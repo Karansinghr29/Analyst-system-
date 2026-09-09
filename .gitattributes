@@ -1,0 +1,27 @@
+# Git must not transform any file in this repository.
+#
+# WHY THIS FILE EXISTS
+#
+# The trusted export is verified by BYTES. `ExportDataSource.descriptor()` reads all 253
+# evidence files, hashes them, and compares the result against `EXPORT_BASELINE_SHA` -- the
+# digest every Phase 1-8 guarantee was established against. A source whose digest does not match
+# is marked FAILED, and `bind_source` then refuses to let it serve the engine. That is the
+# integrity mechanism doing its job.
+#
+# Git's line-ending conversion breaks it. With `core.autocrlf=true` (the default on Git for
+# Windows) git stores CRLF working-copy files as LF blobs, so a Linux host -- Streamlit Community
+# Cloud, a container, CI -- checks out different bytes than the machine the export was built on.
+# All 253 evidence files were altered this way, the digest changed, and the application refused
+# to start with a QuarantineError. Correctly: the evidence really had been modified in transit.
+#
+# `-text` disables that conversion entirely. Git stores and restores every byte exactly as it is,
+# on every platform, so the export that is verified here is the export that is served there.
+#
+# The rule is `*` rather than `*.csv` deliberately: the digest covers whatever the manifest
+# names, and a future evidence file with a different extension must be protected without anyone
+# having to remember to add it here.
+* -text
+
+# Language hints only. These affect GitHub's diff and language statistics, never file contents.
+*.csv linguist-generated=true
+*.zip binary
