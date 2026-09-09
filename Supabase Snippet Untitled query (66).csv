@@ -1,0 +1,201 @@
+entry_date,period,source_table,entry_description,is_reversal,line_no,account_code,account_name,account_type,debit,credit,party_kind,memo
+2026-09-20,2026-09,invoices,Invoice VISTA/26-27/09/00002,false,1,1200,Accounts Receivable - Tenants,ASSET,2250.00,0.00,tenant,Exit charges VISTA/26-27/09/00002
+2026-09-20,2026-09,invoices,Invoice VISTA/26-27/09/00002,false,2,4500,Exit Charges Income,INCOME,0.00,2250.00,null,Exit charges
+2026-09-06,2026-09,invoices,Invoice VISTA/26-27/09/00001,false,1,1200,Accounts Receivable - Tenants,ASSET,2250.00,0.00,tenant,Exit charges VISTA/26-27/09/00001
+2026-09-06,2026-09,invoices,Invoice VISTA/26-27/09/00001,false,2,4500,Exit Charges Income,INCOME,0.00,2250.00,null,Exit charges
+2026-08-31,2026-08,invoices,Invoice VISTA/26-27/08/00203,false,1,1200,Accounts Receivable - Tenants,ASSET,468.00,0.00,tenant,VISTA/26-27/08/00203 (2026-08)
+2026-08-31,2026-08,invoices,Invoice VISTA/26-27/08/00203,false,2,4100,Rental Income,INCOME,0.00,468.00,null,Rent 2026-08
+2026-08-28,2026-08,receipts,Onboarding Charges Received,false,1,1200,Accounts Receivable - Tenants,ASSET,1000.00,0.00,tenant,Onboarding Charges Received
+2026-08-28,2026-08,receipts,Onboarding Charges Received,false,2,4300,Onboarding Fees,INCOME,0.00,1000.00,null,Onboarding Charges Received
+2026-08-28,2026-08,receipts,Payment Received - VISTA/26-27/08/00089,false,1,1120,Bank - Operating Account,ASSET,1000.00,0.00,null,Receipt No: VISTA/26-27/08/00089
+2026-08-28,2026-08,receipts,Payment Received - VISTA/26-27/08/00089,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,Receipt No: VISTA/26-27/08/00089
+2026-08-27,2026-08,receipts,Payment Received - VISTA/26-27/08/R00205,false,1,1120,Bank - Operating Account,ASSET,17825.00,0.00,null,VISTA/26-27/08/R00205 UPI
+2026-08-27,2026-08,receipts,Payment Received - VISTA/26-27/08/R00205,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,17825.00,tenant,VISTA/26-27/08/R00205 payment to AR
+2026-08-26,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/08/00084 — receipt edited — reposting,true,1,1120,Bank - Operating Account,ASSET,0.00,39942.00,null,REVERSAL: Receipt No: VISTA/26-27/08/00084
+2026-08-26,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/08/00084 — receipt edited — reposting,true,2,1200,Accounts Receivable - Tenants,ASSET,39942.00,0.00,tenant,REVERSAL: Receipt No: VISTA/26-27/08/00084
+2026-08-26,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/08/00084 — receipt edited — reposting,true,3,1200,Accounts Receivable - Tenants,ASSET,0.00,29250.00,tenant,REVERSAL: Deposit Received : VISTA/26-27/08/00084
+2026-08-26,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/08/00084 — receipt edited — reposting,true,4,2100,Tenant Deposits Held,LIABILITY,29250.00,0.00,tenant,REVERSAL: Deposit Received : VISTA/26-27/08/00084
+2026-08-26,2026-08,receipts,Payment Received - VISTA/26-27/08/00090,false,1,1120,Bank - Operating Account,ASSET,22218.00,0.00,null,Receipt No: VISTA/26-27/08/00090
+2026-08-26,2026-08,receipts,Payment Received - VISTA/26-27/08/00090,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,22218.00,tenant,Receipt No: VISTA/26-27/08/00090
+2026-08-26,2026-08,receipts,Payment Received - VISTA/26-27/08/00090,false,3,1200,Accounts Receivable - Tenants,ASSET,21750.00,0.00,tenant,Deposit Received : VISTA/26-27/08/00090
+2026-08-26,2026-08,receipts,Payment Received - VISTA/26-27/08/00090,false,4,2100,Tenant Deposits Held,LIABILITY,0.00,21750.00,tenant,Deposit Received : VISTA/26-27/08/00090
+2026-08-26,2026-08,receipts,Onboarding Charges Received,false,1,1200,Accounts Receivable - Tenants,ASSET,1000.00,0.00,tenant,Onboarding Charges Received
+2026-08-26,2026-08,receipts,Onboarding Charges Received,false,2,4300,Onboarding Fees,INCOME,0.00,1000.00,null,Onboarding Charges Received
+2026-08-26,2026-08,invoices,Invoice 9adf9f7d-9388-47e5-b80d-589ba17ea99f,false,1,1200,Accounts Receivable - Tenants,ASSET,3000.00,0.00,tenant,"Additional deposit invoice "
+2026-08-26,2026-08,invoices,Invoice 9adf9f7d-9388-47e5-b80d-589ba17ea99f,false,2,2100,Tenant Deposits Held,LIABILITY,0.00,3000.00,tenant,Deposit top-up
+2026-08-26,2026-08,receipts,Payment Received - VISTA/26-27/08/00088,false,1,1120,Bank - Operating Account,ASSET,1000.00,0.00,null,Receipt No: VISTA/26-27/08/00088
+2026-08-26,2026-08,receipts,Payment Received - VISTA/26-27/08/00088,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,Receipt No: VISTA/26-27/08/00088
+2026-08-26,2026-08,invoices,Invoice 995a3911-520e-4ffe-996d-5177a4b0d6a6,false,1,1200,Accounts Receivable - Tenants,ASSET,1087.00,0.00,tenant,995a3911-520e-4ffe-996d-5177a4b0d6a6 (2026-08)
+2026-08-26,2026-08,invoices,Invoice 995a3911-520e-4ffe-996d-5177a4b0d6a6,false,2,4200,Electricity Income,INCOME,0.00,1087.00,null,Electricity (actual + estimated) 2026-08
+2026-08-26,2026-08,invoices,Invoice 4d326f05-e080-4101-b643-25a29153b852,false,1,1200,Accounts Receivable - Tenants,ASSET,388.00,0.00,tenant,4d326f05-e080-4101-b643-25a29153b852 (2026-08)
+2026-08-26,2026-08,invoices,Invoice 4d326f05-e080-4101-b643-25a29153b852,false,2,4100,Rental Income,INCOME,0.00,388.00,null,Rent 2026-08
+2026-08-26,2026-08,invoices,Invoice VISTA/26-27/08/00202,false,1,1200,Accounts Receivable - Tenants,ASSET,3000.00,0.00,tenant,VISTA/26-27/08/00202 (2026-08)
+2026-08-26,2026-08,invoices,Invoice VISTA/26-27/08/00202,false,2,4100,Rental Income,INCOME,0.00,3000.00,null,Rent 2026-08
+2026-08-25,2026-08,invoices,Invoice VISTA/26-27/08/00187,false,1,1200,Accounts Receivable - Tenants,ASSET,7904.00,0.00,tenant,VISTA/26-27/08/00187 (2026-08)
+2026-08-25,2026-08,invoices,Invoice VISTA/26-27/08/00187,false,2,4100,Rental Income,INCOME,0.00,7904.00,null,Rent 2026-08
+2026-08-25,2026-08,receipts,Onboarding Charges Received,false,1,1200,Accounts Receivable - Tenants,ASSET,1000.00,0.00,tenant,Onboarding Charges Received
+2026-08-25,2026-08,receipts,Onboarding Charges Received,false,2,4300,Onboarding Fees,INCOME,0.00,1000.00,null,Onboarding Charges Received
+2026-08-25,2026-08,receipts,Payment Received - VISTA/26-27/08/00085,false,1,1120,Bank - Operating Account,ASSET,1000.00,0.00,null,Receipt No: VISTA/26-27/08/00085
+2026-08-25,2026-08,receipts,Payment Received - VISTA/26-27/08/00085,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,Receipt No: VISTA/26-27/08/00085
+2026-08-25,2026-08,receipts,Onboarding Charges Received,false,1,1200,Accounts Receivable - Tenants,ASSET,1000.00,0.00,tenant,Onboarding Charges Received
+2026-08-25,2026-08,receipts,Onboarding Charges Received,false,2,4300,Onboarding Fees,INCOME,0.00,1000.00,null,Onboarding Charges Received
+2026-08-25,2026-08,receipts,Payment Received - VISTA/26-27/08/00083,false,1,1120,Bank - Operating Account,ASSET,1000.00,0.00,null,Receipt No: VISTA/26-27/08/00083
+2026-08-25,2026-08,receipts,Payment Received - VISTA/26-27/08/00083,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,Receipt No: VISTA/26-27/08/00083
+2026-08-24,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00044 — invoice amount changed,true,1,1200,Accounts Receivable - Tenants,ASSET,0.00,20733.00,tenant,REVERSAL: VISTA/26-27/08/00044 (2026-08)
+2026-08-24,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00044 — invoice amount changed,true,2,4100,Rental Income,INCOME,14000.00,0.00,null,REVERSAL: Rent 2026-08
+2026-08-24,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00044 — invoice amount changed,true,3,4200,Electricity Income,INCOME,4483.00,0.00,null,REVERSAL: Electricity (actual + estimated) 2026-08
+2026-08-24,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00044 — invoice amount changed,true,4,4900,Other Income,INCOME,2250.00,0.00,null,REVERSAL: Other charges 2026-08
+2026-08-23,2026-08,invoices,Invoice VISTA/26-27/08/00191,false,1,1200,Accounts Receivable - Tenants,ASSET,9000.00,0.00,tenant,VISTA/26-27/08/00191 (2026-08)
+2026-08-23,2026-08,invoices,Invoice VISTA/26-27/08/00191,false,2,4100,Rental Income,INCOME,0.00,9000.00,null,Rent 2026-08
+2026-08-22,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00061 — invoice amount changed,true,1,1200,Accounts Receivable - Tenants,ASSET,0.00,18145.00,tenant,REVERSAL: VISTA/26-27/08/00061 (2026-08)
+2026-08-22,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00061 — invoice amount changed,true,2,4100,Rental Income,INCOME,10420.00,0.00,null,REVERSAL: Rent 2026-08
+2026-08-22,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00061 — invoice amount changed,true,3,4200,Electricity Income,INCOME,5475.00,0.00,null,REVERSAL: Electricity (actual + estimated) 2026-08
+2026-08-22,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00061 — invoice amount changed,true,4,4900,Other Income,INCOME,2250.00,0.00,null,REVERSAL: Other charges 2026-08
+2026-08-21,2026-08,invoices,Invoice ae3a0491-c6f5-46f0-a3f1-699b6cb6e34b,false,1,1200,Accounts Receivable - Tenants,ASSET,956.00,0.00,tenant,ae3a0491-c6f5-46f0-a3f1-699b6cb6e34b (2026-08)
+2026-08-21,2026-08,invoices,Invoice ae3a0491-c6f5-46f0-a3f1-699b6cb6e34b,false,2,4200,Electricity Income,INCOME,0.00,956.00,null,Electricity (actual + estimated) 2026-08
+2026-08-19,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/08/00073 — receipt edited — reposting,true,1,1120,Bank - Operating Account,ASSET,0.00,1000.00,null,REVERSAL: Receipt No: VISTA/26-27/08/00073
+2026-08-19,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/08/00073 — receipt edited — reposting,true,2,1200,Accounts Receivable - Tenants,ASSET,1000.00,0.00,tenant,REVERSAL: Receipt No: VISTA/26-27/08/00073
+2026-08-19,2026-08,receipts,Payment Received - VISTA/26-27/08/00073,false,1,1120,Bank - Operating Account,ASSET,1000.00,0.00,null,Receipt No: VISTA/26-27/08/00073
+2026-08-19,2026-08,receipts,Payment Received - VISTA/26-27/08/00073,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,Receipt No: VISTA/26-27/08/00073
+2026-08-19,2026-08,receipts,REVERSAL of Onboarding Charges Received — receipt edited — reposting,true,1,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,REVERSAL: Onboarding Charges Received
+2026-08-19,2026-08,receipts,REVERSAL of Onboarding Charges Received — receipt edited — reposting,true,2,4300,Onboarding Fees,INCOME,1000.00,0.00,null,REVERSAL: Onboarding Charges Received
+2026-08-19,2026-08,receipts,Onboarding Charges Received,false,1,1200,Accounts Receivable - Tenants,ASSET,1000.00,0.00,tenant,Onboarding Charges Received
+2026-08-19,2026-08,receipts,Onboarding Charges Received,false,2,4300,Onboarding Fees,INCOME,0.00,1000.00,null,Onboarding Charges Received
+2026-08-18,2026-08,receipts,Payment Received - VISTA/26-27/08/00075,false,1,1120,Bank - Operating Account,ASSET,61580.00,0.00,null,Receipt No: VISTA/26-27/08/00075
+2026-08-18,2026-08,receipts,Payment Received - VISTA/26-27/08/00075,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,61580.00,tenant,Receipt No: VISTA/26-27/08/00075
+2026-08-18,2026-08,receipts,Payment Received - VISTA/26-27/08/00075,false,3,1200,Accounts Receivable - Tenants,ASSET,52500.00,0.00,tenant,Deposit Received : VISTA/26-27/08/00075
+2026-08-18,2026-08,receipts,Payment Received - VISTA/26-27/08/00075,false,4,2100,Tenant Deposits Held,LIABILITY,0.00,52500.00,tenant,Deposit Received : VISTA/26-27/08/00075
+2026-08-18,2026-08,invoices,Invoice 48fa3b74-7b74-4cb7-8c03-8e9a584b2d5e,false,1,1200,Accounts Receivable - Tenants,ASSET,2259.00,0.00,tenant,48fa3b74-7b74-4cb7-8c03-8e9a584b2d5e (2026-08)
+2026-08-18,2026-08,invoices,Invoice 48fa3b74-7b74-4cb7-8c03-8e9a584b2d5e,false,2,4100,Rental Income,INCOME,0.00,2259.00,null,Rent 2026-08
+2026-08-18,2026-08,invoices,Invoice 62040ddd-430b-4b41-8502-78b09dd1f2d7,false,1,1200,Accounts Receivable - Tenants,ASSET,264.00,0.00,tenant,62040ddd-430b-4b41-8502-78b09dd1f2d7 (2026-08)
+2026-08-18,2026-08,invoices,Invoice 62040ddd-430b-4b41-8502-78b09dd1f2d7,false,2,4200,Electricity Income,INCOME,0.00,264.00,null,Electricity (actual + estimated) 2026-08
+2026-08-18,2026-08,invoices,Invoice f4185768-a216-4e4f-aad6-a41715f9c82d,false,1,1200,Accounts Receivable - Tenants,ASSET,7500.00,0.00,tenant,"Additional deposit invoice "
+2026-08-18,2026-08,invoices,Invoice f4185768-a216-4e4f-aad6-a41715f9c82d,false,2,2100,Tenant Deposits Held,LIABILITY,0.00,7500.00,tenant,Deposit top-up
+2026-08-17,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/07/R02728 — receipt edited — reposting,true,1,1120,Bank - Operating Account,ASSET,0.00,22400.00,null,REVERSAL: VISTA/26-27/07/R02728 UPI
+2026-08-17,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/07/R02728 — receipt edited — reposting,true,2,1200,Accounts Receivable - Tenants,ASSET,22400.00,0.00,tenant,REVERSAL: VISTA/26-27/07/R02728 payment to AR
+2026-08-17,2026-08,receipts,Payment Received - VISTA/26-27/08/R00190,false,1,1120,Bank - Operating Account,ASSET,20833.00,0.00,null,VISTA/26-27/08/R00190 CREDIT_CARD
+2026-08-17,2026-08,receipts,Payment Received - VISTA/26-27/08/R00190,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,20833.00,tenant,VISTA/26-27/08/R00190 payment to AR
+2026-08-16,2026-08,receipts,Payment Received - VISTA/26-27/08/00080,false,1,1120,Bank - Operating Account,ASSET,32882.00,0.00,null,Receipt No: VISTA/26-27/08/00080
+2026-08-16,2026-08,receipts,Payment Received - VISTA/26-27/08/00080,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,32882.00,tenant,Receipt No: VISTA/26-27/08/00080
+2026-08-16,2026-08,receipts,Payment Received - VISTA/26-27/08/00080,false,3,1200,Accounts Receivable - Tenants,ASSET,21750.00,0.00,tenant,Deposit Received : VISTA/26-27/08/00080
+2026-08-16,2026-08,receipts,Payment Received - VISTA/26-27/08/00080,false,4,2100,Tenant Deposits Held,LIABILITY,0.00,21750.00,tenant,Deposit Received : VISTA/26-27/08/00080
+2026-08-16,2026-08,receipts,Payment Received - VISTA/26-27/08/00074,false,1,1120,Bank - Operating Account,ASSET,1000.00,0.00,null,Receipt No: VISTA/26-27/08/00074
+2026-08-16,2026-08,receipts,Payment Received - VISTA/26-27/08/00074,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,Receipt No: VISTA/26-27/08/00074
+2026-08-16,2026-08,receipts,Onboarding Charges Received,false,1,1200,Accounts Receivable - Tenants,ASSET,1000.00,0.00,tenant,Onboarding Charges Received
+2026-08-16,2026-08,receipts,Onboarding Charges Received,false,2,4300,Onboarding Fees,INCOME,0.00,1000.00,null,Onboarding Charges Received
+2026-08-16,2026-08,receipts,Payment Received - VISTA/26-27/08/00072,false,1,1120,Bank - Operating Account,ASSET,14500.00,0.00,null,VISTA/26-27/08/00072 UPI
+2026-08-16,2026-08,receipts,Payment Received - VISTA/26-27/08/00072,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,14500.00,tenant,VISTA/26-27/08/00072 payment to AR
+2026-08-16,2026-08,receipts,Payment Received - VISTA/26-27/08/00073,false,1,1120,Bank - Operating Account,ASSET,1000.00,0.00,null,Receipt No: VISTA/26-27/08/00073
+2026-08-16,2026-08,receipts,Payment Received - VISTA/26-27/08/00073,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,Receipt No: VISTA/26-27/08/00073
+2026-08-16,2026-08,receipts,Onboarding Charges Received,false,1,1200,Accounts Receivable - Tenants,ASSET,1000.00,0.00,tenant,Onboarding Charges Received
+2026-08-16,2026-08,receipts,Onboarding Charges Received,false,2,4300,Onboarding Fees,INCOME,0.00,1000.00,null,Onboarding Charges Received
+2026-08-15,2026-08,receipts,Payment Received - VISTA/26-27/08/00070,false,1,1120,Bank - Operating Account,ASSET,32039.00,0.00,null,Receipt No: VISTA/26-27/08/00070
+2026-08-15,2026-08,receipts,Payment Received - VISTA/26-27/08/00070,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,32039.00,tenant,Receipt No: VISTA/26-27/08/00070
+2026-08-15,2026-08,receipts,Payment Received - VISTA/26-27/08/00070,false,3,1200,Accounts Receivable - Tenants,ASSET,23250.00,0.00,tenant,Deposit Received : VISTA/26-27/08/00070
+2026-08-15,2026-08,receipts,Payment Received - VISTA/26-27/08/00070,false,4,2100,Tenant Deposits Held,LIABILITY,0.00,23250.00,tenant,Deposit Received : VISTA/26-27/08/00070
+2026-08-15,2026-08,invoices,Invoice VISTA/26-27/08/00186,false,1,1200,Accounts Receivable - Tenants,ASSET,8500.00,0.00,tenant,VISTA/26-27/08/00186 (2026-08)
+2026-08-15,2026-08,invoices,Invoice VISTA/26-27/08/00186,false,2,4100,Rental Income,INCOME,0.00,8500.00,null,Rent 2026-08
+2026-08-15,2026-08,receipts,Payment Received - VISTA/26-27/08/00069,false,1,1120,Bank - Operating Account,ASSET,1000.00,0.00,null,Receipt No: VISTA/26-27/08/00069
+2026-08-15,2026-08,receipts,Payment Received - VISTA/26-27/08/00069,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,Receipt No: VISTA/26-27/08/00069
+2026-08-15,2026-08,receipts,Payment Received - VISTA/26-27/08/00082,false,1,1120,Bank - Operating Account,ASSET,30000.00,0.00,null,Receipt No: VISTA/26-27/08/00082
+2026-08-15,2026-08,receipts,Payment Received - VISTA/26-27/08/00082,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,30000.00,tenant,Receipt No: VISTA/26-27/08/00082
+2026-08-15,2026-08,receipts,Payment Received - VISTA/26-27/08/00082,false,3,1200,Accounts Receivable - Tenants,ASSET,20250.00,0.00,tenant,Deposit Received : VISTA/26-27/08/00082
+2026-08-15,2026-08,receipts,Payment Received - VISTA/26-27/08/00082,false,4,2100,Tenant Deposits Held,LIABILITY,0.00,20250.00,tenant,Deposit Received : VISTA/26-27/08/00082
+2026-08-15,2026-08,invoices,Invoice VISTA/26-27/08/00194,false,1,1200,Accounts Receivable - Tenants,ASSET,10694.00,0.00,tenant,VISTA/26-27/08/00194 (2026-08)
+2026-08-15,2026-08,invoices,Invoice VISTA/26-27/08/00194,false,2,4100,Rental Income,INCOME,0.00,10694.00,null,Rent 2026-08
+2026-08-15,2026-08,receipts,Onboarding Charges Received,false,1,1200,Accounts Receivable - Tenants,ASSET,1000.00,0.00,tenant,Onboarding Charges Received
+2026-08-15,2026-08,receipts,Onboarding Charges Received,false,2,4300,Onboarding Fees,INCOME,0.00,1000.00,null,Onboarding Charges Received
+2026-08-15,2026-08,invoices,Invoice VISTA/26-27/08/00198,false,1,1200,Accounts Receivable - Tenants,ASSET,7952.00,0.00,tenant,VISTA/26-27/08/00198 (2026-08)
+2026-08-15,2026-08,invoices,Invoice VISTA/26-27/08/00198,false,2,4100,Rental Income,INCOME,0.00,7952.00,null,Rent 2026-08
+2026-08-15,2026-08,receipts,Onboarding Charges Received,false,1,1200,Accounts Receivable - Tenants,ASSET,1000.00,0.00,tenant,Onboarding Charges Received
+2026-08-15,2026-08,receipts,Onboarding Charges Received,false,2,4300,Onboarding Fees,INCOME,0.00,1000.00,null,Onboarding Charges Received
+2026-08-15,2026-08,receipts,Payment Received - VISTA/26-27/08/00071,false,1,1120,Bank - Operating Account,ASSET,1000.00,0.00,null,Receipt No: VISTA/26-27/08/00071
+2026-08-15,2026-08,receipts,Payment Received - VISTA/26-27/08/00071,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,Receipt No: VISTA/26-27/08/00071
+2026-08-15,2026-08,invoices,Invoice VISTA/26-27/08/00193,false,1,1200,Accounts Receivable - Tenants,ASSET,7404.00,0.00,tenant,VISTA/26-27/08/00193 (2026-08)
+2026-08-15,2026-08,invoices,Invoice VISTA/26-27/08/00193,false,2,4100,Rental Income,INCOME,0.00,7404.00,null,Rent 2026-08
+2026-08-14,2026-08,receipts,Payment Received - VISTA/26-27/08/R00189,false,1,1120,Bank - Operating Account,ASSET,1000.00,0.00,null,VISTA/26-27/08/R00189 UPI
+2026-08-14,2026-08,receipts,Payment Received - VISTA/26-27/08/R00189,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,VISTA/26-27/08/R00189 payment to AR
+2026-08-14,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/08/R00087 — receipt edited — reposting,true,1,1120,Bank - Operating Account,ASSET,0.00,16143.00,null,REVERSAL: VISTA/26-27/08/R00087 UPI
+2026-08-14,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/08/R00087 — receipt edited — reposting,true,2,1200,Accounts Receivable - Tenants,ASSET,16143.00,0.00,tenant,REVERSAL: VISTA/26-27/08/R00087 payment to AR
+2026-08-14,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/06/00208 — invoice soft-deleted,true,1,1200,Accounts Receivable - Tenants,ASSET,0.00,967.00,tenant,REVERSAL: VISTA/26-27/06/00208 (2026-06)
+2026-08-14,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/06/00208 — invoice soft-deleted,true,2,4100,Rental Income,INCOME,967.00,0.00,null,REVERSAL: Rent 2026-06
+2026-08-14,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/06/00208 (re-posted) — invoice soft-deleted,true,1,1200,Accounts Receivable - Tenants,ASSET,0.00,967.00,tenant,REVERSAL: VISTA/26-27/06/00208 (2026-06)
+2026-08-14,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/06/00208 (re-posted) — invoice soft-deleted,true,2,4100,Rental Income,INCOME,967.00,0.00,null,REVERSAL: Rent 2026-06
+2026-08-14,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/08/R00087 — receipt edited — reposting,true,1,1120,Bank - Operating Account,ASSET,0.00,17142.00,null,REVERSAL: VISTA/26-27/08/R00087 UPI
+2026-08-14,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/08/R00087 — receipt edited — reposting,true,2,1200,Accounts Receivable - Tenants,ASSET,17142.00,0.00,tenant,REVERSAL: VISTA/26-27/08/R00087 payment to AR
+2026-08-13,2026-08,receipts,Payment Received - VISTA/26-27/08/R00184,false,1,1120,Bank - Operating Account,ASSET,265.00,0.00,null,VISTA/26-27/08/R00184 UPI
+2026-08-13,2026-08,receipts,Payment Received - VISTA/26-27/08/R00184,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,265.00,tenant,VISTA/26-27/08/R00184 payment to AR
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 (corrected) — invoice amount changed,true,1,1200,Accounts Receivable - Tenants,ASSET,0.00,14574.00,tenant,REVERSAL: VISTA/26-27/08/00043 (2026-08)
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 (corrected) — invoice amount changed,true,2,4100,Rental Income,INCOME,8807.00,0.00,null,REVERSAL: Rent 2026-08
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 (corrected) — invoice amount changed,true,3,4200,Electricity Income,INCOME,3517.00,0.00,null,REVERSAL: Electricity (actual + estimated) 2026-08
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 (corrected) — invoice amount changed,true,4,4900,Other Income,INCOME,2250.00,0.00,null,REVERSAL: Other charges 2026-08
+2026-08-13,2026-08,receipts,Payment Received - VISTA/26-27/08/00067,false,1,1120,Bank - Operating Account,ASSET,1000.00,0.00,null,Receipt No: VISTA/26-27/08/00067
+2026-08-13,2026-08,receipts,Payment Received - VISTA/26-27/08/00067,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,Receipt No: VISTA/26-27/08/00067
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,1,1120,Bank - Operating Account,ASSET,0.00,43089.00,null,REVERSAL: Receipt No: VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,2,1200,Accounts Receivable - Tenants,ASSET,43089.00,0.00,tenant,REVERSAL: Receipt No: VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,3,1200,Accounts Receivable - Tenants,ASSET,0.00,29250.00,tenant,REVERSAL: Deposit Received : VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,4,2100,Tenant Deposits Held,LIABILITY,29250.00,0.00,tenant,REVERSAL: Deposit Received : VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/07/00110 — receipt edited — reposting,true,1,1120,Bank - Operating Account,ASSET,0.00,1000.00,null,REVERSAL: Receipt No: VISTA/26-27/07/00110
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/07/00110 — receipt edited — reposting,true,2,1200,Accounts Receivable - Tenants,ASSET,1000.00,0.00,tenant,REVERSAL: Receipt No: VISTA/26-27/07/00110
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 (corrected) — invoice amount changed,true,1,1200,Accounts Receivable - Tenants,ASSET,0.00,11535.00,tenant,REVERSAL: VISTA/26-27/08/00043 (2026-08)
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 (corrected) — invoice amount changed,true,2,4100,Rental Income,INCOME,8807.00,0.00,null,REVERSAL: Rent 2026-08
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 (corrected) — invoice amount changed,true,3,4200,Electricity Income,INCOME,2728.00,0.00,null,REVERSAL: Electricity (actual + estimated) 2026-08
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 (corrected) — invoice amount changed,true,1,1200,Accounts Receivable - Tenants,ASSET,0.00,12324.00,tenant,REVERSAL: VISTA/26-27/08/00043 (2026-08)
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 (corrected) — invoice amount changed,true,2,4100,Rental Income,INCOME,8807.00,0.00,null,REVERSAL: Rent 2026-08
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 (corrected) — invoice amount changed,true,3,4200,Electricity Income,INCOME,3517.00,0.00,null,REVERSAL: Electricity (actual + estimated) 2026-08
+2026-08-13,2026-08,receipts,Onboarding Charges Received,false,1,1200,Accounts Receivable - Tenants,ASSET,1000.00,0.00,tenant,Onboarding Charges Received
+2026-08-13,2026-08,receipts,Onboarding Charges Received,false,2,4300,Onboarding Fees,INCOME,0.00,1000.00,null,Onboarding Charges Received
+2026-08-13,2026-08,receipts,REVERSAL of Onboarding Charges Received — receipt edited — reposting,true,1,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,REVERSAL: Onboarding Charges Received
+2026-08-13,2026-08,receipts,REVERSAL of Onboarding Charges Received — receipt edited — reposting,true,2,4300,Onboarding Fees,INCOME,1000.00,0.00,null,REVERSAL: Onboarding Charges Received
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,1,1120,Bank - Operating Account,ASSET,0.00,43089.00,null,REVERSAL: Receipt No: VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,2,1200,Accounts Receivable - Tenants,ASSET,43089.00,0.00,tenant,REVERSAL: Receipt No: VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,3,1200,Accounts Receivable - Tenants,ASSET,0.00,29250.00,tenant,REVERSAL: Deposit Received : VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,4,2100,Tenant Deposits Held,LIABILITY,29250.00,0.00,tenant,REVERSAL: Deposit Received : VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,1,1120,Bank - Operating Account,ASSET,0.00,60000.00,null,REVERSAL: Receipt No: VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,2,1200,Accounts Receivable - Tenants,ASSET,60000.00,0.00,tenant,REVERSAL: Receipt No: VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,3,1200,Accounts Receivable - Tenants,ASSET,0.00,29250.00,tenant,REVERSAL: Deposit Received : VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,4,2100,Tenant Deposits Held,LIABILITY,29250.00,0.00,tenant,REVERSAL: Deposit Received : VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,1,1120,Bank - Operating Account,ASSET,0.00,43089.00,null,REVERSAL: Receipt No: VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,2,1200,Accounts Receivable - Tenants,ASSET,43089.00,0.00,tenant,REVERSAL: Receipt No: VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,3,1200,Accounts Receivable - Tenants,ASSET,0.00,29250.00,tenant,REVERSAL: Deposit Received : VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/23-24/08/00003 — receipt edited — reposting,true,4,2100,Tenant Deposits Held,LIABILITY,29250.00,0.00,tenant,REVERSAL: Deposit Received : VISTA/23-24/08/00003
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/08/R00055 — receipt edited — reposting,true,1,1120,Bank - Operating Account,ASSET,0.00,16656.00,null,REVERSAL: VISTA/26-27/08/R00055 UPI
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/08/R00055 — receipt edited — reposting,true,2,1200,Accounts Receivable - Tenants,ASSET,16656.00,0.00,tenant,REVERSAL: VISTA/26-27/08/R00055 payment to AR
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/08/R00055 — receipt edited — reposting,true,1,1120,Bank - Operating Account,ASSET,0.00,16855.00,null,REVERSAL: VISTA/26-27/08/R00055 UPI
+2026-08-13,2026-08,receipts,REVERSAL of Payment Received - VISTA/26-27/08/R00055 — receipt edited — reposting,true,2,1200,Accounts Receivable - Tenants,ASSET,16855.00,0.00,tenant,REVERSAL: VISTA/26-27/08/R00055 payment to AR
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 (corrected) — invoice amount changed,true,1,1200,Accounts Receivable - Tenants,ASSET,0.00,15013.00,tenant,REVERSAL: VISTA/26-27/08/00043 (2026-08)
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 (corrected) — invoice amount changed,true,2,4100,Rental Income,INCOME,8807.00,0.00,null,REVERSAL: Rent 2026-08
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 (corrected) — invoice amount changed,true,3,4200,Electricity Income,INCOME,3956.00,0.00,null,REVERSAL: Electricity (actual + estimated) 2026-08
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 (corrected) — invoice amount changed,true,4,4900,Other Income,INCOME,2250.00,0.00,null,REVERSAL: Other charges 2026-08
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 — invoice amount changed,true,1,1200,Accounts Receivable - Tenants,ASSET,0.00,22228.00,tenant,REVERSAL: VISTA/26-27/08/00043 (2026-08)
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 — invoice amount changed,true,2,4100,Rental Income,INCOME,19500.00,0.00,null,REVERSAL: Rent 2026-08
+2026-08-13,2026-08,invoices,REVERSAL of Invoice VISTA/26-27/08/00043 — invoice amount changed,true,3,4200,Electricity Income,INCOME,2728.00,0.00,null,REVERSAL: Electricity (actual + estimated) 2026-08
+2026-08-11,2026-08,receipts,Payment Received - VISTA/26-27/08/00079,false,1,1120,Bank - Operating Account,ASSET,55800.00,0.00,null,Receipt No: VISTA/26-27/08/00079
+2026-08-11,2026-08,receipts,Payment Received - VISTA/26-27/08/00079,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,55800.00,tenant,Receipt No: VISTA/26-27/08/00079
+2026-08-11,2026-08,receipts,Payment Received - VISTA/26-27/08/00079,false,3,1200,Accounts Receivable - Tenants,ASSET,46500.00,0.00,tenant,Deposit Received : VISTA/26-27/08/00079
+2026-08-11,2026-08,receipts,Payment Received - VISTA/26-27/08/00079,false,4,2100,Tenant Deposits Held,LIABILITY,0.00,46500.00,tenant,Deposit Received : VISTA/26-27/08/00079
+2026-08-11,2026-08,receipts,Payment Received - VISTA/26-27/08/00061,false,1,1120,Bank - Operating Account,ASSET,1000.00,0.00,null,Receipt No: VISTA/26-27/08/00061
+2026-08-11,2026-08,receipts,Payment Received - VISTA/26-27/08/00061,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,Receipt No: VISTA/26-27/08/00061
+2026-08-11,2026-08,receipts,Payment Received - VISTA/26-27/08/00060,false,1,1120,Bank - Operating Account,ASSET,32509.00,0.00,null,Receipt No: VISTA/26-27/08/00060
+2026-08-11,2026-08,receipts,Payment Received - VISTA/26-27/08/00060,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,32509.00,tenant,Receipt No: VISTA/26-27/08/00060
+2026-08-11,2026-08,receipts,Payment Received - VISTA/26-27/08/00060,false,3,1200,Accounts Receivable - Tenants,ASSET,21750.00,0.00,tenant,Deposit Received : VISTA/26-27/08/00060
+2026-08-11,2026-08,receipts,Payment Received - VISTA/26-27/08/00060,false,4,2100,Tenant Deposits Held,LIABILITY,0.00,21750.00,tenant,Deposit Received : VISTA/26-27/08/00060
+2026-08-11,2026-08,receipts,Onboarding Charges Received,false,1,1200,Accounts Receivable - Tenants,ASSET,1000.00,0.00,tenant,Onboarding Charges Received
+2026-08-11,2026-08,receipts,Onboarding Charges Received,false,2,4300,Onboarding Fees,INCOME,0.00,1000.00,null,Onboarding Charges Received
+2026-08-11,2026-08,receipts,Payment Received - VISTA/26-27/08/00059,false,1,1120,Bank - Operating Account,ASSET,21453.00,0.00,null,VISTA/26-27/08/00059 UPI
+2026-08-11,2026-08,receipts,Payment Received - VISTA/26-27/08/00059,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,21453.00,tenant,VISTA/26-27/08/00059 payment to AR
+2026-08-10,2026-08,receipts,Onboarding Charges Received,false,1,1200,Accounts Receivable - Tenants,ASSET,1000.00,0.00,tenant,Onboarding Charges Received
+2026-08-10,2026-08,receipts,Onboarding Charges Received,false,2,4300,Onboarding Fees,INCOME,0.00,1000.00,null,Onboarding Charges Received
+2026-08-10,2026-08,receipts,Payment Received - VISTA/26-27/08/00048,false,1,1120,Bank - Operating Account,ASSET,1000.00,0.00,null,Receipt No: VISTA/26-27/08/00048
+2026-08-10,2026-08,receipts,Payment Received - VISTA/26-27/08/00048,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,1000.00,tenant,Receipt No: VISTA/26-27/08/00048
+2026-08-10,2026-08,receipts,Payment Received - VISTA/23-24/08/00003,false,1,1120,Bank - Operating Account,ASSET,43089.00,0.00,null,Receipt No: VISTA/23-24/08/00003
+2026-08-10,2026-08,receipts,Payment Received - VISTA/23-24/08/00003,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,43089.00,tenant,Receipt No: VISTA/23-24/08/00003
+2026-08-10,2026-08,receipts,Payment Received - VISTA/23-24/08/00003,false,3,1200,Accounts Receivable - Tenants,ASSET,29250.00,0.00,tenant,Deposit Received : VISTA/23-24/08/00003
+2026-08-10,2026-08,receipts,Payment Received - VISTA/23-24/08/00003,false,4,2100,Tenant Deposits Held,LIABILITY,0.00,29250.00,tenant,Deposit Received : VISTA/23-24/08/00003
+2026-08-10,2026-08,receipts,Payment Received - VISTA/23-24/08/00003,false,1,1120,Bank - Operating Account,ASSET,43089.00,0.00,null,Receipt No: VISTA/23-24/08/00003
+2026-08-10,2026-08,receipts,Payment Received - VISTA/23-24/08/00003,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,43089.00,tenant,Receipt No: VISTA/23-24/08/00003
+2026-08-10,2026-08,receipts,Payment Received - VISTA/23-24/08/00003,false,3,1200,Accounts Receivable - Tenants,ASSET,29250.00,0.00,tenant,Deposit Received : VISTA/23-24/08/00003
+2026-08-10,2026-08,receipts,Payment Received - VISTA/23-24/08/00003,false,4,2100,Tenant Deposits Held,LIABILITY,0.00,29250.00,tenant,Deposit Received : VISTA/23-24/08/00003
+2026-08-10,2026-08,receipts,Payment Received - VISTA/26-27/08/R00170,false,1,1120,Bank - Operating Account,ASSET,20678.00,0.00,null,VISTA/26-27/08/R00170 UPI
+2026-08-10,2026-08,receipts,Payment Received - VISTA/26-27/08/R00170,false,2,1200,Accounts Receivable - Tenants,ASSET,0.00,20678.00,tenant,VISTA/26-27/08/R00170 payment to AR
+2026-08-10,2026-08,receipts,Payment Received - VISTA/23-24/08/00003,false,1,1120,Bank - Operating Account,ASSET,60000.00,0.00,null,Receipt No: VISTA/23-24/08/00003

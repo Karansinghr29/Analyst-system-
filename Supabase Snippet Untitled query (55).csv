@@ -1,0 +1,2 @@
+id,allotment_id,tenant_id,date,amount,direction,ledger_type,category,reference_table,created_at
+f4eea2bd-84fb-45e9-ae31-2833af4ec696,298ae27c-7f05-4e4a-b957-6a68d2287c2d,398396b1-f339-683b-4307-b3441615b82a,0206-03-27,12516,CREDIT,PAYMENT,PAYMENT,receipts,2026-04-20 10:09:31.076398+00

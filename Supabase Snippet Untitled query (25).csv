@@ -1,0 +1,297 @@
+table_schema,table_name,column_name,data_type,total_rows,non_null_rows,min_value,max_value,distinct_days,distinct_months,rows_before_2019,rows_after_today
+market,amenity_embeddings,updated_at,timestamp with time zone,0,0,null,null,0,0,0,0
+market,competitor_intelligence,created_at,timestamp with time zone,133,133,2026-05-14 04:19:05.333403+00,2026-05-22 20:42:03.218777+00,5,1,0,0
+market,competitor_intelligence,scraped_at,timestamp with time zone,133,63,2026-05-14 06:14:24.445+00,2026-05-14 07:57:54.625+00,1,1,0,0
+market,competitor_intelligence,updated_at,timestamp with time zone,133,133,2026-05-14 17:23:49.872+00,2026-05-22 21:25:03.222+00,7,1,0,0
+market,competitor_pricing_snapshots_2026_05,scraped_at,timestamp with time zone,0,0,null,null,0,0,0,0
+market,competitor_pricing_snapshots_2026_06,scraped_at,timestamp with time zone,0,0,null,null,0,0,0,0
+market,competitor_pricing_snapshots_2026_07,scraped_at,timestamp with time zone,0,0,null,null,0,0,0,0
+market,competitor_pricing_snapshots_2026_08,scraped_at,timestamp with time zone,0,0,null,null,0,0,0,0
+market,competitor_properties,created_at,timestamp with time zone,257,257,2026-05-13 18:58:50.985503+00,2026-05-21 20:32:07.584305+00,9,1,0,0
+market,competitor_properties,last_scraped_at,timestamp with time zone,257,257,2026-05-13 21:17:09.356+00,2026-05-22 20:33:57.445+00,10,1,0,0
+market,competitor_properties,updated_at,timestamp with time zone,257,257,2026-05-13 21:17:09.464354+00,2026-05-22 20:33:57.556004+00,10,1,0,0
+market,competitor_reviews,review_date,date,0,0,null,null,0,0,0,0
+market,competitor_reviews,scraped_at,timestamp with time zone,0,0,null,null,0,0,0,0
+market,competitor_room_types,updated_at,timestamp with time zone,1,1,2026-05-22 20:33:23.121463+00,2026-05-22 20:33:23.121463+00,1,1,0,0
+market,localities,created_at,timestamp with time zone,6,6,2026-05-13 17:40:56.768532+00,2026-05-14 09:25:22.882013+00,2,1,0,0
+market,locality_market_metrics,calculated_at,timestamp with time zone,0,0,null,null,0,0,0,0
+market,org_tracked_localities,created_at,timestamp with time zone,5,5,2026-05-13 17:40:56.768532+00,2026-05-14 05:35:40.438741+00,2,1,0,0
+market,property_embeddings,updated_at,timestamp with time zone,0,0,null,null,0,0,0,0
+market,review_embeddings,updated_at,timestamp with time zone,0,0,null,null,0,0,0,0
+market,scrape_sources,created_at,timestamp with time zone,4,4,2026-05-13 17:21:14.10073+00,2026-05-13 18:58:50.281518+00,1,1,0,0
+public,accounting_migration_log,created_at,timestamp with time zone,30,30,2026-04-25 10:17:01.70487+00,2026-05-09 03:32:17.410825+00,5,2,0,0
+public,accounting_periods,closed_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,ai_actions,created_at,timestamp with time zone,7,7,2026-04-18 23:14:47.501931+00,2026-04-20 06:50:14.993805+00,3,1,0,0
+public,ai_logs,created_at,timestamp with time zone,6765,6765,2026-04-19 06:50:43.598317+00,2026-08-29 07:06:33.011351+00,133,5,0,10
+public,ai_sessions,created_at,timestamp with time zone,14,14,2026-04-18 22:58:51.493602+00,2026-04-28 07:27:58.604116+00,4,1,0,0
+public,ai_sessions,updated_at,timestamp with time zone,14,14,2026-04-18 22:59:44.797+00,2026-04-28 07:28:00.588+00,4,1,0,0
+public,announcements,created_at,timestamp with time zone,1,1,2026-08-05 11:04:32.51626+00,2026-08-05 11:04:32.51626+00,1,1,0,0
+public,announcements,published_at,timestamp with time zone,1,0,null,null,0,0,0,0
+public,announcements,updated_at,timestamp with time zone,1,1,2026-08-05 11:04:32.51626+00,2026-08-05 11:04:32.51626+00,1,1,0,0
+public,apartments,created_at,timestamp with time zone,43,43,2026-03-16 17:47:27.477146+00,2026-07-28 10:33:11.792654+00,4,3,0,0
+public,apartments,end_date,date,43,38,2024-08-31,2032-03-31,11,11,0,34
+public,apartments,signing_date,date,43,2,2026-08-01,2026-08-01,1,1,0,0
+public,apartments,start_date,date,43,43,1899-12-30,2026-08-01,13,12,2,0
+public,asset_allocations,allocated_date,date,1822,1822,2023-03-30,2026-04-10,41,21,0,0
+public,asset_allocations,created_at,timestamp with time zone,1822,1822,2026-04-10 22:55:50.068336+00,2026-04-10 22:56:09.024651+00,1,1,0,0
+public,asset_brands,created_at,timestamp with time zone,50,50,2026-03-18 10:35:50.931768+00,2026-04-10 21:42:56.147942+00,2,2,0,0
+public,asset_categories,created_at,timestamp with time zone,11,11,2026-03-16 17:36:58.873783+00,2026-04-22 23:35:03.161901+00,4,2,0,0
+public,asset_depreciation,last_calculated,timestamp with time zone,0,0,null,null,0,0,0,0
+public,asset_maintenance_logs,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,asset_maintenance_logs,maintenance_date,date,0,0,null,null,0,0,0,0
+public,asset_maintenance_logs,next_service_due,date,0,0,null,null,0,0,0,0
+public,asset_movements,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,asset_movements,move_date,date,0,0,null,null,0,0,0,0
+public,asset_payments,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,asset_payments,payment_date,date,0,0,null,null,0,0,0,0
+public,asset_types,created_at,timestamp with time zone,34,34,2026-04-08 17:42:38.607307+00,2026-04-22 23:35:18.023055+00,5,1,0,0
+public,assets,created_at,timestamp with time zone,1700,1700,2026-04-10 22:55:20.97926+00,2026-04-10 22:55:42.660512+00,1,1,0,0
+public,assets,invoice_date,date,1700,308,2023-03-30,2026-03-23,61,25,0,0
+public,assets,purchase_date,date,1700,308,2023-03-30,2026-03-23,61,25,0,0
+public,assets,warranty_expiry,date,1700,1,2026-07-31,2026-07-31,1,1,0,0
+public,attendance_logs,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,attendance_logs,date,date,0,0,null,null,0,0,0,0
+public,attendance_sync,created_at,timestamp with time zone,50,50,2026-05-23 12:39:13.816039+00,2026-08-21 06:16:20.178982+00,7,3,0,0
+public,attendance_sync,date,date,50,50,2026-03-11,2026-05-23,14,3,0,0
+public,attendance_sync,synced_at,timestamp with time zone,50,50,2026-05-23 12:39:13.019+00,2026-08-22 00:16:20.789+00,3,3,0,0
+public,audit_logs,performed_at,timestamp with time zone,3119,3119,2026-03-16 19:49:16.587842+00,2026-08-28 05:58:24.575976+00,135,6,0,0
+public,bed_rates,created_at,timestamp with time zone,24,24,2025-04-29 04:13:00+00,2025-04-29 14:13:00+00,1,1,0,0
+public,bed_rates,from_date,date,24,24,2022-01-01,2025-05-01,4,4,0,0
+public,bed_rates,to_date,date,24,24,2024-01-31,2026-12-31,4,4,0,6
+public,bed_status_history,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,bed_status_history,from_date,date,0,0,null,null,0,0,0,0
+public,bed_status_history,to_date,date,0,0,null,null,0,0,0,0
+public,bed_type_config,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,beds,created_at,timestamp with time zone,203,203,2026-03-16 17:47:56.452874+00,2026-07-29 09:49:44.372876+00,8,4,0,0
+public,bot_conversations,updated_at,timestamp with time zone,9,9,2026-07-08 11:26:07.013233+00,2026-07-09 08:27:05.642988+00,2,1,0,0
+public,coa_accounts,created_at,timestamp with time zone,57,57,2026-04-25 10:03:17.881395+00,2026-05-09 03:32:17.410825+00,3,2,0,0
+public,companies,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,cost_estimate_approvers,created_at,timestamp with time zone,1,1,2026-03-27 11:49:30.217217+00,2026-03-27 11:49:30.217217+00,1,1,0,0
+public,departments,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,deposit_settlements,created_at,timestamp with time zone,307,307,2026-04-06 13:04:32.758064+00,2026-08-28 11:11:38.25454+00,56,5,0,0
+public,deposit_settlements,settlement_date,date,307,307,2023-04-03,2026-09-20,184,35,0,2
+public,diagnostic_sessions,completed_at,timestamp with time zone,479,479,2026-04-09 11:31:27.923+00,2026-08-24 11:31:09.479+00,82,5,0,0
+public,diagnostic_sessions,created_at,timestamp with time zone,479,479,2026-04-09 11:31:29.132565+00,2026-08-24 11:31:10.241986+00,81,5,0,0
+public,eb_monitoring_readings,created_at,timestamp with time zone,35,35,2026-06-28 12:10:44.840278+00,2026-06-28 12:10:44.840278+00,1,1,0,0
+public,eb_monitoring_readings,reading_date,date,35,35,2026-08-18,2026-08-18,1,1,0,0
+public,eb_payments,bill_date,date,70,70,2026-04-29,2026-06-27,2,2,0,0
+public,eb_payments,billing_period_end,date,70,70,2026-04-12,2026-06-16,2,2,0,0
+public,eb_payments,billing_period_start,date,70,70,2026-02-07,2026-04-12,2,2,0,0
+public,eb_payments,created_at,timestamp with time zone,70,70,2026-06-12 03:27:05.826942+00,2026-07-02 09:10:25.453897+00,2,2,0,0
+public,eb_payments,payment_date,date,70,70,2026-05-05,2026-07-02,2,2,0,0
+public,eb_rates,created_at,timestamp with time zone,2,2,2026-03-17 06:58:50.705725+00,2026-03-18 09:27:58.23605+00,2,1,0,0
+public,eb_rates,from_date,date,2,2,2021-01-01,2024-07-01,2,2,0,0
+public,eb_rates,to_date,date,2,1,2024-06-30,2024-06-30,1,1,0,0
+public,eb_tenant_shares,created_at,timestamp with time zone,801,801,2026-04-07 07:48:35.486464+00,2026-08-08 08:13:03.945825+00,10,5,0,0
+public,electricity_readings,created_at,timestamp with time zone,1411,1411,2026-03-20 06:10:21.371689+00,2026-07-31 07:49:57.346442+00,8,5,0,0
+public,electricity_shares,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,email_templates,created_at,timestamp with time zone,4,4,2026-04-21 08:27:54.335104+00,2026-04-21 14:10:29.131713+00,1,1,0,0
+public,email_templates,updated_at,timestamp with time zone,4,4,2026-04-21 08:27:54.335104+00,2026-04-22 06:24:46.707634+00,2,1,0,0
+public,employee_specialties,created_at,timestamp with time zone,10,10,2026-03-30 12:45:39.100333+00,2026-08-12 05:51:56.141662+00,3,3,0,0
+public,employees,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,employees_sync,created_at,timestamp with time zone,23,23,2026-05-09 07:22:53.226874+00,2026-08-07 05:24:40.830595+00,5,3,0,0
+public,employees_sync,synced_at,timestamp with time zone,23,23,2026-07-08 00:16:15.432+00,2026-08-29 06:16:15.483+00,4,2,0,18
+public,enquiries,created_at,timestamp with time zone,18,18,2026-07-02 12:39:11.113526+00,2026-07-09 07:41:53.69523+00,5,1,0,0
+public,enquiries,move_in_date,date,18,1,2024-01-01,2024-01-01,1,1,0,0
+public,enquiries,updated_at,timestamp with time zone,18,18,2026-07-02 12:42:13.493877+00,2026-07-09 08:27:05.965929+00,5,1,0,0
+public,exit_tasks,assigned_at,timestamp with time zone,3,3,2026-04-16 10:57:56.27184+00,2026-08-10 12:04:37.704413+00,3,2,0,0
+public,exit_tasks,completed_at,timestamp with time zone,3,0,null,null,0,0,0,0
+public,exit_tasks,created_at,timestamp with time zone,3,3,2026-04-16 10:57:56.27184+00,2026-08-10 12:04:37.704413+00,3,2,0,0
+public,exit_tasks,exit_date,date,3,3,2026-04-16,2026-08-08,3,2,0,0
+public,exit_tasks,tenant_approved_at,timestamp with time zone,3,0,null,null,0,0,0,0
+public,expense_bed_allocations,created_at,timestamp with time zone,448,448,2026-04-11 00:09:03.571139+00,2026-04-11 00:09:03.571139+00,1,1,0,0
+public,expense_categories,created_at,timestamp with time zone,9,9,2026-04-11 00:52:15.45091+00,2026-05-20 06:42:20.317078+00,2,2,0,0
+public,expense_subcategories,created_at,timestamp with time zone,10,10,2026-04-08 14:53:41.090772+00,2026-04-08 14:53:41.090772+00,1,1,0,0
+public,expenses,created_at,timestamp with time zone,516,516,2026-04-11 00:08:55.107554+00,2026-08-24 10:06:17.305383+00,14,4,0,0
+public,expenses,expense_date,date,516,516,2023-03-11,2026-08-24,133,35,0,0
+public,financial_audit_log,created_at,timestamp with time zone,23132,23132,2026-04-26 14:00:49.983879+00,2026-08-29 04:29:03.478242+00,108,5,0,2
+public,gst_monthly_workings,generated_at,timestamp with time zone,5,5,2026-04-17 11:02:38.253+00,2026-08-13 10:05:53.442+00,5,5,0,0
+public,gst_monthly_workings,last_updated_at,timestamp with time zone,5,5,2026-04-17 11:02:38.253+00,2026-08-13 10:05:53.442+00,5,5,0,0
+public,invoice_line_items,created_at,timestamp with time zone,5536,5536,2026-03-28 14:18:49.320492+00,2026-08-28 11:11:37.129938+00,65,6,0,0
+public,invoice_pdf_configs,created_at,timestamp with time zone,2,2,2026-05-13 11:10:27.545366+00,2026-05-14 09:04:30.408061+00,2,1,0,0
+public,invoice_pdf_configs,updated_at,timestamp with time zone,2,2,2026-05-15 07:01:52.205+00,2026-06-02 06:31:04.282+00,2,2,0,0
+public,invoices,created_at,timestamp with time zone,5214,5214,2026-03-28 14:18:45.293194+00,2026-08-29 04:29:03.046662+00,83,6,0,1
+public,invoices,due_date,date,5214,5214,2023-02-09,2026-09-20,379,44,0,3
+public,invoices,invoice_date,date,5214,5214,2023-02-05,2026-09-20,357,44,0,3
+public,issue_sub_types,created_at,timestamp with time zone,51,51,2026-03-18 07:58:58.536997+00,2026-04-18 18:06:01.468744+00,2,2,0,0
+public,issue_type_asset_types,created_at,timestamp with time zone,33,33,2026-04-18 13:51:33.164009+00,2026-04-18 18:11:20.825522+00,1,1,0,0
+public,issue_type_expense_mapping,created_at,timestamp with time zone,14,14,2026-04-25 11:28:03.615886+00,2026-04-25 11:28:03.615886+00,1,1,0,0
+public,issue_types,created_at,timestamp with time zone,14,14,2026-03-16 17:36:58.873783+00,2026-04-08 17:39:27.806614+00,3,2,0,0
+public,journal_entries,entry_date,date,14236,14236,2019-11-03,2026-09-20,968,54,0,3
+public,journal_entries,posted_at,timestamp with time zone,14236,14236,2026-04-25 11:21:14.487161+00,2026-08-29 04:29:03.478242+00,106,5,0,2
+public,leave_requests_sync,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,leave_requests_sync,end_date,date,0,0,null,null,0,0,0,0
+public,leave_requests_sync,start_date,date,0,0,null,null,0,0,0,0
+public,leave_requests_sync,synced_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,ledger_entries,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,ledger_entries,entry_date,date,0,0,null,null,0,0,0,0
+public,lifecycle_config,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,lifecycle_config,from_date,date,0,0,null,null,0,0,0,0
+public,lifecycle_config,to_date,date,0,0,null,null,0,0,0,0
+public,maintenance_item_stock_entries,created_at,timestamp with time zone,47,47,2026-04-22 17:55:31.904743+00,2026-08-20 07:05:51.690895+00,17,5,0,0
+public,maintenance_item_stock_entries,purchased_on,timestamp with time zone,47,47,2026-04-21 00:00:00+00,2026-08-20 07:05:51.262+00,17,5,0,0
+public,maintenance_item_usage,created_at,timestamp with time zone,39,39,2026-04-24 13:07:59.03849+00,2026-08-20 07:05:51.839725+00,13,5,0,0
+public,maintenance_items,created_at,timestamp with time zone,93,93,2026-04-22 17:22:54.139564+00,2026-07-17 07:39:41.819937+00,8,4,0,0
+public,maintenance_items,updated_at,timestamp with time zone,93,93,2026-04-22 19:26:39.870161+00,2026-07-17 07:39:41.819937+00,8,4,0,0
+public,maintenance_tickets,closed_at,timestamp with time zone,1610,1416,2025-01-29 18:54:00+00,2026-08-29 03:49:01.079+00,362,20,0,1
+public,maintenance_tickets,created_at,timestamp with time zone,1610,1610,2025-01-29 13:20:00+00,2026-08-29 07:06:45.762796+00,457,20,0,3
+public,maintenance_tickets,resolution_edit_unlocked_at,timestamp with time zone,1610,5,2026-06-21 02:49:00.174+00,2026-07-16 06:54:44.564+00,3,2,0,0
+public,maintenance_tickets,resolved_at,timestamp with time zone,1610,1560,2025-01-29 13:20:00+00,2026-08-27 10:50:41.274+00,404,20,0,0
+public,maintenance_tickets,sla_deadline,timestamp with time zone,1610,1610,2025-02-01 21:00:00+00,2026-09-01 05:36:44.379+00,492,20,0,11
+public,maintenance_tickets,updated_at,timestamp with time zone,1610,1610,2026-03-31 14:41:05.467561+00,2026-08-29 07:06:45.762796+00,144,6,0,3
+public,migration_log,run_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,offline_kyc_pending,created_at,timestamp with time zone,38,38,2026-06-25 10:19:13.345837+00,2026-08-28 10:35:26.522095+00,22,3,0,0
+public,offline_kyc_pending,expires_at,timestamp with time zone,38,23,2026-07-09 07:19:49.548+00,2026-08-29 10:35:26.462+00,16,2,0,1
+public,offline_kyc_pending,merged_at,timestamp with time zone,38,0,null,null,0,0,0,0
+public,offline_kyc_pending,submitted_at,timestamp with time zone,38,38,2026-06-25 10:24:19.785+00,2026-08-28 15:38:23.151+00,22,3,0,0
+public,offline_kyc_pending,updated_at,timestamp with time zone,38,38,2026-06-26 06:20:46.910355+00,2026-08-28 15:38:23.363935+00,21,3,0,0
+public,org_ai_settings,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,org_ai_settings,updated_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,org_branding_settings,created_at,timestamp with time zone,1,1,2026-04-21 08:33:39.386535+00,2026-04-21 08:33:39.386535+00,1,1,0,0
+public,org_branding_settings,updated_at,timestamp with time zone,1,1,2026-05-29 12:15:22.209831+00,2026-05-29 12:15:22.209831+00,1,1,0,0
+public,org_email_settings,created_at,timestamp with time zone,1,1,2026-04-20 14:59:58.397659+00,2026-04-20 14:59:58.397659+00,1,1,0,0
+public,org_email_settings,updated_at,timestamp with time zone,1,1,2026-06-10 12:18:18.161894+00,2026-06-10 12:18:18.161894+00,1,1,0,0
+public,org_whatsapp_settings,created_at,timestamp with time zone,1,1,2026-05-12 12:19:11.228122+00,2026-05-12 12:19:11.228122+00,1,1,0,0
+public,org_whatsapp_settings,updated_at,timestamp with time zone,1,1,2026-08-08 12:28:48.909494+00,2026-08-08 12:28:48.909494+00,1,1,0,0
+public,organization_bank_accounts,created_at,timestamp with time zone,5,5,2026-03-17 16:23:23.106076+00,2026-03-25 19:34:33.060929+00,2,1,0,0
+public,organization_subscriptions,cancelled_at,timestamp with time zone,1,0,null,null,0,0,0,0
+public,organization_subscriptions,created_at,timestamp with time zone,1,1,2026-04-05 12:25:57.899319+00,2026-04-05 12:25:57.899319+00,1,1,0,0
+public,organization_subscriptions,current_period_end,date,1,1,2027-04-05,2027-04-05,1,1,0,1
+public,organization_subscriptions,current_period_start,date,1,1,2026-04-05,2026-04-05,1,1,0,0
+public,organization_subscriptions,trial_ends_at,date,1,0,null,null,0,0,0,0
+public,organization_subscriptions,updated_at,timestamp with time zone,1,1,2026-04-05 12:25:57.899319+00,2026-04-05 12:25:57.899319+00,1,1,0,0
+public,organizations,created_at,timestamp with time zone,1,1,2026-03-16 17:36:35.764299+00,2026-03-16 17:36:35.764299+00,1,1,0,0
+public,otp_codes,created_at,timestamp with time zone,6,6,2026-07-03 15:09:50.146092+00,2026-08-19 02:32:16.815088+00,6,2,0,0
+public,otp_codes,expires_at,timestamp with time zone,6,6,2026-07-03 15:14:49.878+00,2026-08-19 02:37:15.816+00,6,2,0,0
+public,owner_contracts,created_at,timestamp with time zone,35,35,2026-04-01 07:36:12.505441+00,2026-04-17 13:09:26.379776+00,3,1,0,0
+public,owner_contracts,end_date,date,35,35,2025-03-31,2032-03-31,10,10,0,33
+public,owner_contracts,renewal_date,date,35,35,2024-12-31,2031-12-31,10,10,0,33
+public,owner_contracts,start_date,date,35,35,2022-10-01,2025-08-01,9,9,0,0
+public,owner_payments,actual_due_date,date,345,345,2022-11-09,2026-08-09,109,46,0,0
+public,owner_payments,bill_date,date,345,345,2022-11-01,2026-08-01,46,46,0,0
+public,owner_payments,created_at,timestamp with time zone,345,345,2026-08-13 09:14:24.263788+00,2026-08-13 09:14:39.919374+00,1,1,0,0
+public,owner_payments,due_date,date,345,345,2022-11-09,2026-08-09,115,46,0,0
+public,owner_payments,paid_date,date,345,125,2023-11-05,2026-08-10,63,25,0,0
+public,owners,created_at,timestamp with time zone,13,12,2025-06-28 15:17:17+00,2025-06-28 15:17:17+00,1,1,0,0
+public,payment_proofs,created_at,timestamp with time zone,24,24,2026-08-07 07:36:47.031665+00,2026-08-29 04:29:12.738417+00,10,1,0,1
+public,payroll,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,payroll,paid_date,date,0,0,null,null,0,0,0,0
+public,payroll_sync,period_end,date,18,18,2026-06-28,2026-06-28,1,1,0,0
+public,payroll_sync,period_start,date,18,18,2026-05-29,2026-05-29,1,1,0,0
+public,payroll_sync,synced_at,timestamp with time zone,18,18,2026-06-29 06:19:53.533+00,2026-06-29 06:20:03.303+00,1,1,0,0
+public,profiles,created_at,timestamp with time zone,222,222,2026-03-16 17:46:06.001449+00,2026-08-29 06:59:11.132759+00,107,6,0,1
+public,profiles,updated_at,timestamp with time zone,222,222,2026-03-16 17:46:06.001449+00,2026-08-29 06:59:11.132759+00,107,6,0,1
+public,properties,created_at,timestamp with time zone,1,1,2026-03-16 17:46:59.714781+00,2026-03-16 17:46:59.714781+00,1,1,0,0
+public,properties,start_date,date,1,1,2023-04-01,2023-04-01,1,1,0,0
+public,property_images,created_at,timestamp with time zone,2,2,2026-05-22 03:00:26.137646+00,2026-05-22 03:00:51.639141+00,1,1,0,0
+public,purchase_items,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,purchase_orders,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,purchase_orders,order_date,date,0,0,null,null,0,0,0,0
+public,receipt_allocations,allocated_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,receipt_number_counters,updated_at,timestamp with time zone,8,8,2026-05-20 10:42:14.677527+00,2026-08-29 04:29:03.299429+00,7,4,0,1
+public,receipts,created_at,timestamp with time zone,5858,5858,2026-03-28 04:42:46.267553+00,2026-08-29 04:29:03.478242+00,109,6,0,1
+public,receipts,payment_date,date,5858,5858,2022-11-30,2026-08-28,843,46,0,0
+public,receipts_dedup_audit,detected_at,timestamp with time zone,9,9,2026-04-22 05:50:28.900039+00,2026-04-22 05:50:28.900039+00,1,1,0,0
+public,receipts_dedup_audit,payment_date,date,9,9,2023-09-02,2026-04-04,9,9,0,0
+public,regular_maintenance_rules,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,regular_maintenance_rules,last_run_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,regular_maintenance_rules,next_run_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,regular_maintenance_rules,start_date,date,0,0,null,null,0,0,0,0
+public,replacement_forecasts,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,replacement_forecasts,expected_replacement_date,date,0,0,null,null,0,0,0,0
+public,role_permissions,created_at,timestamp with time zone,122,122,2026-03-19 09:33:07.518719+00,2026-07-18 06:21:05.325752+00,19,5,0,0
+public,role_permissions,updated_at,timestamp with time zone,122,122,2026-03-19 09:33:07.518719+00,2026-07-18 06:21:05.325752+00,18,5,0,0
+public,room_switches,cancelled_at,timestamp with time zone,34,8,2026-05-27 07:18:29.186+00,2026-07-17 07:16:33.167+00,3,2,0,0
+public,room_switches,completed_at,timestamp with time zone,34,26,2026-05-17 06:41:03.115+00,2026-08-25 12:12:06.036+00,14,4,0,0
+public,room_switches,created_at,timestamp with time zone,34,34,2026-05-17 06:41:03.349492+00,2026-08-25 12:12:04.878575+00,19,4,0,0
+public,room_switches,effective_date,date,34,34,2026-05-01,2026-08-28,22,4,0,0
+public,room_switches,switch_date,date,34,34,2026-05-16,2026-08-28,21,4,0,0
+public,running_bed_maintenance_details,created_at,timestamp with time zone,23,23,2026-04-24 13:24:41.038067+00,2026-08-24 10:06:20.72133+00,17,5,0,0
+public,subscription_plans,created_at,timestamp with time zone,4,4,2026-04-05 12:25:57.899319+00,2026-04-05 12:25:57.899319+00,1,1,0,0
+public,tab_permissions,created_at,timestamp with time zone,405,405,2026-03-23 12:18:41.133564+00,2026-06-24 07:53:24.097912+00,15,4,0,0
+public,tab_permissions,updated_at,timestamp with time zone,405,405,2026-03-23 12:20:26.366376+00,2026-06-30 05:42:15.519+00,13,4,0,0
+public,team_attendance,created_at,timestamp with time zone,1320,1320,2026-04-22 08:45:50.763395+00,2026-08-29 05:16:55.391482+00,115,5,0,11
+public,team_attendance,date,date,1320,1320,2026-03-11,2026-08-29,147,6,0,0
+public,team_departments,created_at,timestamp with time zone,4,4,2026-07-23 09:06:59.313169+00,2026-07-23 09:09:38.109213+00,1,1,0,0
+public,team_departments,updated_at,timestamp with time zone,4,4,2026-07-23 09:06:59.313169+00,2026-07-23 09:09:38.109213+00,1,1,0,0
+public,team_members,created_at,timestamp with time zone,20,20,2026-03-17 06:44:22.200623+00,2026-07-07 12:29:07.92477+00,10,4,0,0
+public,team_members,date_of_birth,date,20,2,1976-07-25,2001-07-13,2,2,2,0
+public,team_members,exit_date,date,20,6,2026-02-11,2026-08-04,6,4,0,0
+public,team_members,joining_date,date,20,3,2024-11-05,2026-03-28,3,3,0,0
+public,team_payments,created_at,timestamp with time zone,3,3,2026-05-15 08:46:21.431631+00,2026-05-15 08:46:22.138637+00,1,1,0,0
+public,team_payments,payment_date,date,3,3,2026-03-27,2026-04-27,2,2,0,0
+public,team_salary_bills,created_at,timestamp with time zone,71,71,2026-05-15 08:49:20.115453+00,2026-08-28 09:02:17.380383+00,19,4,0,0
+public,tenant_absence_records,created_at,timestamp with time zone,38,38,2026-04-01 08:45:09.489002+00,2026-08-25 09:14:28.99182+00,16,5,0,0
+public,tenant_absence_records,from_date,date,38,38,2026-02-07,2026-08-24,22,7,0,0
+public,tenant_absence_records,to_date,date,38,38,2026-03-09,2026-09-21,22,7,0,3
+public,tenant_adjustments,adjustment_date,date,266,266,2021-12-05,2026-08-25,162,43,0,0
+public,tenant_adjustments,created_at,timestamp with time zone,266,266,2026-03-28 04:41:49.875051+00,2026-08-21 11:37:39.118131+00,56,6,0,0
+public,tenant_allotments,actual_exit_date,date,1213,1007,2022-11-20,2026-09-20,524,47,0,2
+public,tenant_allotments,booking_date,date,1213,1195,2019-11-03,2026-08-28,635,67,0,0
+public,tenant_allotments,created_at,timestamp with time zone,1213,1213,2026-03-28 03:59:16.061175+00,2026-08-28 10:32:32.387305+00,73,6,0,0
+public,tenant_allotments,estimated_exit_date,date,1213,995,2022-11-02,2026-09-27,518,47,0,8
+public,tenant_allotments,expected_payment_date,date,1213,0,null,null,0,0,0,0
+public,tenant_allotments,notice_date,date,1213,995,2022-11-02,2026-08-28,516,46,0,0
+public,tenant_allotments,onboarding_date,date,1213,1197,2019-11-03,2026-08-31,641,67,0,1
+public,tenant_document_history,replaced_at,timestamp with time zone,1,1,2026-07-25 11:43:45.318821+00,2026-07-25 11:43:45.318821+00,1,1,0,0
+public,tenant_exits,created_at,timestamp with time zone,147,147,2026-03-28 03:59:17.284368+00,2026-08-28 11:11:37.588262+00,54,6,0,0
+public,tenant_exits,exit_date,date,147,147,2023-07-10,2026-09-20,107,31,0,2
+public,tenant_exits,refund_date,date,147,101,2023-09-05,2026-08-26,46,18,0,0
+public,tenant_notices,actual_exit_date,date,86,0,null,null,0,0,0,0
+public,tenant_notices,created_at,timestamp with time zone,86,86,2026-04-01 08:06:45.02274+00,2026-08-27 21:02:27.979925+00,57,5,0,0
+public,tenant_notices,exit_date,date,86,86,2026-04-16,2026-09-27,59,6,0,8
+public,tenant_notices,notice_date,date,86,86,2026-04-01,2026-08-28,57,5,0,0
+public,tenant_remarks,created_at,timestamp with time zone,2,2,2026-08-11 07:29:26.584739+00,2026-08-11 07:34:27.917939+00,1,1,0,0
+public,tenant_transactions,created_at,timestamp with time zone,16451,16451,2026-04-17 12:40:11.307989+00,2026-04-28 11:06:50.998129+00,6,1,0,0
+public,tenant_transactions,date,date,16451,16451,0206-03-27,2026-05-05,1046,65,1,0
+public,tenants,created_at,timestamp with time zone,1027,1009,2025-05-05 04:45:36+00,2026-08-27 16:14:35.84275+00,70,7,0,0
+public,tenants,date_of_birth,date,1027,466,1959-05-14,2026-06-13,441,218,451,0
+public,tenants,date_of_joining,date,1027,92,2023-06-14,2026-09-02,63,15,0,2
+public,tenants,rating_last_computed,timestamp with time zone,1027,1015,2026-08-03 09:34:01.819+00,2026-08-11 07:35:40.112+00,2,1,0,0
+public,ticket_assignment_rules,created_at,timestamp with time zone,7,7,2026-03-20 12:03:08.410054+00,2026-03-20 12:03:52.962273+00,1,1,0,0
+public,ticket_cost_estimates,approved_at,timestamp with time zone,28,20,2026-04-30 09:10:50.632+00,2026-07-17 07:34:45.998+00,7,4,0,0
+public,ticket_cost_estimates,created_at,timestamp with time zone,28,28,2026-04-16 11:05:05.963859+00,2026-07-17 07:34:44.798018+00,10,4,0,0
+public,ticket_cost_estimates,updated_at,timestamp with time zone,28,28,2026-04-16 11:05:05.963859+00,2026-07-17 07:34:45.343188+00,11,4,0,0
+public,ticket_cost_estimates_dedupe_backup_20260715,approved_at,timestamp with time zone,12,8,2026-04-30 09:10:50.632+00,2026-06-25 12:02:27.809+00,2,2,0,0
+public,ticket_cost_estimates_dedupe_backup_20260715,created_at,timestamp with time zone,12,12,2026-04-30 08:37:13.03588+00,2026-06-25 12:02:26.46767+00,2,2,0,0
+public,ticket_cost_estimates_dedupe_backup_20260715,updated_at,timestamp with time zone,12,12,2026-04-30 09:10:50.785351+00,2026-06-25 12:02:28.513474+00,2,2,0,0
+public,ticket_logs,created_at,timestamp with time zone,8239,8239,2026-03-31 14:41:05.467561+00,2026-08-29 07:52:49.168037+00,148,6,0,9
+public,ticket_number_counters,updated_at,timestamp with time zone,5,5,2026-04-30 18:31:44.465643+00,2026-08-29 07:06:45.762796+00,5,5,0,1
+public,ticket_purchases,created_at,timestamp with time zone,4,4,2026-04-30 09:05:56.779573+00,2026-06-25 11:58:42.230141+00,4,3,0,0
+public,ticket_purchases,purchase_date,date,4,4,2026-04-30,2026-06-25,4,3,0,0
+public,ticket_purchases,updated_at,timestamp without time zone,4,4,2026-04-30 09:05:56.779573,2026-06-25 11:58:42.230141,4,3,0,0
+public,ticket_resolutions,created_at,timestamp with time zone,466,466,2026-04-17 10:42:21.591228+00,2026-08-24 11:31:24.843346+00,74,5,0,0
+public,ticket_resolutions,payment_date,date,466,18,2026-04-23,2026-08-24,12,4,0,0
+public,ticket_resolutions,resolved_at,timestamp with time zone,466,466,2026-04-17 10:42:21.591228+00,2026-08-24 11:31:24.843346+00,74,5,0,0
+public,ticket_resolutions,updated_at,timestamp with time zone,466,466,2026-04-28 08:59:46.424551+00,2026-08-27 10:50:40.61188+00,71,5,0,0
+public,tickets,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,tickets,sla_deadline,timestamp with time zone,0,0,null,null,0,0,0,0
+public,tickets,updated_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,upi_tenant_mappings,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,upi_tenant_mappings,last_seen_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,users,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,users,email_verified_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,users,last_login_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,users,password_set_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,users,phone_verified_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,vendor_remarks,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,vendors,created_at,timestamp with time zone,40,40,2026-03-17 17:30:54.62693+00,2026-04-11 00:05:03.700349+00,4,2,0,0
+public,whatsapp_conversations,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,whatsapp_conversations,expires_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,whatsapp_conversations,updated_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,whatsapp_dedup,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,whatsapp_events,created_at,timestamp with time zone,1943,1943,2026-05-16 12:48:53.123158+00,2026-08-29 07:48:19.136623+00,80,4,0,1
+public,whatsapp_events,processed_at,timestamp with time zone,1943,6,2026-05-29 12:44:13.374+00,2026-06-10 06:57:35.499+00,3,2,0,0
+public,whatsapp_events,updated_at,timestamp with time zone,1943,1943,2026-05-16 12:48:53.123158+00,2026-08-29 07:48:19.136623+00,80,4,0,1
+public,whatsapp_failures,created_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,whatsapp_failures,next_retry_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,whatsapp_failures,updated_at,timestamp with time zone,0,0,null,null,0,0,0,0
+public,whatsapp_payment_submissions,created_at,timestamp with time zone,387,387,2026-06-01 06:33:24.622922+00,2026-08-27 12:39:11.91549+00,46,3,0,0
+public,whatsapp_payment_submissions,ocr_payment_date,date,387,129,2023-07-02,2026-08-16,33,5,0,0
+public,whatsapp_payment_submissions,updated_at,timestamp with time zone,387,387,2026-06-01 08:45:18.798248+00,2026-08-27 12:39:11.91549+00,46,3,0,0
+public,whatsapp_payment_submissions,verified_at,timestamp with time zone,387,387,2026-06-01 08:45:17.618+00,2026-08-27 12:39:12.522+00,43,3,0,0
+public,whatsapp_send_deliveries,created_at,timestamp with time zone,2422,2422,2026-05-31 12:36:49.879283+00,2026-08-17 05:47:25.97564+00,47,4,0,0
+public,whatsapp_send_deliveries,sent_at,timestamp with time zone,2422,2231,2026-05-31 12:36:54.46+00,2026-08-17 05:47:30.26+00,45,4,0,0
+public,whatsapp_send_jobs,created_at,timestamp with time zone,395,395,2026-05-31 12:35:16.159818+00,2026-08-17 05:47:23.099726+00,47,4,0,0
+public,whatsapp_send_jobs,dismissed_at,timestamp with time zone,395,53,2026-06-08 11:54:00.86+00,2026-08-05 10:02:20.082+00,7,3,0,0
+public,whatsapp_send_jobs,updated_at,timestamp with time zone,395,395,2026-05-31 12:35:25.19685+00,2026-08-17 05:47:30.880943+00,45,4,0,0

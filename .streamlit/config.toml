@@ -1,0 +1,27 @@
+# Streamlit configuration for the owner application.
+#
+# Deliberately small. Only what changes behaviour that matters for this deployment.
+
+[server]
+# The engine's payloads are held in a cached resource for the life of the process. Watching the
+# filesystem would restart it on any change under the package -- including the 276 evidence CSVs,
+# which is 70 MB of files to watch for no reason, since the export is immutable.
+fileWatcherType = "none"
+
+# The evidence export never crosses this boundary; only rendered projections do. 50 MB is far
+# more than any page sends, and caps an accidental large upload.
+maxUploadSize = 5
+
+[browser]
+# No usage statistics from an application serving one business's financial records.
+gatherUsageStats = false
+
+[client]
+# An error must not print an engine traceback into the owner's browser. The existing product
+# sanitises its errors server-side; this is the same posture for anything Streamlit itself
+# raises.
+showErrorDetails = "none"
+
+[theme]
+base = "light"
+primaryColor = "#1f4e79"

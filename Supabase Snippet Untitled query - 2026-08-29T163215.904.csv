@@ -1,0 +1,51 @@
+schema_name,routine_name,arguments,return_type,definition
+public,guard_deposit_transfer_before_onboarding,,trigger,"CREATE OR REPLACE FUNCTION public.guard_deposit_transfer_before_onboarding()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_je          journal_entries%ROWTYPE;
+  v_onboarding  date;
+  v_acct_code   text;
+BEGIN
+  SELECT je.* INTO v_je
+  FROM journal_entries je
+  WHERE je.id = NEW.journal_entry_id;
+
+  IF v_je.source_table IS DISTINCT FROM 'manual' THEN
+    RETURN NEW;
+  END IF;
+
+  IF COALESCE(v_je.description, '') NOT ILIKE '%deposit transfer%' THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT ca.code INTO v_acct_code
+  FROM coa_accounts ca
+  WHERE ca.id = NEW.account_id;
+
+  IF v_acct_code IS DISTINCT FROM '2100' OR COALESCE(NEW.credit, 0) <= 0 THEN
+    RETURN NEW;
+  END IF;
+
+  IF NEW.allotment_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT ta.onboarding_date INTO v_onboarding
+  FROM tenant_allotments ta
+  WHERE ta.id = NEW.allotment_id;
+
+  IF v_onboarding IS NOT NULL AND v_je.entry_date < v_onboarding THEN
+    RAISE EXCEPTION
+      'Deposit transfer entry_date (%) cannot be before allotment onboarding_date (%) for allotment %',
+      v_je.entry_date, v_onboarding, NEW.allotment_id
+      USING ERRCODE = 'check_violation';
+  END IF;
+
+  RETURN NEW;
+END;
+$function$
+"

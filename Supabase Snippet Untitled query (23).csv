@@ -1,0 +1,1892 @@
+table_schema,table_name,ordinal_position,column_name,data_type,total_rows,non_null_rows,distinct_values
+market,amenities_master,1,id,uuid,15,15,15
+market,amenities_master,2,canonical_name,text,15,15,15
+market,amenities_master,3,aliases,text[],15,15,15
+market,amenities_master,4,category,text,15,15,8
+market,amenity_embeddings,1,amenity_id,uuid,0,0,0
+market,amenity_embeddings,2,embedding,vector(768),0,0,0
+market,amenity_embeddings,3,updated_at,timestamp with time zone,0,0,0
+market,competitor_intelligence,1,id,uuid,133,133,133
+market,competitor_intelligence,2,organization_id,uuid,133,133,1
+market,competitor_intelligence,3,competitor_id,uuid,133,133,133
+market,competitor_intelligence,4,pricing_min,"numeric(10,2)",133,21,17
+market,competitor_intelligence,5,pricing_max,"numeric(10,2)",133,21,17
+market,competitor_intelligence,6,room_types,jsonb,133,133,34
+market,competitor_intelligence,7,amenities,text[],133,133,50
+market,competitor_intelligence,8,amenity_score,integer,133,63,19
+market,competitor_intelligence,9,market_segment,text,133,52,4
+market,competitor_intelligence,10,target_demographic,text,133,55,3
+market,competitor_intelligence,11,digital_maturity_score,integer,133,63,12
+market,competitor_intelligence,12,has_online_booking,boolean,133,63,2
+market,competitor_intelligence,13,has_virtual_tour,boolean,133,63,2
+market,competitor_intelligence,14,has_photos,boolean,133,63,2
+market,competitor_intelligence,15,phone,text,133,28,24
+market,competitor_intelligence,16,email,text,133,14,11
+market,competitor_intelligence,17,usp_tags,text[],133,133,59
+market,competitor_intelligence,18,positioning_summary,text,133,59,59
+market,competitor_intelligence,19,raw_intelligence,jsonb,133,133,64
+market,competitor_intelligence,20,crawled_url,text,133,133,121
+market,competitor_intelligence,21,crawl_status,text,133,133,1
+market,competitor_intelligence,22,error_message,text,133,133,1
+market,competitor_intelligence,23,scraped_at,timestamp with time zone,133,63,63
+market,competitor_intelligence,24,created_at,timestamp with time zone,133,133,133
+market,competitor_intelligence,25,updated_at,timestamp with time zone,133,133,133
+market,competitor_pricing_snapshots_2026_05,1,id,uuid,0,0,0
+market,competitor_pricing_snapshots_2026_05,2,organization_id,uuid,0,0,0
+market,competitor_pricing_snapshots_2026_05,3,competitor_id,uuid,0,0,0
+market,competitor_pricing_snapshots_2026_05,4,room_type_label,text,0,0,0
+market,competitor_pricing_snapshots_2026_05,5,price,"numeric(10,2)",0,0,0
+market,competitor_pricing_snapshots_2026_05,6,scraped_at,timestamp with time zone,0,0,0
+market,competitor_pricing_snapshots_2026_06,1,id,uuid,0,0,0
+market,competitor_pricing_snapshots_2026_06,2,organization_id,uuid,0,0,0
+market,competitor_pricing_snapshots_2026_06,3,competitor_id,uuid,0,0,0
+market,competitor_pricing_snapshots_2026_06,4,room_type_label,text,0,0,0
+market,competitor_pricing_snapshots_2026_06,5,price,"numeric(10,2)",0,0,0
+market,competitor_pricing_snapshots_2026_06,6,scraped_at,timestamp with time zone,0,0,0
+market,competitor_pricing_snapshots_2026_07,1,id,uuid,0,0,0
+market,competitor_pricing_snapshots_2026_07,2,organization_id,uuid,0,0,0
+market,competitor_pricing_snapshots_2026_07,3,competitor_id,uuid,0,0,0
+market,competitor_pricing_snapshots_2026_07,4,room_type_label,text,0,0,0
+market,competitor_pricing_snapshots_2026_07,5,price,"numeric(10,2)",0,0,0
+market,competitor_pricing_snapshots_2026_07,6,scraped_at,timestamp with time zone,0,0,0
+market,competitor_pricing_snapshots_2026_08,1,id,uuid,0,0,0
+market,competitor_pricing_snapshots_2026_08,2,organization_id,uuid,0,0,0
+market,competitor_pricing_snapshots_2026_08,3,competitor_id,uuid,0,0,0
+market,competitor_pricing_snapshots_2026_08,4,room_type_label,text,0,0,0
+market,competitor_pricing_snapshots_2026_08,5,price,"numeric(10,2)",0,0,0
+market,competitor_pricing_snapshots_2026_08,6,scraped_at,timestamp with time zone,0,0,0
+market,competitor_properties,1,id,uuid,257,257,257
+market,competitor_properties,2,organization_id,uuid,257,257,1
+market,competitor_properties,3,source_id,uuid,257,257,1
+market,competitor_properties,4,source_url,text,257,257,257
+market,competitor_properties,5,name,text,257,257,256
+market,competitor_properties,6,locality_id,uuid,257,257,6
+market,competitor_properties,7,rating,"numeric(3,2)",257,257,27
+market,competitor_properties,8,review_count,integer,257,257,178
+market,competitor_properties,9,amenities,text[],257,257,3
+market,competitor_properties,10,description,text,257,24,24
+market,competitor_properties,11,is_active,boolean,257,257,1
+market,competitor_properties,12,last_scraped_at,timestamp with time zone,257,257,257
+market,competitor_properties,13,created_at,timestamp with time zone,257,257,257
+market,competitor_properties,14,updated_at,timestamp with time zone,257,257,257
+market,competitor_properties,15,website_url,text,257,136,124
+market,competitor_reviews,1,id,uuid,0,0,0
+market,competitor_reviews,2,organization_id,uuid,0,0,0
+market,competitor_reviews,3,competitor_id,uuid,0,0,0
+market,competitor_reviews,4,reviewer_name,text,0,0,0
+market,competitor_reviews,5,rating,"numeric(3,2)",0,0,0
+market,competitor_reviews,6,review_text,text,0,0,0
+market,competitor_reviews,7,review_date,date,0,0,0
+market,competitor_reviews,8,source_review_id,text,0,0,0
+market,competitor_reviews,9,scraped_at,timestamp with time zone,0,0,0
+market,competitor_room_types,1,id,uuid,1,1,1
+market,competitor_room_types,2,organization_id,uuid,1,1,1
+market,competitor_room_types,3,competitor_id,uuid,1,1,1
+market,competitor_room_types,4,label,text,1,1,1
+market,competitor_room_types,5,current_price,"numeric(10,2)",1,1,1
+market,competitor_room_types,6,occupancy,integer,1,0,0
+market,competitor_room_types,7,updated_at,timestamp with time zone,1,1,1
+market,localities,1,id,uuid,6,6,6
+market,localities,2,name,text,6,6,6
+market,localities,3,city,text,6,6,1
+market,localities,4,state,text,6,6,1
+market,localities,5,latitude,"numeric(10,6)",6,0,0
+market,localities,6,longitude,"numeric(10,6)",6,0,0
+market,localities,7,created_at,timestamp with time zone,6,6,6
+market,locality_market_metrics,1,id,uuid,0,0,0
+market,locality_market_metrics,2,organization_id,uuid,0,0,0
+market,locality_market_metrics,3,locality_id,uuid,0,0,0
+market,locality_market_metrics,4,room_type_label,text,0,0,0
+market,locality_market_metrics,5,period_month,text,0,0,0
+market,locality_market_metrics,6,price_p25,"numeric(10,2)",0,0,0
+market,locality_market_metrics,7,price_median,"numeric(10,2)",0,0,0
+market,locality_market_metrics,8,price_p75,"numeric(10,2)",0,0,0
+market,locality_market_metrics,9,price_avg,"numeric(10,2)",0,0,0
+market,locality_market_metrics,10,property_count,integer,0,0,0
+market,locality_market_metrics,11,calculated_at,timestamp with time zone,0,0,0
+market,org_tracked_localities,1,id,uuid,5,5,5
+market,org_tracked_localities,2,organization_id,uuid,5,5,1
+market,org_tracked_localities,3,locality_id,uuid,5,5,5
+market,org_tracked_localities,4,is_active,boolean,5,5,1
+market,org_tracked_localities,5,created_at,timestamp with time zone,5,5,5
+market,org_tracked_localities,6,city_wide_scan,boolean,5,5,1
+market,property_embeddings,1,competitor_id,uuid,0,0,0
+market,property_embeddings,2,organization_id,uuid,0,0,0
+market,property_embeddings,3,embedding,vector(768),0,0,0
+market,property_embeddings,4,content_hash,text,0,0,0
+market,property_embeddings,5,updated_at,timestamp with time zone,0,0,0
+market,review_embeddings,1,review_id,uuid,0,0,0
+market,review_embeddings,2,organization_id,uuid,0,0,0
+market,review_embeddings,3,embedding,vector(768),0,0,0
+market,review_embeddings,4,updated_at,timestamp with time zone,0,0,0
+market,scrape_sources,1,id,uuid,4,4,4
+market,scrape_sources,2,key,text,4,4,4
+market,scrape_sources,3,name,text,4,4,4
+market,scrape_sources,4,base_url,text,4,4,4
+market,scrape_sources,5,is_active,boolean,4,4,1
+market,scrape_sources,6,config,jsonb,4,4,1
+market,scrape_sources,7,created_at,timestamp with time zone,4,4,2
+public,accounting_migration_log,1,id,uuid,30,30,30
+public,accounting_migration_log,2,phase,text,30,30,15
+public,accounting_migration_log,3,severity,text,30,30,2
+public,accounting_migration_log,4,message,text,30,30,19
+public,accounting_migration_log,5,payload,jsonb,30,30,24
+public,accounting_migration_log,6,sql_state,text,30,15,1
+public,accounting_migration_log,7,created_at,timestamp with time zone,30,30,11
+public,accounting_periods,1,organization_id,uuid,0,0,0
+public,accounting_periods,2,period,text,0,0,0
+public,accounting_periods,3,status,text,0,0,0
+public,accounting_periods,4,closed_at,timestamp with time zone,0,0,0
+public,accounting_periods,5,closed_by,uuid,0,0,0
+public,accounting_periods,6,notes,text,0,0,0
+public,ai_actions,1,id,uuid,7,7,7
+public,ai_actions,2,user_id,uuid,7,7,1
+public,ai_actions,3,organization_id,uuid,7,7,1
+public,ai_actions,4,session_id,uuid,7,3,2
+public,ai_actions,5,action,text,7,7,3
+public,ai_actions,6,payload,jsonb,7,7,7
+public,ai_actions,7,result,jsonb,7,7,6
+public,ai_actions,8,status,text,7,7,2
+public,ai_actions,9,error_message,text,7,3,2
+public,ai_actions,10,created_at,timestamp with time zone,7,7,7
+public,ai_logs,1,id,uuid,6765,6765,6765
+public,ai_logs,2,request_type,text,6765,6765,7
+public,ai_logs,3,model,text,6765,6765,3
+public,ai_logs,4,latency_ms,integer,6765,6765,3094
+public,ai_logs,5,success,boolean,6765,6765,2
+public,ai_logs,6,error_message,text,6765,1787,159
+public,ai_logs,7,metadata,jsonb,6765,6765,25
+public,ai_logs,8,prompt_excerpt,text,6765,4969,528
+public,ai_logs,9,response_excerpt,text,6765,4969,4667
+public,ai_logs,10,redaction_level,text,6765,6765,2
+public,ai_logs,11,created_at,timestamp with time zone,6765,6765,6765
+public,ai_sessions,1,id,uuid,14,14,14
+public,ai_sessions,2,user_id,uuid,14,14,3
+public,ai_sessions,3,organization_id,uuid,14,14,1
+public,ai_sessions,4,status,text,14,14,3
+public,ai_sessions,5,pending_action,text,14,7,3
+public,ai_sessions,6,collected_data,jsonb,14,14,10
+public,ai_sessions,7,missing_fields,jsonb,14,14,5
+public,ai_sessions,8,last_plan,jsonb,14,2,2
+public,ai_sessions,9,conversation,jsonb,14,14,14
+public,ai_sessions,10,disambiguation_candidates,jsonb,14,1,1
+public,ai_sessions,11,created_at,timestamp with time zone,14,14,14
+public,ai_sessions,12,updated_at,timestamp with time zone,14,14,14
+public,announcements,1,id,uuid,1,1,1
+public,announcements,2,organization_id,uuid,1,1,1
+public,announcements,3,title,text,1,1,1
+public,announcements,4,content,text,1,1,1
+public,announcements,5,priority,text,1,1,1
+public,announcements,6,is_published,boolean,1,1,1
+public,announcements,7,published_at,timestamp with time zone,1,0,0
+public,announcements,8,created_by,uuid,1,1,1
+public,announcements,9,created_at,timestamp with time zone,1,1,1
+public,announcements,10,updated_at,timestamp with time zone,1,1,1
+public,announcements,11,image_url,text,1,0,0
+public,apartments,1,id,uuid,43,43,43
+public,apartments,2,organization_id,uuid,43,43,1
+public,apartments,3,property_id,uuid,43,43,1
+public,apartments,4,apartment_code,text,43,43,42
+public,apartments,5,floor_number,integer,43,42,4
+public,apartments,6,status,entity_status,43,43,2
+public,apartments,7,created_at,timestamp with time zone,43,43,5
+public,apartments,8,apartment_type,text,43,41,3
+public,apartments,9,size_sqft,numeric,43,40,5
+public,apartments,10,owner_id,uuid,43,1,1
+public,apartments,11,gender_allowed,text,43,43,4
+public,apartments,12,eb_meter_number,text,43,39,35
+public,apartments,13,start_date,date,43,43,13
+public,apartments,14,end_date,date,43,38,11
+public,apartments,15,signing_date,date,43,2,1
+public,apartments,16,property_tax_id,text,43,39,37
+public,apartments,17,property_tax_amount,numeric,43,43,10
+public,apartments,18,property_tax_frequency,text,43,43,2
+public,apartments,19,water_tax_id,text,43,40,38
+public,apartments,20,water_tax_amount,numeric,43,43,4
+public,apartments,21,water_tax_frequency,text,43,43,2
+public,apartments,22,ownership_doc_url,text,43,0,0
+public,apartments,23,eb_card_number,text,43,0,0
+public,apartments,24,eb_consumer_number,text,43,0,0
+public,apartments,25,eb_connection_type,text,43,43,2
+public,apartments,26,eb_sanctioned_load,numeric,43,43,1
+public,apartments,27,eb_card_photo_url,text,43,0,0
+public,apartments,28,star_rating,integer,43,1,1
+public,apartments,29,star_rating_override,boolean,43,43,2
+public,asset_allocations,1,id,uuid,1822,1822,1822
+public,asset_allocations,2,organization_id,uuid,1822,1822,1
+public,asset_allocations,3,asset_id,uuid,1822,1822,1528
+public,asset_allocations,4,allocation_type,text,1822,1822,2
+public,asset_allocations,5,property_id,uuid,1822,1822,1
+public,asset_allocations,6,apartment_id,uuid,1822,1821,35
+public,asset_allocations,7,bed_id,uuid,1822,1223,176
+public,asset_allocations,8,allocated_date,date,1822,1822,41
+public,asset_allocations,9,allocated_by,uuid,1822,0,0
+public,asset_allocations,10,created_at,timestamp with time zone,1822,1822,4
+public,asset_brands,1,id,uuid,50,50,50
+public,asset_brands,2,name,text,50,50,50
+public,asset_brands,3,organization_id,uuid,50,50,1
+public,asset_brands,4,created_at,timestamp with time zone,50,50,2
+public,asset_categories,1,id,uuid,11,11,11
+public,asset_categories,2,organization_id,uuid,11,11,1
+public,asset_categories,3,name,text,11,11,11
+public,asset_categories,4,created_at,timestamp with time zone,11,11,4
+public,asset_depreciation,1,id,uuid,0,0,0
+public,asset_depreciation,2,asset_id,uuid,0,0,0
+public,asset_depreciation,3,purchase_price,"numeric(10,2)",0,0,0
+public,asset_depreciation,4,residual_value,"numeric(10,2)",0,0,0
+public,asset_depreciation,5,useful_life_years,"numeric(5,2)",0,0,0
+public,asset_depreciation,6,current_book_value,"numeric(10,2)",0,0,0
+public,asset_depreciation,7,yearly_depreciation,"numeric(10,2)",0,0,0
+public,asset_depreciation,8,last_calculated,timestamp with time zone,0,0,0
+public,asset_depreciation,9,organization_id,uuid,0,0,0
+public,asset_maintenance_logs,1,id,uuid,0,0,0
+public,asset_maintenance_logs,2,organization_id,uuid,0,0,0
+public,asset_maintenance_logs,3,asset_id,uuid,0,0,0
+public,asset_maintenance_logs,4,maintenance_type,text,0,0,0
+public,asset_maintenance_logs,5,issue,text,0,0,0
+public,asset_maintenance_logs,6,repair_cost,"numeric(10,2)",0,0,0
+public,asset_maintenance_logs,7,vendor,text,0,0,0
+public,asset_maintenance_logs,8,maintenance_date,date,0,0,0
+public,asset_maintenance_logs,9,next_service_due,date,0,0,0
+public,asset_maintenance_logs,10,created_at,timestamp with time zone,0,0,0
+public,asset_movements,1,id,uuid,0,0,0
+public,asset_movements,2,organization_id,uuid,0,0,0
+public,asset_movements,3,asset_id,uuid,0,0,0
+public,asset_movements,4,from_location,text,0,0,0
+public,asset_movements,5,to_location,text,0,0,0
+public,asset_movements,6,moved_by,uuid,0,0,0
+public,asset_movements,7,move_date,date,0,0,0
+public,asset_movements,8,reason,text,0,0,0
+public,asset_movements,9,created_at,timestamp with time zone,0,0,0
+public,asset_payments,1,id,uuid,0,0,0
+public,asset_payments,2,organization_id,uuid,0,0,0
+public,asset_payments,3,asset_id,uuid,0,0,0
+public,asset_payments,4,vendor_id,uuid,0,0,0
+public,asset_payments,5,payment_date,date,0,0,0
+public,asset_payments,6,amount,"numeric(14,2)",0,0,0
+public,asset_payments,7,payment_mode,text,0,0,0
+public,asset_payments,8,bank_account_id,uuid,0,0,0
+public,asset_payments,9,reference_number,text,0,0,0
+public,asset_payments,10,payment_proof_url,text,0,0,0
+public,asset_payments,11,notes,text,0,0,0
+public,asset_payments,12,created_at,timestamp with time zone,0,0,0
+public,asset_payments,13,created_by,uuid,0,0,0
+public,asset_types,1,id,uuid,34,34,34
+public,asset_types,2,organization_id,uuid,34,34,1
+public,asset_types,3,category_id,uuid,34,34,7
+public,asset_types,4,name,text,34,34,34
+public,asset_types,5,expected_life_months,integer,34,29,6
+public,asset_types,6,depreciation_method,text,34,34,1
+public,asset_types,7,depreciation_years,"numeric(5,2)",34,28,6
+public,asset_types,8,maintenance_cycle_months,integer,34,28,3
+public,asset_types,9,replacement_cost_estimate,"numeric(10,2)",34,28,16
+public,asset_types,10,created_at,timestamp with time zone,34,34,7
+public,assets,1,id,uuid,1700,1700,1700
+public,assets,2,organization_id,uuid,1700,1700,1
+public,assets,3,asset_type_id,uuid,1700,1700,26
+public,assets,4,asset_code,text,1700,1700,1700
+public,assets,5,qr_code,text,1700,0,0
+public,assets,6,serial_number,text,1700,250,238
+public,assets,7,brand,text,1700,344,34
+public,assets,8,model,text,1700,549,144
+public,assets,9,purchase_date,date,1700,308,61
+public,assets,10,purchase_price,"numeric(10,2)",1700,308,46
+public,assets,11,supplier_id,uuid,1700,392,7
+public,assets,12,warranty_months,integer,1700,1,1
+public,assets,13,warranty_expiry,date,1700,1,1
+public,assets,14,condition,text,1700,1700,2
+public,assets,15,status,text,1700,1700,2
+public,assets,16,notes,text,1700,231,48
+public,assets,17,created_at,timestamp with time zone,1700,1700,4
+public,assets,18,invoice_number,text,1700,286,63
+public,assets,19,invoice_date,date,1700,308,61
+public,assets,20,invoice_url,text,1700,219,43
+public,assets,21,vendor_name_manual,text,1700,430,16
+public,assets,22,capacity_value,text,1700,124,43
+public,assets,23,capacity_unit,text,1700,0,0
+public,assets,24,product_photo_url,text,1700,0,0
+public,assets,27,apartment_id,uuid,1700,0,0
+public,assets,28,bed_id,uuid[],1700,0,0
+public,assets,29,is_bill_missing,boolean,1700,1700,2
+public,assets,30,data_source,text,1700,1700,1
+public,assets,31,migration_notes,text,1700,0,0
+public,attendance_logs,1,id,uuid,0,0,0
+public,attendance_logs,2,employee_id,uuid,0,0,0
+public,attendance_logs,3,company_id,uuid,0,0,0
+public,attendance_logs,4,date,date,0,0,0
+public,attendance_logs,5,check_in_time,text,0,0,0
+public,attendance_logs,6,check_out_time,text,0,0,0
+public,attendance_logs,7,status,text,0,0,0
+public,attendance_logs,8,hours_worked,"numeric(5,2)",0,0,0
+public,attendance_logs,9,overtime_hours,"numeric(5,2)",0,0,0
+public,attendance_logs,10,late_minutes,integer,0,0,0
+public,attendance_logs,11,bonus,"numeric(12,2)",0,0,0
+public,attendance_logs,12,total_deduction_percent,"numeric(5,2)",0,0,0
+public,attendance_logs,13,notes,text,0,0,0
+public,attendance_logs,14,edit_reason,text,0,0,0
+public,attendance_logs,15,edited_by,uuid,0,0,0
+public,attendance_logs,16,source,text,0,0,0
+public,attendance_logs,17,marked_by,text,0,0,0
+public,attendance_logs,18,check_in_image_account,text,0,0,0
+public,attendance_logs,19,check_out_image_account,text,0,0,0
+public,attendance_logs,20,check_in_device_id,text,0,0,0
+public,attendance_logs,21,check_out_device_id,text,0,0,0
+public,attendance_logs,22,extended_checkout_time,text,0,0,0
+public,attendance_logs,23,shift_id,uuid,0,0,0
+public,attendance_logs,24,created_at,timestamp with time zone,0,0,0
+public,attendance_sync,1,id,uuid,50,50,50
+public,attendance_sync,2,record_id,text,50,50,50
+public,attendance_sync,3,employee_name,text,50,50,13
+public,attendance_sync,4,employee_email,text,50,50,13
+public,attendance_sync,5,department,text,50,50,5
+public,attendance_sync,6,date,date,50,50,14
+public,attendance_sync,7,check_in_time,time without time zone,50,50,43
+public,attendance_sync,8,check_out_time,time without time zone,50,20,20
+public,attendance_sync,9,status,text,50,50,2
+public,attendance_sync,10,hours_worked,numeric,50,16,15
+public,attendance_sync,11,notes,text,50,1,1
+public,attendance_sync,12,synced_at,timestamp with time zone,50,50,3
+public,attendance_sync,13,created_at,timestamp with time zone,50,50,9
+public,audit_logs,1,id,uuid,3119,3119,3119
+public,audit_logs,2,organization_id,uuid,3119,3119,1
+public,audit_logs,3,table_name,text,3119,3119,28
+public,audit_logs,4,record_id,uuid,3119,3119,2374
+public,audit_logs,5,action,text,3119,3119,12
+public,audit_logs,6,changes,jsonb,3119,3119,2064
+public,audit_logs,7,performed_by,uuid,3119,2650,13
+public,audit_logs,8,performed_at,timestamp with time zone,3119,3119,3119
+public,audit_logs,9,old_value,jsonb,3119,3119,62
+public,audit_logs,10,new_value,jsonb,3119,3119,125
+public,bed_rates,1,id,uuid,24,24,24
+public,bed_rates,2,organization_id,uuid,24,24,1
+public,bed_rates,3,property_id,uuid,24,24,1
+public,bed_rates,4,bed_type,bed_type,24,24,4
+public,bed_rates,5,toilet_type,toilet_type,24,24,2
+public,bed_rates,6,monthly_rate,"numeric(10,2)",24,24,12
+public,bed_rates,7,from_date,date,24,24,4
+public,bed_rates,8,to_date,date,24,24,4
+public,bed_rates,9,created_at,timestamp with time zone,24,24,2
+public,bed_status_history,1,id,uuid,0,0,0
+public,bed_status_history,2,bed_id,uuid,0,0,0
+public,bed_status_history,3,status,text,0,0,0
+public,bed_status_history,4,from_date,date,0,0,0
+public,bed_status_history,5,to_date,date,0,0,0
+public,bed_status_history,6,notes,text,0,0,0
+public,bed_status_history,7,organization_id,uuid,0,0,0
+public,bed_status_history,8,created_at,timestamp with time zone,0,0,0
+public,bed_type_config,1,id,uuid,0,0,0
+public,bed_type_config,2,name,text,0,0,0
+public,bed_type_config,3,organization_id,uuid,0,0,0
+public,bed_type_config,4,sort_order,integer,0,0,0
+public,bed_type_config,5,created_at,timestamp with time zone,0,0,0
+public,beds,1,id,uuid,203,203,203
+public,beds,2,organization_id,uuid,203,203,1
+public,beds,3,apartment_id,uuid,203,203,38
+public,beds,4,bed_code,text,203,203,16
+public,beds,5,bed_type,bed_type,203,203,4
+public,beds,6,toilet_type,toilet_type,203,203,2
+public,beds,7,status,entity_status,203,203,2
+public,beds,8,created_at,timestamp with time zone,203,203,17
+public,beds,9,bed_lifecycle_status,text,203,203,3
+public,bot_conversations,1,phone,text,9,9,9
+public,bot_conversations,2,transcript,jsonb,9,9,9
+public,bot_conversations,3,updated_at,timestamp with time zone,9,9,9
+public,coa_accounts,1,id,uuid,57,57,57
+public,coa_accounts,2,organization_id,uuid,57,57,1
+public,coa_accounts,3,code,text,57,57,57
+public,coa_accounts,4,name,text,57,57,57
+public,coa_accounts,5,account_type,account_type,57,57,5
+public,coa_accounts,6,normal_balance,normal_balance,57,57,2
+public,coa_accounts,7,parent_id,uuid,57,52,11
+public,coa_accounts,8,is_active,boolean,57,57,1
+public,coa_accounts,9,requires_party,boolean,57,57,2
+public,coa_accounts,10,requires_allotment,boolean,57,57,2
+public,coa_accounts,11,party_kind,party_kind,57,5,3
+public,coa_accounts,12,description,text,57,0,0
+public,coa_accounts,13,created_at,timestamp with time zone,57,57,3
+public,companies,1,id,uuid,0,0,0
+public,companies,2,name,text,0,0,0
+public,companies,3,address,text,0,0,0
+public,companies,4,gst_number,text,0,0,0
+public,companies,5,late_threshold_minutes,integer,0,0,0
+public,companies,6,overtime_threshold_hours,"numeric(5,2)",0,0,0
+public,companies,7,weekly_off_day,integer,0,0,0
+public,companies,8,bonus,"numeric(12,2)",0,0,0
+public,companies,9,status,text,0,0,0
+public,companies,10,shared_account_only_departments,text[],0,0,0
+public,companies,11,created_at,timestamp with time zone,0,0,0
+public,cost_estimate_approvers,1,id,uuid,1,1,1
+public,cost_estimate_approvers,2,organization_id,uuid,1,1,1
+public,cost_estimate_approvers,3,approver_user_id,uuid,1,1,1
+public,cost_estimate_approvers,4,scope_type,text,1,1,1
+public,cost_estimate_approvers,5,property_id,uuid,1,1,1
+public,cost_estimate_approvers,6,issue_type_id,uuid,1,0,0
+public,cost_estimate_approvers,7,created_at,timestamp with time zone,1,1,1
+public,departments,1,id,uuid,0,0,0
+public,departments,2,name,text,0,0,0
+public,departments,3,company_id,uuid,0,0,0
+public,departments,4,created_at,timestamp with time zone,0,0,0
+public,deposit_settlements,1,id,uuid,307,307,307
+public,deposit_settlements,2,organization_id,uuid,307,307,1
+public,deposit_settlements,3,tenant_id,uuid,307,307,297
+public,deposit_settlements,4,allotment_id,uuid,307,307,307
+public,deposit_settlements,5,deposit_amount,numeric,307,307,52
+public,deposit_settlements,6,pending_rent,numeric,307,307,179
+public,deposit_settlements,7,pending_eb,numeric,307,307,58
+public,deposit_settlements,8,pending_late_fees,numeric,307,307,1
+public,deposit_settlements,9,damages,numeric,307,307,1
+public,deposit_settlements,10,other_deductions,numeric,307,307,12
+public,deposit_settlements,11,total_deductions,numeric,307,307,180
+public,deposit_settlements,12,refund_amount,numeric,307,307,195
+public,deposit_settlements,13,settlement_date,date,307,307,184
+public,deposit_settlements,14,status,text,307,307,2
+public,deposit_settlements,15,notes,text,307,82,80
+public,deposit_settlements,16,created_at,timestamp with time zone,307,307,104
+public,deposit_settlements,17,is_deleted,boolean,307,307,1
+public,diagnostic_sessions,1,id,uuid,479,479,479
+public,diagnostic_sessions,2,ticket_id,uuid,479,479,463
+public,diagnostic_sessions,3,organization_id,uuid,479,479,1
+public,diagnostic_sessions,4,performed_by,uuid,479,479,3
+public,diagnostic_sessions,5,issue_type_id,uuid,479,479,14
+public,diagnostic_sessions,6,questions_answers,jsonb,479,479,64
+public,diagnostic_sessions,7,ai_diagnosis,jsonb,479,479,478
+public,diagnostic_sessions,8,employee_override,jsonb,479,7,7
+public,diagnostic_sessions,9,status,text,479,479,2
+public,diagnostic_sessions,10,created_at,timestamp with time zone,479,479,479
+public,diagnostic_sessions,11,completed_at,timestamp with time zone,479,479,479
+public,eb_monitoring_readings,1,id,uuid,35,35,35
+public,eb_monitoring_readings,2,organization_id,uuid,35,35,1
+public,eb_monitoring_readings,3,property_id,uuid,35,35,1
+public,eb_monitoring_readings,4,apartment_id,uuid,35,35,35
+public,eb_monitoring_readings,5,reading_date,date,35,35,1
+public,eb_monitoring_readings,6,start_reading,numeric,35,35,35
+public,eb_monitoring_readings,7,start_month,text,35,35,1
+public,eb_monitoring_readings,8,current_reading,numeric,35,35,35
+public,eb_monitoring_readings,9,units_consumed,numeric,35,35,33
+public,eb_monitoring_readings,10,eb_amount,numeric,35,35,33
+public,eb_monitoring_readings,11,is_danger,boolean,35,35,2
+public,eb_monitoring_readings,12,meter_photo_url,text,35,35,35
+public,eb_monitoring_readings,13,created_at,timestamp with time zone,35,35,1
+public,eb_payments,1,id,uuid,70,70,70
+public,eb_payments,2,organization_id,uuid,70,70,1
+public,eb_payments,3,property_id,uuid,70,70,1
+public,eb_payments,4,bill_date,date,70,70,2
+public,eb_payments,5,bill_amount,numeric,70,70,69
+public,eb_payments,6,payment_date,date,70,70,2
+public,eb_payments,7,payment_mode,text,70,70,2
+public,eb_payments,8,reference_number,text,70,70,70
+public,eb_payments,9,billing_period_start,date,70,70,2
+public,eb_payments,10,billing_period_end,date,70,70,2
+public,eb_payments,11,notes,text,70,0,0
+public,eb_payments,12,is_locked,boolean,70,70,1
+public,eb_payments,13,locked_by,uuid,70,0,0
+public,eb_payments,14,created_at,timestamp with time zone,70,70,70
+public,eb_payments,15,apartment_id,uuid,70,70,36
+public,eb_payments,16,bank_account_id,uuid,70,70,1
+public,eb_rates,1,id,uuid,2,2,2
+public,eb_rates,2,organization_id,uuid,2,2,1
+public,eb_rates,3,property_id,uuid,2,0,0
+public,eb_rates,4,unit_cost,numeric,2,2,2
+public,eb_rates,5,from_date,date,2,2,2
+public,eb_rates,6,to_date,date,2,1,1
+public,eb_rates,7,created_at,timestamp with time zone,2,2,2
+public,eb_tenant_shares,1,id,uuid,801,801,801
+public,eb_tenant_shares,2,invoice_id,uuid,801,801,801
+public,eb_tenant_shares,3,apartment_id,uuid,801,801,35
+public,eb_tenant_shares,4,billing_month,text,801,801,5
+public,eb_tenant_shares,5,total_apartment_bill,numeric,801,801,170
+public,eb_tenant_shares,6,total_tenant_days,integer,801,801,66
+public,eb_tenant_shares,7,per_day_rate,numeric,801,801,72
+public,eb_tenant_shares,8,tenant_stay_days,integer,801,801,28
+public,eb_tenant_shares,9,tenant_eb_charge,numeric,801,801,166
+public,eb_tenant_shares,10,total_units,numeric,801,801,171
+public,eb_tenant_shares,11,unit_cost,numeric,801,801,1
+public,eb_tenant_shares,12,created_at,timestamp with time zone,801,801,17
+public,eb_tenant_shares,13,organization_id,uuid,801,801,1
+public,eb_tenant_shares,14,tenant_id,uuid,801,148,148
+public,electricity_readings,1,id,uuid,1411,1411,1411
+public,electricity_readings,2,organization_id,uuid,1411,1411,1
+public,electricity_readings,3,property_id,uuid,1411,1411,1
+public,electricity_readings,4,apartment_id,uuid,1411,1411,39
+public,electricity_readings,5,reading_start,"numeric(10,2)",1411,1411,1252
+public,electricity_readings,6,reading_end,"numeric(10,2)",1411,1411,1265
+public,electricity_readings,7,units_consumed,"numeric(10,2)",1411,1411,1178
+public,electricity_readings,8,unit_cost,"numeric(10,2)",1411,1411,2
+public,electricity_readings,9,billing_month,text,1411,1411,39
+public,electricity_readings,10,created_at,timestamp with time zone,1411,1411,12
+public,electricity_readings,11,meter_photo_url,text,1411,138,138
+public,electricity_readings,12,is_locked,boolean,1411,1411,2
+public,electricity_readings,13,locked_by,uuid,1411,132,1
+public,electricity_shares,1,id,uuid,0,0,0
+public,electricity_shares,2,electricity_reading_id,uuid,0,0,0
+public,electricity_shares,3,tenant_id,uuid,0,0,0
+public,electricity_shares,4,units_allocated,"numeric(10,2)",0,0,0
+public,electricity_shares,5,cost_share,"numeric(10,2)",0,0,0
+public,electricity_shares,6,created_at,timestamp with time zone,0,0,0
+public,email_templates,1,id,uuid,4,4,4
+public,email_templates,2,organization_id,uuid,4,1,1
+public,email_templates,3,email_type,text,4,4,3
+public,email_templates,4,subject_template,text,4,4,4
+public,email_templates,5,html_template,text,4,4,4
+public,email_templates,6,design_json,jsonb,4,1,1
+public,email_templates,7,is_default,boolean,4,4,2
+public,email_templates,8,version,integer,4,4,3
+public,email_templates,9,created_at,timestamp with time zone,4,4,2
+public,email_templates,10,updated_at,timestamp with time zone,4,4,3
+public,employee_specialties,1,id,uuid,10,10,10
+public,employee_specialties,2,user_id,uuid,10,10,4
+public,employee_specialties,3,specialty,text,10,10,6
+public,employee_specialties,4,created_at,timestamp with time zone,10,10,4
+public,employees,1,id,uuid,0,0,0
+public,employees,2,employee_id,text,0,0,0
+public,employees,3,first_name,text,0,0,0
+public,employees,4,last_name,text,0,0,0
+public,employees,5,full_name,text,0,0,0
+public,employees,6,email,text,0,0,0
+public,employees,7,department,text,0,0,0
+public,employees,8,department_id,uuid,0,0,0
+public,employees,9,position,text,0,0,0
+public,employees,10,company_id,uuid,0,0,0
+public,employees,11,shift_id,uuid,0,0,0
+public,employees,12,salary_type,text,0,0,0
+public,employees,13,salary_rate,"numeric(12,2)",0,0,0
+public,employees,14,branch,text,0,0,0
+public,employees,15,bonus,"numeric(12,2)",0,0,0
+public,employees,16,status,text,0,0,0
+public,employees,17,face_registered,boolean,0,0,0
+public,employees,18,face_descriptor,double precision[],0,0,0
+public,employees,19,bank_name,text,0,0,0
+public,employees,20,bank_account_number,text,0,0,0
+public,employees,21,bank_ifsc_code,text,0,0,0
+public,employees,22,aadhar_number,text,0,0,0
+public,employees,23,user_id,uuid,0,0,0
+public,employees,24,created_at,timestamp with time zone,0,0,0
+public,employees_sync,1,id,uuid,23,23,23
+public,employees_sync,2,record_id,text,23,23,23
+public,employees_sync,3,employee_code,text,23,23,11
+public,employees_sync,4,first_name,text,23,23,23
+public,employees_sync,5,last_name,text,23,23,14
+public,employees_sync,6,email,text,23,23,22
+public,employees_sync,7,department,text,23,23,6
+public,employees_sync,8,position,text,23,23,12
+public,employees_sync,9,company_name,text,23,23,3
+public,employees_sync,10,shift_name,text,23,23,2
+public,employees_sync,11,salary_type,text,23,23,1
+public,employees_sync,12,salary_rate,numeric,23,23,12
+public,employees_sync,13,bank_name,text,23,23,4
+public,employees_sync,14,bank_account,text,23,23,2
+public,employees_sync,15,ifsc_code,text,23,23,2
+public,employees_sync,16,aadhar_number,text,23,23,2
+public,employees_sync,17,status,text,23,23,2
+public,employees_sync,18,synced_at,timestamp with time zone,23,23,6
+public,employees_sync,19,created_at,timestamp with time zone,23,23,7
+public,enquiries,1,id,uuid,18,18,18
+public,enquiries,2,organization_id,uuid,18,18,1
+public,enquiries,3,phone,text,18,18,18
+public,enquiries,4,name,text,18,3,3
+public,enquiries,5,language,text,18,10,1
+public,enquiries,6,move_in_date,date,18,1,1
+public,enquiries,7,bed_type,text,18,2,1
+public,enquiries,8,gender,text,18,1,1
+public,enquiries,9,property_interest,text,18,0,0
+public,enquiries,10,budget,numeric,18,0,0
+public,enquiries,11,status,text,18,18,2
+public,enquiries,12,source,text,18,18,1
+public,enquiries,13,raw_payload,jsonb,18,18,5
+public,enquiries,14,created_at,timestamp with time zone,18,18,18
+public,enquiries,15,updated_at,timestamp with time zone,18,18,18
+public,exit_tasks,1,id,uuid,3,3,3
+public,exit_tasks,2,organization_id,uuid,3,3,1
+public,exit_tasks,3,allotment_id,uuid,3,3,3
+public,exit_tasks,4,tenant_id,uuid,3,3,3
+public,exit_tasks,5,exit_date,date,3,3,3
+public,exit_tasks,6,assigned_to,uuid,3,2,1
+public,exit_tasks,7,assigned_at,timestamp with time zone,3,3,3
+public,exit_tasks,8,status,text,3,3,1
+public,exit_tasks,9,checklist,jsonb,3,3,1
+public,exit_tasks,10,refund_details,jsonb,3,3,1
+public,exit_tasks,11,tenant_approval_sent,boolean,3,3,1
+public,exit_tasks,12,tenant_approved,boolean,3,0,0
+public,exit_tasks,13,tenant_approved_at,timestamp with time zone,3,0,0
+public,exit_tasks,14,completed_by,uuid,3,0,0
+public,exit_tasks,15,completed_at,timestamp with time zone,3,0,0
+public,exit_tasks,16,notes,text,3,0,0
+public,exit_tasks,17,created_at,timestamp with time zone,3,3,3
+public,expense_bed_allocations,1,id,uuid,448,448,448
+public,expense_bed_allocations,2,expense_id,uuid,448,448,224
+public,expense_bed_allocations,3,bed_id,uuid,448,448,100
+public,expense_bed_allocations,4,organization_id,uuid,448,448,1
+public,expense_bed_allocations,5,allocated_amount,numeric,448,448,55
+public,expense_bed_allocations,6,created_at,timestamp with time zone,448,448,1
+public,expense_categories,1,id,uuid,9,9,9
+public,expense_categories,2,organization_id,uuid,9,9,1
+public,expense_categories,3,key,text,9,9,9
+public,expense_categories,4,label,text,9,9,9
+public,expense_categories,5,sort_order,integer,9,9,2
+public,expense_categories,6,is_active,boolean,9,9,1
+public,expense_categories,7,created_at,timestamp with time zone,9,9,7
+public,expense_categories,8,gl_account_id,uuid,9,8,4
+public,expense_subcategories,1,id,uuid,10,10,10
+public,expense_subcategories,2,organization_id,uuid,10,10,1
+public,expense_subcategories,3,category_id,uuid,10,10,3
+public,expense_subcategories,4,key,text,10,10,10
+public,expense_subcategories,5,label,text,10,10,10
+public,expense_subcategories,6,sort_order,integer,10,10,5
+public,expense_subcategories,7,is_active,boolean,10,10,1
+public,expense_subcategories,8,created_at,timestamp with time zone,10,10,1
+public,expense_subcategories,9,gl_account_id,uuid,10,0,0
+public,expenses,1,id,uuid,516,516,516
+public,expenses,2,organization_id,uuid,516,516,1
+public,expenses,3,property_id,uuid,516,515,1
+public,expenses,4,apartment_id,uuid,516,459,35
+public,expenses,5,bed_id,uuid,516,131,42
+public,expenses,8,description,text,516,515,165
+public,expenses,9,amount,numeric,516,516,131
+public,expenses,10,expense_date,date,516,516,133
+public,expenses,11,billing_month,text,516,516,35
+public,expenses,12,receipt_url,text,516,15,15
+public,expenses,13,created_at,timestamp with time zone,516,516,17
+public,expenses,15,data_source,text,516,516,3
+public,expenses,16,related_asset_id,uuid,516,8,8
+public,expenses,17,category_id,uuid,516,512,4
+public,expenses,18,subcategory_id,uuid,516,46,2
+public,expenses,19,vendor_id,uuid,516,459,19
+public,expenses,20,asset_type_id,uuid,516,458,11
+public,expenses,21,issue_type_id,uuid,516,465,10
+public,expenses,22,ticket_resolution_id,uuid,516,15,15
+public,expenses,23,bank_account_id,uuid,516,0,0
+public,expenses,24,team_payment_id,uuid,516,1,1
+public,export_entity_registry,1,entity_key,text,17,17,17
+public,export_entity_registry,2,view_name,text,17,17,17
+public,export_entity_registry,3,label,text,17,17,17
+public,export_entity_registry,4,module,text,17,17,7
+public,export_entity_registry,5,sort_order,integer,17,17,17
+public,financial_audit_log,1,id,uuid,23132,23132,23132
+public,financial_audit_log,2,organization_id,uuid,23132,23132,1
+public,financial_audit_log,3,journal_entry_id,uuid,23132,11627,11627
+public,financial_audit_log,4,operation,text,23132,23132,2
+public,financial_audit_log,5,actor_user_id,uuid,23132,5959,9
+public,financial_audit_log,6,source_table,text,23132,23132,10
+public,financial_audit_log,7,source_id,uuid,23132,23130,19683
+public,financial_audit_log,8,period,text,23132,23132,68
+public,financial_audit_log,9,total_debit,"numeric(14,2)",23132,23132,4596
+public,financial_audit_log,10,total_credit,"numeric(14,2)",23132,23132,4596
+public,financial_audit_log,11,metadata,jsonb,23132,23132,2126
+public,financial_audit_log,12,created_at,timestamp with time zone,23132,23132,2272
+public,gst_monthly_workings,1,id,uuid,5,5,5
+public,gst_monthly_workings,2,organization_id,uuid,5,5,1
+public,gst_monthly_workings,3,month,integer,5,5,5
+public,gst_monthly_workings,4,year,integer,5,5,1
+public,gst_monthly_workings,5,generated_at,timestamp with time zone,5,5,5
+public,gst_monthly_workings,6,generated_by,uuid,5,5,2
+public,gst_monthly_workings,7,tenant_json,jsonb,5,5,5
+public,gst_monthly_workings,8,summary_json,jsonb,5,5,5
+public,gst_monthly_workings,9,rcm_json,jsonb,5,5,2
+public,gst_monthly_workings,10,last_updated_at,timestamp with time zone,5,5,5
+public,invoice_line_items,1,id,uuid,5536,5536,5536
+public,invoice_line_items,2,invoice_id,uuid,5536,5536,2877
+public,invoice_line_items,3,line_type,text,5536,5536,5
+public,invoice_line_items,4,description,text,5536,5536,319
+public,invoice_line_items,5,amount,numeric,5536,5536,759
+public,invoice_line_items,6,created_at,timestamp with time zone,5536,5536,323
+public,invoice_line_items,7,metadata,jsonb,5536,5536,356
+public,invoice_line_items,8,organization_id,uuid,5536,5536,1
+public,invoice_pdf_configs,1,id,uuid,2,2,2
+public,invoice_pdf_configs,2,organization_id,uuid,2,2,1
+public,invoice_pdf_configs,3,config_type,text,2,2,2
+public,invoice_pdf_configs,4,logo_url,text,2,0,0
+public,invoice_pdf_configs,5,accent_color,text,2,2,2
+public,invoice_pdf_configs,6,header_bg_color,text,2,2,1
+public,invoice_pdf_configs,7,pan_number,text,2,2,1
+public,invoice_pdf_configs,8,cin_number,text,2,0,0
+public,invoice_pdf_configs,9,tax_label,text,2,2,2
+public,invoice_pdf_configs,10,bank_name,text,2,0,0
+public,invoice_pdf_configs,11,account_number,text,2,0,0
+public,invoice_pdf_configs,12,ifsc_code,text,2,0,0
+public,invoice_pdf_configs,13,upi_id,text,2,0,0
+public,invoice_pdf_configs,14,qr_code_url,text,2,0,0
+public,invoice_pdf_configs,15,terms_and_conditions,text,2,2,2
+public,invoice_pdf_configs,16,footer_notes,text,2,1,1
+public,invoice_pdf_configs,17,signatory_name,text,2,2,2
+public,invoice_pdf_configs,18,signatory_title,text,2,1,1
+public,invoice_pdf_configs,19,number_prefix,text,2,2,1
+public,invoice_pdf_configs,20,created_at,timestamp with time zone,2,2,2
+public,invoice_pdf_configs,21,updated_at,timestamp with time zone,2,2,2
+public,invoice_pdf_configs,22,layout_style,text,2,1,1
+public,invoice_pdf_configs,23,body_text_color,text,2,0,0
+public,invoice_pdf_configs,24,muted_text_color,text,2,0,0
+public,invoice_pdf_configs,25,header_text_color,text,2,2,2
+public,invoice_pdf_configs,26,style_options,jsonb,2,2,2
+public,invoices,1,id,uuid,5214,5214,5214
+public,invoices,2,organization_id,uuid,5214,5214,1
+public,invoices,3,tenant_id,uuid,5214,5214,492
+public,invoices,4,property_id,uuid,5214,5214,1
+public,invoices,5,apartment_id,uuid,5214,5214,38
+public,invoices,6,bed_id,uuid,5214,5214,194
+public,invoices,7,invoice_number,text,5214,5173,5096
+public,invoices,8,invoice_date,date,5214,5214,357
+public,invoices,9,due_date,date,5214,5214,379
+public,invoices,10,rent_amount,"numeric(10,2)",5214,5214,449
+public,invoices,11,electricity_amount,"numeric(10,2)",5214,5214,755
+public,invoices,12,other_charges,"numeric(10,2)",5214,5214,96
+public,invoices,13,total_amount,"numeric(10,2)",5214,5214,2424
+public,invoices,14,status,text,5214,5214,3
+public,invoices,15,created_at,timestamp with time zone,5214,5214,271
+public,invoices,16,late_fee,numeric,5214,5214,1
+public,invoices,17,locked,boolean,5214,5214,2
+public,invoices,18,billing_month,text,5214,5214,44
+public,invoices,21,allotment_id,uuid,5214,5214,606
+public,invoices,22,estimated_eb,numeric,5214,5214,89
+public,invoices,23,amount_paid,numeric,5214,5214,1191
+public,invoices,24,balance,numeric,5214,5214,478
+public,invoices,25,is_deleted,boolean,5214,5214,1
+public,invoices,26,invoice_type,text,5214,5214,3
+public,invoices,27,reference_type,text,5214,165,4
+public,invoices,28,reference_id,uuid,5214,165,129
+public,issue_sub_types,1,id,uuid,51,51,51
+public,issue_sub_types,2,issue_type_id,uuid,51,51,12
+public,issue_sub_types,3,organization_id,uuid,51,51,1
+public,issue_sub_types,4,name,text,51,51,51
+public,issue_sub_types,5,icon,text,51,51,34
+public,issue_sub_types,6,description,text,51,51,51
+public,issue_sub_types,7,sort_order,integer,51,51,7
+public,issue_sub_types,8,created_at,timestamp with time zone,51,51,3
+public,issue_type_asset_types,1,id,uuid,33,33,33
+public,issue_type_asset_types,2,organization_id,uuid,33,33,1
+public,issue_type_asset_types,3,issue_type_id,uuid,33,33,9
+public,issue_type_asset_types,4,asset_type_id,uuid,33,33,33
+public,issue_type_asset_types,5,created_at,timestamp with time zone,33,33,9
+public,issue_type_expense_mapping,1,id,uuid,14,14,14
+public,issue_type_expense_mapping,2,organization_id,uuid,14,14,1
+public,issue_type_expense_mapping,3,issue_type_id,uuid,14,14,14
+public,issue_type_expense_mapping,4,expense_category_id,uuid,14,14,1
+public,issue_type_expense_mapping,5,expense_subcategory_id,uuid,14,0,0
+public,issue_type_expense_mapping,6,gl_account_id,uuid,14,14,6
+public,issue_type_expense_mapping,7,created_at,timestamp with time zone,14,14,1
+public,issue_types,1,id,uuid,14,14,14
+public,issue_types,2,organization_id,uuid,14,14,1
+public,issue_types,3,name,text,14,14,14
+public,issue_types,4,icon,text,14,14,9
+public,issue_types,5,priority,text,14,14,4
+public,issue_types,6,sla_hours,integer,14,14,4
+public,issue_types,7,created_at,timestamp with time zone,14,14,3
+public,journal_entries,1,id,uuid,14236,14236,14236
+public,journal_entries,2,organization_id,uuid,14236,14236,1
+public,journal_entries,3,entry_date,date,14236,14236,968
+public,journal_entries,4,period,text,14236,14236,54
+public,journal_entries,5,description,text,14236,14236,12029
+public,journal_entries,6,source_table,text,14236,14236,9
+public,journal_entries,7,source_id,uuid,14236,14234,13468
+public,journal_entries,8,is_reversal_of,uuid,14236,347,347
+public,journal_entries,9,posted_at,timestamp with time zone,14236,14236,1742
+public,journal_entries,10,posted_by,uuid,14236,0,0
+public,journal_entries,11,metadata,jsonb,14236,14236,709
+public,journal_lines,1,id,uuid,33894,33894,33894
+public,journal_lines,2,journal_entry_id,uuid,33894,33894,14233
+public,journal_lines,3,organization_id,uuid,33894,33894,1
+public,journal_lines,4,account_id,uuid,33894,33894,24
+public,journal_lines,5,debit,"numeric(14,2)",33894,33894,3837
+public,journal_lines,6,credit,"numeric(14,2)",33894,33894,4108
+public,journal_lines,7,party_kind,party_kind,33894,15044,3
+public,journal_lines,8,party_id,uuid,33894,15044,527
+public,journal_lines,9,allotment_id,uuid,33894,14407,645
+public,journal_lines,10,property_id,uuid,33894,25592,1
+public,journal_lines,11,apartment_id,uuid,33894,24735,39
+public,journal_lines,12,bed_id,uuid,33894,24216,194
+public,journal_lines,13,memo,text,33894,33892,18059
+public,journal_lines,14,line_no,integer,33894,33892,6
+public,leave_requests_sync,1,id,uuid,0,0,0
+public,leave_requests_sync,2,record_id,text,0,0,0
+public,leave_requests_sync,3,employee_name,text,0,0,0
+public,leave_requests_sync,4,leave_type,text,0,0,0
+public,leave_requests_sync,5,start_date,date,0,0,0
+public,leave_requests_sync,6,end_date,date,0,0,0
+public,leave_requests_sync,7,reason,text,0,0,0
+public,leave_requests_sync,8,status,text,0,0,0
+public,leave_requests_sync,9,synced_at,timestamp with time zone,0,0,0
+public,leave_requests_sync,10,created_at,timestamp with time zone,0,0,0
+public,ledger_entries,1,id,uuid,0,0,0
+public,ledger_entries,2,organization_id,uuid,0,0,0
+public,ledger_entries,3,asset_id,uuid,0,0,0
+public,ledger_entries,4,entry_type,text,0,0,0
+public,ledger_entries,5,amount,"numeric(12,2)",0,0,0
+public,ledger_entries,6,entry_date,date,0,0,0
+public,ledger_entries,7,reference,text,0,0,0
+public,ledger_entries,8,notes,text,0,0,0
+public,ledger_entries,9,created_at,timestamp with time zone,0,0,0
+public,lifecycle_config,1,id,uuid,0,0,0
+public,lifecycle_config,2,organization_id,uuid,0,0,0
+public,lifecycle_config,3,from_date,date,0,0,0
+public,lifecycle_config,4,to_date,date,0,0,0
+public,lifecycle_config,5,booking_fee,numeric,0,0,0
+public,lifecycle_config,6,onboarding_fee,numeric,0,0,0
+public,lifecycle_config,7,advance_ratio,numeric,0,0,0
+public,lifecycle_config,8,exit_fee_under_1yr,numeric,0,0,0
+public,lifecycle_config,9,key_loss_fee,numeric,0,0,0
+public,lifecycle_config,10,notice_period_days,integer,0,0,0
+public,lifecycle_config,11,refund_deadline_days,integer,0,0,0
+public,lifecycle_config,12,created_at,timestamp with time zone,0,0,0
+public,lifecycle_config,13,gst_exemption_days,integer,0,0,0
+public,lifecycle_config,14,gst_short_stay_rate,"numeric(6,3)",0,0,0
+public,lifecycle_config,15,gst_rcm_rate,"numeric(6,3)",0,0,0
+public,maintenance_item_stock_entries,1,id,uuid,47,47,47
+public,maintenance_item_stock_entries,2,organization_id,uuid,47,47,1
+public,maintenance_item_stock_entries,3,maintenance_item_id,uuid,47,47,16
+public,maintenance_item_stock_entries,4,quantity_received,numeric,47,47,1
+public,maintenance_item_stock_entries,5,quantity_available,numeric,47,47,2
+public,maintenance_item_stock_entries,6,purchase_cost_per_unit,numeric,47,47,20
+public,maintenance_item_stock_entries,7,vendor_name,text,47,9,4
+public,maintenance_item_stock_entries,8,invoice_number,text,47,6,3
+public,maintenance_item_stock_entries,9,purchased_on,timestamp with time zone,47,47,47
+public,maintenance_item_stock_entries,10,remarks,text,47,46,1
+public,maintenance_item_stock_entries,11,created_by,uuid,47,47,5
+public,maintenance_item_stock_entries,12,created_at,timestamp with time zone,47,47,47
+public,maintenance_item_usage,1,id,uuid,39,39,39
+public,maintenance_item_usage,2,organization_id,uuid,39,39,1
+public,maintenance_item_usage,3,maintenance_ticket_id,uuid,39,39,14
+public,maintenance_item_usage,4,maintenance_item_id,uuid,39,39,12
+public,maintenance_item_usage,5,stock_entry_id,uuid,39,39,39
+public,maintenance_item_usage,6,quantity_used,numeric,39,39,1
+public,maintenance_item_usage,7,cost_per_unit,numeric,39,39,15
+public,maintenance_item_usage,8,total_cost,numeric,39,39,15
+public,maintenance_item_usage,9,usage_source,text,39,39,1
+public,maintenance_item_usage,10,remarks,text,39,39,1
+public,maintenance_item_usage,11,created_by,uuid,39,39,4
+public,maintenance_item_usage,12,created_at,timestamp with time zone,39,39,39
+public,maintenance_items,1,id,uuid,93,93,93
+public,maintenance_items,2,organization_id,uuid,93,93,1
+public,maintenance_items,3,name,text,93,93,93
+public,maintenance_items,4,specifications,text,93,89,43
+public,maintenance_items,5,default_unit_cost,numeric,93,93,20
+public,maintenance_items,6,active,boolean,93,93,1
+public,maintenance_items,7,created_at,timestamp with time zone,93,93,10
+public,maintenance_items,8,updated_at,timestamp with time zone,93,93,17
+public,maintenance_items,9,item_name,text,93,93,93
+public,maintenance_items,10,item_code,text,93,0,0
+public,maintenance_items,12,unit,text,93,93,1
+public,maintenance_items,13,default_cost,numeric,93,93,20
+public,maintenance_items,14,minimum_stock_level,numeric,93,93,2
+public,maintenance_items,15,is_active,boolean,93,93,2
+public,maintenance_items,16,asset_type_id,uuid,93,88,33
+public,maintenance_items,17,issue_type_id,uuid,93,93,11
+public,maintenance_tickets,1,id,uuid,1610,1610,1610
+public,maintenance_tickets,2,organization_id,uuid,1610,1610,1
+public,maintenance_tickets,3,ticket_number,text,1610,1610,1610
+public,maintenance_tickets,4,tenant_id,uuid,1610,1569,265
+public,maintenance_tickets,5,property_id,uuid,1610,1610,1
+public,maintenance_tickets,6,apartment_id,uuid,1610,1609,37
+public,maintenance_tickets,7,bed_id,uuid,1610,1601,174
+public,maintenance_tickets,8,issue_type_id,uuid,1610,1610,14
+public,maintenance_tickets,9,description,text,1610,1610,541
+public,maintenance_tickets,10,photo_urls,text[],1610,242,242
+public,maintenance_tickets,11,priority,text,1610,1610,4
+public,maintenance_tickets,12,status,text,1610,1610,6
+public,maintenance_tickets,13,assigned_to,uuid,1610,1610,7
+public,maintenance_tickets,14,sla_deadline,timestamp with time zone,1610,1610,1472
+public,maintenance_tickets,15,resolved_at,timestamp with time zone,1610,1560,1470
+public,maintenance_tickets,16,closed_at,timestamp with time zone,1610,1416,1303
+public,maintenance_tickets,17,tenant_approved,boolean,1610,1410,2
+public,maintenance_tickets,18,diagnostic_data,jsonb,1610,1543,816
+public,maintenance_tickets,19,created_at,timestamp with time zone,1610,1610,1520
+public,maintenance_tickets,20,tenant_rejection_reason,text,1610,70,66
+public,maintenance_tickets,21,tenant_name,text,1610,1604,309
+public,maintenance_tickets,22,tenant_phone,text,1610,519,4
+public,maintenance_tickets,36,created_by,uuid,1610,553,149
+public,maintenance_tickets,40,updated_at,timestamp with time zone,1610,1610,559
+public,maintenance_tickets,42,resolution_id,uuid,1610,464,464
+public,maintenance_tickets,43,asset_id,uuid,1610,334,228
+public,maintenance_tickets,44,issue_sub_type_id,uuid,1610,345,41
+public,maintenance_tickets,45,resolution_edit_unlocked_at,timestamp with time zone,1610,5,5
+public,maintenance_tickets,46,resolution_edit_unlocked_by,uuid,1610,5,2
+public,maintenance_tickets,47,closure_cost,"numeric(14,2)",1610,0,0
+public,migration_log,1,id,uuid,0,0,0
+public,migration_log,2,run_at,timestamp with time zone,0,0,0
+public,migration_log,3,table_name,text,0,0,0
+public,migration_log,4,record_id,uuid,0,0,0
+public,migration_log,5,action,text,0,0,0
+public,migration_log,6,source_file,text,0,0,0
+public,migration_log,7,source_row,text,0,0,0
+public,migration_log,8,notes,text,0,0,0
+public,offline_kyc_pending,1,id,uuid,38,38,38
+public,offline_kyc_pending,2,organization_id,uuid,38,38,1
+public,offline_kyc_pending,3,allotment_id,uuid,38,38,38
+public,offline_kyc_pending,4,tenant_id,uuid,38,38,36
+public,offline_kyc_pending,5,access_token,text,38,38,38
+public,offline_kyc_pending,6,status,text,38,38,1
+public,offline_kyc_pending,7,registration_data,jsonb,38,38,38
+public,offline_kyc_pending,8,form_payload,jsonb,38,38,38
+public,offline_kyc_pending,9,kyc_front_path,text,38,38,38
+public,offline_kyc_pending,10,kyc_back_path,text,38,38,38
+public,offline_kyc_pending,11,final_pdf_path,text,38,0,0
+public,offline_kyc_pending,12,sent_to_email,text,38,37,35
+public,offline_kyc_pending,13,sent_to_phone,text,38,38,36
+public,offline_kyc_pending,14,submitted_at,timestamp with time zone,38,38,38
+public,offline_kyc_pending,15,merged_at,timestamp with time zone,38,0,0
+public,offline_kyc_pending,16,created_by,uuid,38,38,3
+public,offline_kyc_pending,17,created_at,timestamp with time zone,38,38,38
+public,offline_kyc_pending,18,updated_at,timestamp with time zone,38,38,38
+public,offline_kyc_pending,19,expires_at,timestamp with time zone,38,23,23
+public,org_ai_settings,1,organization_id,uuid,0,0,0
+public,org_ai_settings,2,payment_proof_mode,text,0,0,0
+public,org_ai_settings,3,meter_reading_mode,text,0,0,0
+public,org_ai_settings,4,created_at,timestamp with time zone,0,0,0
+public,org_ai_settings,5,updated_at,timestamp with time zone,0,0,0
+public,org_branding_settings,1,organization_id,uuid,1,1,1
+public,org_branding_settings,2,logo_url,text,1,1,1
+public,org_branding_settings,3,address_text,text,1,1,1
+public,org_branding_settings,4,footer_text,text,1,1,1
+public,org_branding_settings,5,contact_email,text,1,1,1
+public,org_branding_settings,6,contact_phone,text,1,1,1
+public,org_branding_settings,7,created_at,timestamp with time zone,1,1,1
+public,org_branding_settings,8,updated_at,timestamp with time zone,1,1,1
+public,org_email_settings,1,organization_id,uuid,1,1,1
+public,org_email_settings,2,enabled,boolean,1,1,1
+public,org_email_settings,3,smtp_host,text,1,1,1
+public,org_email_settings,4,smtp_port,integer,1,1,1
+public,org_email_settings,5,smtp_secure,boolean,1,1,1
+public,org_email_settings,6,smtp_user,text,1,1,1
+public,org_email_settings,7,smtp_pass_encrypted,text,1,1,1
+public,org_email_settings,8,from_name,text,1,1,1
+public,org_email_settings,9,from_email,text,1,1,1
+public,org_email_settings,10,reply_to,text,1,1,1
+public,org_email_settings,11,imap_host,text,1,1,1
+public,org_email_settings,12,imap_port,integer,1,1,1
+public,org_email_settings,13,imap_secure,boolean,1,1,1
+public,org_email_settings,14,pop3_host,text,1,1,1
+public,org_email_settings,15,pop3_port,integer,1,1,1
+public,org_email_settings,16,pop3_secure,boolean,1,1,1
+public,org_email_settings,17,created_at,timestamp with time zone,1,1,1
+public,org_email_settings,18,updated_at,timestamp with time zone,1,1,1
+public,org_whatsapp_settings,1,organization_id,uuid,1,1,1
+public,org_whatsapp_settings,2,test_phone,text,1,1,1
+public,org_whatsapp_settings,3,test_mode_enabled,boolean,1,1,1
+public,org_whatsapp_settings,4,created_at,timestamp with time zone,1,1,1
+public,org_whatsapp_settings,5,updated_at,timestamp with time zone,1,1,1
+public,org_whatsapp_settings,6,notifications_enabled,boolean,1,1,1
+public,org_whatsapp_settings,7,post_invoice_whatsapp_modal_enabled,boolean,1,1,1
+public,org_whatsapp_settings,8,post_collection_whatsapp_modal_enabled,boolean,1,1,1
+public,org_whatsapp_settings,9,ai_auto_response_enabled,boolean,1,1,1
+public,organization_bank_accounts,1,id,uuid,5,5,5
+public,organization_bank_accounts,2,organization_id,uuid,5,5,1
+public,organization_bank_accounts,3,bank_name,text,5,5,3
+public,organization_bank_accounts,4,account_name,text,5,5,2
+public,organization_bank_accounts,5,account_number,text,5,5,5
+public,organization_bank_accounts,6,ifsc_code,text,5,5,2
+public,organization_bank_accounts,7,branch,text,5,5,2
+public,organization_bank_accounts,8,account_type,text,5,5,1
+public,organization_bank_accounts,9,swift_code,text,5,5,1
+public,organization_bank_accounts,10,upi_id,text,5,5,5
+public,organization_bank_accounts,11,is_primary,boolean,5,5,1
+public,organization_bank_accounts,12,status,text,5,5,1
+public,organization_bank_accounts,13,notes,text,5,5,1
+public,organization_bank_accounts,14,created_at,timestamp with time zone,5,5,5
+public,organization_bank_accounts,15,upi_ids,text[],5,5,5
+public,organization_subscriptions,1,id,uuid,1,1,1
+public,organization_subscriptions,2,organization_id,uuid,1,1,1
+public,organization_subscriptions,3,plan_id,uuid,1,1,1
+public,organization_subscriptions,4,status,text,1,1,1
+public,organization_subscriptions,5,billing_cycle,text,1,1,1
+public,organization_subscriptions,6,current_period_start,date,1,1,1
+public,organization_subscriptions,7,current_period_end,date,1,1,1
+public,organization_subscriptions,8,trial_ends_at,date,1,0,0
+public,organization_subscriptions,9,razorpay_subscription_id,text,1,0,0
+public,organization_subscriptions,10,razorpay_customer_id,text,1,0,0
+public,organization_subscriptions,11,cancelled_at,timestamp with time zone,1,0,0
+public,organization_subscriptions,12,cancel_reason,text,1,0,0
+public,organization_subscriptions,13,created_at,timestamp with time zone,1,1,1
+public,organization_subscriptions,14,updated_at,timestamp with time zone,1,1,1
+public,organizations,1,id,uuid,1,1,1
+public,organizations,2,organization_name,text,1,1,1
+public,organizations,3,subscription_plan,text,1,1,1
+public,organizations,4,created_at,timestamp with time zone,1,1,1
+public,organizations,5,gst_number,text,1,1,1
+public,organizations,6,onboarding_completed,boolean,1,1,1
+public,organizations,7,onboarding_step,integer,1,1,1
+public,organizations,8,ticket_auto_approve_threshold,numeric,1,1,1
+public,organizations,9,ticket_repeat_check_days,integer,1,1,1
+public,organizations,10,exit_task_assignee_1,uuid,1,1,1
+public,organizations,11,exit_task_assignee_2,uuid,1,1,1
+public,organizations,12,logo_url,text,1,1,1
+public,organizations,13,address_line1,text,1,1,1
+public,organizations,14,address_line2,text,1,1,1
+public,organizations,15,city,text,1,1,1
+public,organizations,16,state,text,1,1,1
+public,organizations,17,pincode,text,1,1,1
+public,organizations,18,country,text,1,1,1
+public,organizations,19,contact_person_name,text,1,1,1
+public,organizations,20,contact_phone,text,1,1,1
+public,organizations,21,contact_email,text,1,1,1
+public,organizations,22,website,text,1,1,1
+public,otp_codes,1,id,uuid,6,6,6
+public,otp_codes,2,phone,text,6,6,6
+public,otp_codes,3,otp_code,text,6,6,6
+public,otp_codes,4,expires_at,timestamp with time zone,6,6,6
+public,otp_codes,5,verified,boolean,6,6,1
+public,otp_codes,6,created_at,timestamp with time zone,6,6,6
+public,owner_contracts,1,id,uuid,35,35,35
+public,owner_contracts,2,organization_id,uuid,35,35,1
+public,owner_contracts,3,owner_id,uuid,35,35,9
+public,owner_contracts,4,property_id,uuid,35,35,1
+public,owner_contracts,5,contract_type,text,35,35,2
+public,owner_contracts,6,start_date,date,35,35,9
+public,owner_contracts,7,end_date,date,35,35,10
+public,owner_contracts,8,monthly_rent,numeric,35,35,9
+public,owner_contracts,9,revenue_share_percentage,numeric,35,0,0
+public,owner_contracts,10,security_deposit,numeric,35,4,2
+public,owner_contracts,11,lock_in_months,integer,35,1,1
+public,owner_contracts,12,escalation_percentage,numeric,35,29,3
+public,owner_contracts,13,escalation_interval_months,integer,35,28,2
+public,owner_contracts,14,payment_due_day,integer,35,35,3
+public,owner_contracts,15,agreement_url,text,35,1,1
+public,owner_contracts,16,notes,text,35,0,0
+public,owner_contracts,17,status,text,35,35,2
+public,owner_contracts,18,created_at,timestamp with time zone,35,35,35
+public,owner_contracts,19,property_tax_id,text,35,0,0
+public,owner_contracts,20,water_tax_details,text,35,0,0
+public,owner_contracts,21,payment_schedule,text,35,35,1
+public,owner_contracts,22,renewal_date,date,35,35,10
+public,owner_contracts,23,renewal_periods,integer,35,35,2
+public,owner_contracts,24,ownership_doc_url,text,35,0,0
+public,owner_contracts,25,apartment_id,uuid,35,35,34
+public,owner_contracts,26,property_tax_amount,numeric,35,35,1
+public,owner_contracts,27,property_tax_frequency,text,35,35,1
+public,owner_contracts,28,water_tax_id,text,35,0,0
+public,owner_contracts,29,water_tax_amount,numeric,35,35,1
+public,owner_contracts,30,water_tax_frequency,text,35,35,1
+public,owner_contracts,31,rent_paid_in_advance,boolean,35,35,1
+public,owner_contracts,32,gst_info,text,35,29,2
+public,owner_payments,1,id,uuid,345,345,345
+public,owner_payments,2,organization_id,uuid,345,345,1
+public,owner_payments,3,owner_id,uuid,345,345,8
+public,owner_payments,4,contract_id,uuid,345,345,14
+public,owner_payments,5,apartment_id,uuid,345,345,13
+public,owner_payments,6,payment_month,text,345,345,46
+public,owner_payments,7,due_date,date,345,345,115
+public,owner_payments,8,base_amount,numeric,345,345,8
+public,owner_payments,9,escalated_amount,numeric,345,345,12
+public,owner_payments,10,status,text,345,345,2
+public,owner_payments,11,paid_date,date,345,125,63
+public,owner_payments,12,payment_mode,text,345,125,1
+public,owner_payments,13,notes,text,345,345,138
+public,owner_payments,14,created_at,timestamp with time zone,345,345,14
+public,owner_payments,15,actual_due_date,date,345,345,109
+public,owner_payments,16,reference_number,text,345,65,33
+public,owner_payments,17,bill_date,date,345,345,46
+public,owner_payments,18,bank_account_id,uuid,345,0,0
+public,owners,1,id,uuid,13,13,13
+public,owners,2,organization_id,uuid,13,13,1
+public,owners,3,full_name,text,13,13,13
+public,owners,4,phone,text,13,13,13
+public,owners,5,email,text,13,6,6
+public,owners,6,pan_number,text,13,10,10
+public,owners,7,aadhar_number,text,13,4,4
+public,owners,8,address,text,13,13,4
+public,owners,9,city,text,13,13,1
+public,owners,10,state,text,13,13,3
+public,owners,11,pincode,text,13,13,3
+public,owners,12,bank_name,text,13,9,7
+public,owners,13,bank_account_number,text,13,9,8
+public,owners,14,bank_ifsc,text,13,9,8
+public,owners,15,gst_number,text,13,4,4
+public,owners,16,photo_url,text,13,5,5
+public,owners,17,id_proof_url,text,13,4,4
+public,owners,18,notes,text,13,0,0
+public,owners,19,created_at,timestamp with time zone,13,12,1
+public,owners,20,status,text,13,12,1
+public,payment_proofs,1,id,uuid,24,24,24
+public,payment_proofs,2,organization_id,uuid,24,24,1
+public,payment_proofs,3,context,text,24,24,2
+public,payment_proofs,4,booking_id,uuid,24,7,7
+public,payment_proofs,5,tenant_id,uuid,24,24,14
+public,payment_proofs,6,file_url,text,24,24,24
+public,payment_proofs,7,extracted,jsonb,24,24,22
+public,payment_proofs,8,created_by,uuid,24,24,2
+public,payment_proofs,9,created_at,timestamp with time zone,24,24,24
+public,payroll,1,id,uuid,0,0,0
+public,payroll,2,employee_id,uuid,0,0,0
+public,payroll,3,company_id,uuid,0,0,0
+public,payroll,4,month,text,0,0,0
+public,payroll,5,year,integer,0,0,0
+public,payroll,6,base_salary,"numeric(12,2)",0,0,0
+public,payroll,7,days_worked,"numeric(5,2)",0,0,0
+public,payroll,8,total_days,"numeric(5,2)",0,0,0
+public,payroll,9,non_working_days,"numeric(5,2)",0,0,0
+public,payroll,10,leave_days,"numeric(5,2)",0,0,0
+public,payroll,11,approved_leave_days,"numeric(5,2)",0,0,0
+public,payroll,12,rejected_leave_days,"numeric(5,2)",0,0,0
+public,payroll,13,half_days,"numeric(5,2)",0,0,0
+public,payroll,14,working_days_month,"numeric(5,2)",0,0,0
+public,payroll,15,absent_days,"numeric(5,2)",0,0,0
+public,payroll,16,hours_worked,"numeric(7,2)",0,0,0
+public,payroll,17,overtime_hours,"numeric(5,2)",0,0,0
+public,payroll,18,overtime_pay,"numeric(12,2)",0,0,0
+public,payroll,19,deductions,"numeric(12,2)",0,0,0
+public,payroll,20,net_salary,"numeric(12,2)",0,0,0
+public,payroll,21,bonus,"numeric(12,2)",0,0,0
+public,payroll,22,status,text,0,0,0
+public,payroll,23,paid_date,date,0,0,0
+public,payroll,24,payment_mode,text,0,0,0
+public,payroll,25,payment_reference,text,0,0,0
+public,payroll,26,created_at,timestamp with time zone,0,0,0
+public,payroll_sync,1,id,uuid,18,18,18
+public,payroll_sync,2,email,text,18,18,18
+public,payroll_sync,3,employee_name,text,18,18,18
+public,payroll_sync,4,team_member_id,uuid,18,12,12
+public,payroll_sync,5,organization_id,uuid,18,12,1
+public,payroll_sync,6,period_start,date,18,18,1
+public,payroll_sync,7,period_end,date,18,18,1
+public,payroll_sync,8,monthly_salary,numeric,18,18,9
+public,payroll_sync,9,per_day_salary,numeric,18,18,9
+public,payroll_sync,10,present_days,numeric,18,18,6
+public,payroll_sync,11,leave_days,numeric,18,18,3
+public,payroll_sync,12,absent_days,numeric,18,18,5
+public,payroll_sync,13,paid_leave_days,numeric,18,18,3
+public,payroll_sync,14,deducted_days,numeric,18,18,5
+public,payroll_sync,15,deduction_amount,numeric,18,18,13
+public,payroll_sync,16,payable_salary,numeric,18,18,15
+public,payroll_sync,17,synced_at,timestamp with time zone,18,18,18
+public,profiles,1,id,uuid,222,222,222
+public,profiles,2,phone,text,222,222,221
+public,profiles,3,full_name,text,222,222,212
+public,profiles,4,email,text,222,222,222
+public,profiles,5,avatar_url,text,222,0,0
+public,profiles,6,organization_id,uuid,222,222,1
+public,profiles,7,created_at,timestamp with time zone,222,222,222
+public,profiles,8,updated_at,timestamp with time zone,222,222,222
+public,properties,1,id,uuid,1,1,1
+public,properties,2,organization_id,uuid,1,1,1
+public,properties,3,property_name,text,1,1,1
+public,properties,4,address,text,1,1,1
+public,properties,5,city,text,1,1,1
+public,properties,6,state,text,1,1,1
+public,properties,7,pincode,text,1,1,1
+public,properties,8,status,entity_status,1,1,1
+public,properties,9,created_at,timestamp with time zone,1,1,1
+public,properties,10,gps_latitude,numeric,1,0,0
+public,properties,11,gps_longitude,numeric,1,0,0
+public,properties,12,photo_urls,text[],1,0,0
+public,properties,13,code,text,1,0,0
+public,properties,14,start_date,date,1,1,1
+public,properties,16,kyc_qr_code,text,1,1,1
+public,property_images,1,id,uuid,2,2,2
+public,property_images,2,organization_id,uuid,2,2,1
+public,property_images,3,property_id,uuid,2,2,1
+public,property_images,4,image_url,text,2,2,2
+public,property_images,5,caption,text,2,2,2
+public,property_images,6,display_order,integer,2,2,2
+public,property_images,7,is_cover,boolean,2,2,2
+public,property_images,8,created_at,timestamp with time zone,2,2,2
+public,purchase_items,1,id,uuid,0,0,0
+public,purchase_items,2,purchase_order_id,uuid,0,0,0
+public,purchase_items,3,asset_type_id,uuid,0,0,0
+public,purchase_items,4,quantity,integer,0,0,0
+public,purchase_items,5,unit_price,"numeric(10,2)",0,0,0
+public,purchase_items,6,created_at,timestamp with time zone,0,0,0
+public,purchase_items,7,organization_id,uuid,0,0,0
+public,purchase_orders,1,id,uuid,0,0,0
+public,purchase_orders,2,organization_id,uuid,0,0,0
+public,purchase_orders,3,vendor_id,uuid,0,0,0
+public,purchase_orders,4,order_date,date,0,0,0
+public,purchase_orders,5,total_cost,"numeric(10,2)",0,0,0
+public,purchase_orders,6,invoice_number,text,0,0,0
+public,purchase_orders,7,status,text,0,0,0
+public,purchase_orders,8,created_at,timestamp with time zone,0,0,0
+public,receipt_allocations,1,id,uuid,0,0,0
+public,receipt_allocations,2,organization_id,uuid,0,0,0
+public,receipt_allocations,3,receipt_id,uuid,0,0,0
+public,receipt_allocations,4,invoice_id,uuid,0,0,0
+public,receipt_allocations,5,adjustment_id,uuid,0,0,0
+public,receipt_allocations,6,amount,"numeric(14,2)",0,0,0
+public,receipt_allocations,7,allocated_at,timestamp with time zone,0,0,0
+public,receipt_allocations,8,allocated_by,uuid,0,0,0
+public,receipt_allocations,9,notes,text,0,0,0
+public,receipt_number_counters,1,organization_id,uuid,8,8,1
+public,receipt_number_counters,2,property_id,uuid,8,8,1
+public,receipt_number_counters,3,fy,text,8,8,3
+public,receipt_number_counters,4,month,integer,8,8,5
+public,receipt_number_counters,5,last_seq,integer,8,8,7
+public,receipt_number_counters,6,updated_at,timestamp with time zone,8,8,8
+public,receipts,1,id,uuid,5858,5858,5858
+public,receipts,2,organization_id,uuid,5858,5858,1
+public,receipts,4,payment_date,date,5858,5858,843
+public,receipts,5,payment_mode,text,5858,5858,13
+public,receipts,6,amount_paid,"numeric(10,2)",5858,5858,2628
+public,receipts,7,created_at,timestamp with time zone,5858,5858,1248
+public,receipts,8,receipt_number,text,5858,5857,5810
+public,receipts,9,bank_account_id,uuid,5858,2404,5
+public,receipts,10,reference_number,text,5858,5806,4950
+public,receipts,11,tenant_allotment_id,uuid,5858,5858,631
+public,receipts,12,tenant_id,uuid,5858,5858,513
+public,receipts,13,receipt_type,text,5858,5858,4
+public,receipts,14,base_amount,numeric,5858,5858,83
+public,receipts,15,processing_fee,numeric,5858,5858,5
+public,receipts,19,is_deleted,boolean,5858,5858,2
+public,receipts,20,is_locked,boolean,5858,5858,2
+public,receipts,21,locked_by,uuid,5858,170,1
+public,receipts_dedup_audit,1,id,uuid,9,9,9
+public,receipts_dedup_audit,2,organization_id,uuid,9,9,1
+public,receipts_dedup_audit,3,tenant_id,uuid,9,9,9
+public,receipts_dedup_audit,4,payment_date,date,9,9,9
+public,receipts_dedup_audit,5,amount_paid,numeric,9,9,7
+public,receipts_dedup_audit,6,reference_number,text,9,9,9
+public,receipts_dedup_audit,7,duplicate_count,integer,9,9,3
+public,receipts_dedup_audit,8,receipt_ids,uuid[],9,9,9
+public,receipts_dedup_audit,9,detected_at,timestamp with time zone,9,9,1
+public,regular_maintenance_rules,1,id,uuid,0,0,0
+public,regular_maintenance_rules,2,organization_id,uuid,0,0,0
+public,regular_maintenance_rules,3,issue_type_id,uuid,0,0,0
+public,regular_maintenance_rules,4,maintenance_type,text,0,0,0
+public,regular_maintenance_rules,5,frequency,text,0,0,0
+public,regular_maintenance_rules,6,asset_type_id,uuid,0,0,0
+public,regular_maintenance_rules,7,property_id,uuid,0,0,0
+public,regular_maintenance_rules,8,apartment_id,uuid,0,0,0
+public,regular_maintenance_rules,9,start_date,date,0,0,0
+public,regular_maintenance_rules,10,last_run_at,timestamp with time zone,0,0,0
+public,regular_maintenance_rules,11,next_run_at,timestamp with time zone,0,0,0
+public,regular_maintenance_rules,12,is_active,boolean,0,0,0
+public,regular_maintenance_rules,13,auto_assign,boolean,0,0,0
+public,regular_maintenance_rules,14,created_by,uuid,0,0,0
+public,regular_maintenance_rules,15,created_at,timestamp with time zone,0,0,0
+public,replacement_forecasts,1,id,uuid,0,0,0
+public,replacement_forecasts,2,asset_id,uuid,0,0,0
+public,replacement_forecasts,3,expected_replacement_date,date,0,0,0
+public,replacement_forecasts,4,replacement_cost,"numeric(10,2)",0,0,0
+public,replacement_forecasts,5,urgency_level,text,0,0,0
+public,replacement_forecasts,6,created_at,timestamp with time zone,0,0,0
+public,replacement_forecasts,7,organization_id,uuid,0,0,0
+public,role_permissions,1,id,uuid,122,122,122
+public,role_permissions,2,organization_id,uuid,122,122,1
+public,role_permissions,3,role,text,122,122,9
+public,role_permissions,4,module,text,122,122,38
+public,role_permissions,5,can_create,boolean,122,122,2
+public,role_permissions,6,can_read,boolean,122,122,2
+public,role_permissions,7,can_update,boolean,122,122,2
+public,role_permissions,8,can_delete,boolean,122,122,2
+public,role_permissions,9,created_at,timestamp with time zone,122,122,81
+public,role_permissions,10,updated_at,timestamp with time zone,122,122,110
+public,room_switches,1,id,uuid,34,34,34
+public,room_switches,2,organization_id,uuid,34,34,1
+public,room_switches,3,tenant_id,uuid,34,34,24
+public,room_switches,4,allotment_id,uuid,34,34,29
+public,room_switches,5,old_bed_id,uuid,34,34,21
+public,room_switches,6,new_bed_id,uuid,34,34,25
+public,room_switches,7,switch_type,text,34,34,2
+public,room_switches,8,switch_date,date,34,34,21
+public,room_switches,9,effective_date,date,34,34,22
+public,room_switches,10,rent_difference,numeric,34,34,8
+public,room_switches,11,adjustment_type,text,34,34,3
+public,room_switches,12,status,text,34,34,4
+public,room_switches,13,notes,text,34,0,0
+public,room_switches,14,created_at,timestamp with time zone,34,34,34
+public,room_switches,15,old_allotment_id,uuid,34,34,29
+public,room_switches,16,new_allotment_id,uuid,34,30,30
+public,room_switches,17,old_property_id,uuid,34,34,1
+public,room_switches,18,new_property_id,uuid,34,34,1
+public,room_switches,19,old_apartment_id,uuid,34,34,15
+public,room_switches,20,new_apartment_id,uuid,34,34,15
+public,room_switches,21,old_rent,numeric,34,34,4
+public,room_switches,22,new_rent,numeric,34,34,5
+public,room_switches,23,deposit_difference,numeric,34,34,8
+public,room_switches,24,eb_charges,numeric,34,34,22
+public,room_switches,25,completed_at,timestamp with time zone,34,26,26
+public,room_switches,26,cancelled_at,timestamp with time zone,34,8,8
+public,room_switches,27,completed_by,uuid,34,26,2
+public,room_switches,28,cancelled_by,uuid,34,8,2
+public,running_bed_maintenance_details,1,id,uuid,23,23,23
+public,running_bed_maintenance_details,2,organization_id,uuid,23,23,1
+public,running_bed_maintenance_details,3,ticket_id,uuid,23,23,20
+public,running_bed_maintenance_details,4,purchase_id,uuid,23,4,4
+public,running_bed_maintenance_details,5,tenant_id,uuid,23,23,19
+public,running_bed_maintenance_details,6,bed_id,uuid,23,23,19
+public,running_bed_maintenance_details,7,apartment_id,uuid,23,23,14
+public,running_bed_maintenance_details,8,property_id,uuid,23,23,1
+public,running_bed_maintenance_details,9,item_name,text,23,23,11
+public,running_bed_maintenance_details,10,quantity,integer,23,23,1
+public,running_bed_maintenance_details,11,unit_price,numeric,23,23,20
+public,running_bed_maintenance_details,12,actual_cost,numeric,23,23,22
+public,running_bed_maintenance_details,13,vendor_name,text,23,21,3
+public,running_bed_maintenance_details,14,cost_scope,text,23,23,2
+public,running_bed_maintenance_details,15,distributed_amount,numeric,23,23,22
+public,running_bed_maintenance_details,16,billing_month,text,23,23,5
+public,running_bed_maintenance_details,17,maintenance_type,text,23,23,11
+public,running_bed_maintenance_details,18,parts_details,jsonb,23,23,4
+public,running_bed_maintenance_details,19,diagnosis_summary,text,23,20,17
+public,running_bed_maintenance_details,20,notes,text,23,19,1
+public,running_bed_maintenance_details,21,created_at,timestamp with time zone,23,23,23
+public,running_bed_maintenance_details,22,distributed_beds,jsonb,23,23,22
+public,subscription_plans,1,id,uuid,4,4,4
+public,subscription_plans,2,plan_name,text,4,4,4
+public,subscription_plans,3,display_name,text,4,4,4
+public,subscription_plans,4,description,text,4,4,4
+public,subscription_plans,5,price_monthly,numeric,4,4,4
+public,subscription_plans,6,price_yearly,numeric,4,4,4
+public,subscription_plans,7,max_properties,integer,4,4,4
+public,subscription_plans,8,max_apartments,integer,4,4,4
+public,subscription_plans,9,max_beds,integer,4,4,4
+public,subscription_plans,10,max_users,integer,4,4,4
+public,subscription_plans,11,max_tenants,integer,4,4,4
+public,subscription_plans,12,feature_flags,jsonb,4,4,4
+public,subscription_plans,13,is_active,boolean,4,4,1
+public,subscription_plans,14,sort_order,integer,4,4,4
+public,subscription_plans,15,created_at,timestamp with time zone,4,4,1
+public,tab_permissions,1,id,uuid,405,405,405
+public,tab_permissions,2,organization_id,uuid,405,405,1
+public,tab_permissions,3,role,text,405,405,8
+public,tab_permissions,4,module,text,405,405,18
+public,tab_permissions,5,tab_key,text,405,405,82
+public,tab_permissions,6,is_visible,boolean,405,405,2
+public,tab_permissions,7,created_at,timestamp with time zone,405,405,157
+public,tab_permissions,8,updated_at,timestamp with time zone,405,405,155
+public,tab_permissions,9,can_create,boolean,405,405,2
+public,tab_permissions,10,can_read,boolean,405,405,2
+public,tab_permissions,11,can_update,boolean,405,405,2
+public,tab_permissions,12,can_delete,boolean,405,405,2
+public,team_attendance,1,id,uuid,1320,1320,1320
+public,team_attendance,2,organization_id,uuid,1320,1320,1
+public,team_attendance,3,team_member_id,uuid,1320,1320,20
+public,team_attendance,4,date,date,1320,1320,147
+public,team_attendance,5,status,text,1320,1320,4
+public,team_attendance,6,check_in,time without time zone,1320,1301,166
+public,team_attendance,7,check_out,time without time zone,1320,1232,168
+public,team_attendance,8,notes,text,1320,1063,211
+public,team_attendance,9,created_at,timestamp with time zone,1320,1320,1187
+public,team_attendance,10,email,text,1320,1234,14
+public,team_attendance,11,convex_record_id,text,1320,1234,1234
+public,team_attendance,12,attendance_id,uuid,1320,1320,1320
+public,team_attendance,13,overtime_hours,numeric,1320,0,0
+public,team_departments,1,id,uuid,4,4,4
+public,team_departments,2,organization_id,uuid,4,4,1
+public,team_departments,3,name,text,4,4,4
+public,team_departments,4,is_deleted,boolean,4,4,1
+public,team_departments,5,created_at,timestamp with time zone,4,4,4
+public,team_departments,6,updated_at,timestamp with time zone,4,4,4
+public,team_departments,7,attendance_exempt,boolean,4,4,2
+public,team_members,1,id,uuid,20,20,20
+public,team_members,2,organization_id,uuid,20,20,1
+public,team_members,3,user_id,uuid,20,7,7
+public,team_members,4,first_name,text,20,20,20
+public,team_members,5,last_name,text,20,20,17
+public,team_members,6,gender,text,20,18,6
+public,team_members,7,phone,text,20,20,20
+public,team_members,8,email,text,20,20,20
+public,team_members,9,date_of_birth,date,20,2,2
+public,team_members,10,designation,text,20,15,9
+public,team_members,11,department,text,20,17,6
+public,team_members,12,joining_date,date,20,3,3
+public,team_members,13,id_proof_type,text,20,14,2
+public,team_members,14,id_proof_number,text,20,14,1
+public,team_members,15,id_proof_url,text,20,14,2
+public,team_members,16,photo_url,text,20,14,2
+public,team_members,17,pan_number,text,20,13,1
+public,team_members,18,aadhar_number,text,20,13,2
+public,team_members,19,address,text,20,13,2
+public,team_members,20,city,text,20,14,3
+public,team_members,21,state,text,20,14,2
+public,team_members,22,pincode,text,20,14,3
+public,team_members,23,bank_name,text,20,13,2
+public,team_members,24,bank_account_number,text,20,13,2
+public,team_members,25,bank_ifsc,text,20,13,2
+public,team_members,26,emergency_contact_name,text,20,13,1
+public,team_members,27,emergency_contact_phone,text,20,13,1
+public,team_members,28,salary_amount,numeric,20,20,9
+public,team_members,29,status,text,20,20,2
+public,team_members,30,created_at,timestamp with time zone,20,20,20
+public,team_members,31,exit_date,date,20,6,6
+public,team_members,32,exit_type,text,20,6,2
+public,team_members,33,exit_reason,text,20,2,2
+public,team_members,34,free_leave_days,integer,20,20,1
+public,team_members,35,department_id,uuid,20,15,4
+public,team_members,36,work_start_time,time without time zone,20,20,3
+public,team_members,37,work_hours_per_day,numeric,20,20,1
+public,team_payments,1,id,uuid,3,3,3
+public,team_payments,2,organization_id,uuid,3,3,1
+public,team_payments,3,team_member_id,uuid,3,3,2
+public,team_payments,4,payment_type,text,3,3,1
+public,team_payments,5,amount,numeric,3,3,3
+public,team_payments,6,payment_date,date,3,3,2
+public,team_payments,7,payment_month,text,3,3,2
+public,team_payments,8,payment_mode,text,3,3,1
+public,team_payments,9,notes,text,3,3,2
+public,team_payments,10,created_at,timestamp with time zone,3,3,3
+public,team_salary_bills,1,id,uuid,71,71,71
+public,team_salary_bills,2,organization_id,uuid,71,71,1
+public,team_salary_bills,3,team_member_id,uuid,71,71,17
+public,team_salary_bills,4,month,text,71,71,7
+public,team_salary_bills,5,working_days,integer,71,71,3
+public,team_salary_bills,6,present_days,integer,71,71,19
+public,team_salary_bills,7,base_salary,numeric,71,71,9
+public,team_salary_bills,8,earned_salary,numeric,71,71,37
+public,team_salary_bills,9,advance_deducted,numeric,71,71,1
+public,team_salary_bills,10,other_deductions,numeric,71,71,1
+public,team_salary_bills,11,net_payable,numeric,71,71,37
+public,team_salary_bills,12,status,text,71,71,3
+public,team_salary_bills,13,notes,text,71,68,32
+public,team_salary_bills,14,created_at,timestamp with time zone,71,71,71
+public,tenant_absence_records,1,id,uuid,38,38,38
+public,tenant_absence_records,2,organization_id,uuid,38,38,1
+public,tenant_absence_records,3,tenant_id,uuid,38,38,26
+public,tenant_absence_records,4,allotment_id,uuid,38,38,26
+public,tenant_absence_records,5,from_date,date,38,38,22
+public,tenant_absence_records,6,to_date,date,38,38,22
+public,tenant_absence_records,7,reason,text,38,1,1
+public,tenant_absence_records,8,created_by,uuid,38,38,3
+public,tenant_absence_records,9,created_at,timestamp with time zone,38,38,38
+public,tenant_adjustments,1,id,uuid,266,266,266
+public,tenant_adjustments,2,organization_id,uuid,266,266,1
+public,tenant_adjustments,3,tenant_id,uuid,266,266,128
+public,tenant_adjustments,4,allotment_id,uuid,266,266,133
+public,tenant_adjustments,5,adjustment_type,text,266,266,2
+public,tenant_adjustments,6,amount,numeric,266,266,128
+public,tenant_adjustments,7,reason,text,266,138,88
+public,tenant_adjustments,8,reference_number,text,266,5,5
+public,tenant_adjustments,9,adjustment_date,date,266,266,162
+public,tenant_adjustments,10,billing_month,text,266,186,37
+public,tenant_adjustments,11,property_id,uuid,266,256,1
+public,tenant_adjustments,12,apartment_id,uuid,266,256,35
+public,tenant_adjustments,13,bed_id,uuid,266,256,111
+public,tenant_adjustments,14,created_by,uuid,266,15,2
+public,tenant_adjustments,15,created_at,timestamp with time zone,266,266,239
+public,tenant_adjustments,16,is_deleted,boolean,266,266,2
+public,tenant_adjustments,17,category,text,266,266,7
+public,tenant_adjustments,18,reference_type,text,266,15,3
+public,tenant_adjustments,19,reference_id,uuid,266,15,11
+public,tenant_adjustments,20,is_locked,boolean,266,266,1
+public,tenant_adjustments,21,locked_by,uuid,266,0,0
+public,tenant_allotments,1,id,uuid,1213,1213,1213
+public,tenant_allotments,2,organization_id,uuid,1213,1213,1
+public,tenant_allotments,3,tenant_id,uuid,1213,1213,989
+public,tenant_allotments,4,property_id,uuid,1213,1213,1
+public,tenant_allotments,5,apartment_id,uuid,1213,1213,38
+public,tenant_allotments,6,bed_id,uuid,1213,1213,194
+public,tenant_allotments,7,booking_date,date,1213,1195,635
+public,tenant_allotments,8,onboarding_date,date,1213,1197,641
+public,tenant_allotments,9,estimated_exit_date,date,1213,995,518
+public,tenant_allotments,10,actual_exit_date,date,1213,1007,524
+public,tenant_allotments,11,monthly_rental,"numeric(10,2)",1213,1186,13
+public,tenant_allotments,12,deposit_paid,"numeric(10,2)",1213,1213,26
+public,tenant_allotments,13,discount,"numeric(10,2)",1213,1213,16
+public,tenant_allotments,14,staying_status,staying_status,1213,1213,5
+public,tenant_allotments,15,created_at,timestamp with time zone,1213,1213,192
+public,tenant_allotments,16,notice_date,date,1213,995,516
+public,tenant_allotments,17,onboarding_charges,numeric,1213,1213,4
+public,tenant_allotments,19,prorated_rent,numeric,1213,1201,73
+public,tenant_allotments,20,total_due,numeric,1213,1201,73
+public,tenant_allotments,21,paid_amount,numeric,1213,1213,101
+public,tenant_allotments,22,balance_due,numeric,1213,1213,79
+public,tenant_allotments,23,payment_status,text,1213,1213,3
+public,tenant_allotments,24,expected_payment_date,date,1213,0,0
+public,tenant_allotments,25,kyc_front_url,text,1213,178,161
+public,tenant_allotments,26,kyc_back_url,text,1213,178,161
+public,tenant_allotments,27,premium,numeric,1213,1213,11
+public,tenant_allotments,28,processing_fee,numeric,1213,1213,5
+public,tenant_allotments,29,expected_stay_days,integer,1213,15,5
+public,tenant_document_history,1,id,uuid,1,1,1
+public,tenant_document_history,2,organization_id,uuid,1,1,1
+public,tenant_document_history,3,tenant_id,uuid,1,1,1
+public,tenant_document_history,4,allotment_id,uuid,1,1,1
+public,tenant_document_history,5,doc_slot,text,1,1,1
+public,tenant_document_history,6,old_url,text,1,1,1
+public,tenant_document_history,7,new_url,text,1,1,1
+public,tenant_document_history,8,replaced_at,timestamp with time zone,1,1,1
+public,tenant_document_history,9,replaced_by,uuid,1,0,0
+public,tenant_exits,1,id,uuid,147,147,147
+public,tenant_exits,2,organization_id,uuid,147,147,1
+public,tenant_exits,3,tenant_id,uuid,147,147,115
+public,tenant_exits,4,allotment_id,uuid,147,147,144
+public,tenant_exits,5,bed_id,uuid,147,147,92
+public,tenant_exits,6,exit_date,date,147,147,107
+public,tenant_exits,7,has_notice,boolean,147,147,1
+public,tenant_exits,8,room_inspection,boolean,147,147,2
+public,tenant_exits,9,key_returned,boolean,147,147,1
+public,tenant_exits,10,damage_charges,numeric,147,147,1
+public,tenant_exits,11,key_loss_fee,numeric,147,147,1
+public,tenant_exits,12,exit_charges,numeric,147,147,2
+public,tenant_exits,13,eb_charges,numeric,147,147,68
+public,tenant_exits,14,pending_rent,numeric,147,147,59
+public,tenant_exits,15,total_deductions,numeric,147,147,60
+public,tenant_exits,16,advance_held,numeric,147,147,18
+public,tenant_exits,17,refund_due,numeric,147,147,66
+public,tenant_exits,18,refund_status,text,147,147,3
+public,tenant_exits,19,refund_date,date,147,101,46
+public,tenant_exits,20,notes,text,147,6,3
+public,tenant_exits,21,created_at,timestamp with time zone,147,147,110
+public,tenant_exits,22,is_deleted,boolean,147,147,2
+public,tenant_exits,23,refund_reference,text,147,95,88
+public,tenant_exits,24,refund_bank_id,uuid,147,100,5
+public,tenant_exits,25,refund_proof_url,text,147,70,70
+public,tenant_notices,1,id,uuid,86,86,86
+public,tenant_notices,2,organization_id,uuid,86,86,1
+public,tenant_notices,3,tenant_id,uuid,86,86,85
+public,tenant_notices,4,allotment_id,uuid,86,86,85
+public,tenant_notices,5,bed_id,uuid,86,86,69
+public,tenant_notices,6,notice_date,date,86,86,57
+public,tenant_notices,7,exit_date,date,86,86,59
+public,tenant_notices,8,actual_exit_date,date,86,0,0
+public,tenant_notices,9,status,text,86,86,1
+public,tenant_notices,10,notes,text,86,22,22
+public,tenant_notices,11,created_at,timestamp with time zone,86,86,86
+public,tenant_remarks,1,id,uuid,2,2,2
+public,tenant_remarks,2,organization_id,uuid,2,2,1
+public,tenant_remarks,3,tenant_id,uuid,2,2,1
+public,tenant_remarks,4,remark_type,text,2,2,2
+public,tenant_remarks,5,title,text,2,2,2
+public,tenant_remarks,6,description,text,2,0,0
+public,tenant_remarks,7,severity,text,2,2,2
+public,tenant_remarks,8,created_by,uuid,2,2,1
+public,tenant_remarks,9,created_at,timestamp with time zone,2,2,2
+public,tenant_transactions,1,id,uuid,16451,16451,16451
+public,tenant_transactions,2,tenant_id,uuid,16451,16451,884
+public,tenant_transactions,3,allotment_id,uuid,16451,16451,1048
+public,tenant_transactions,4,date,date,16451,16451,1046
+public,tenant_transactions,5,amount,numeric,16451,16451,4349
+public,tenant_transactions,6,direction,text,16451,16451,2
+public,tenant_transactions,7,ledger_type,text,16451,16451,3
+public,tenant_transactions,8,category,text,16451,16451,11
+public,tenant_transactions,9,reference_table,text,16451,16451,5
+public,tenant_transactions,10,reference_id,uuid,16451,16451,14424
+public,tenant_transactions,11,description,text,16451,16451,13213
+public,tenant_transactions,12,metadata,jsonb,16451,16451,14
+public,tenant_transactions,13,organization_id,uuid,16451,16451,1
+public,tenant_transactions,14,created_at,timestamp with time zone,16451,16451,40
+public,tenants,1,id,uuid,1027,1027,1027
+public,tenants,2,organization_id,uuid,1027,1027,1
+public,tenants,3,user_id,uuid,1027,977,197
+public,tenants,4,full_name,text,1027,1027,1026
+public,tenants,5,phone,text,1027,1027,1026
+public,tenants,6,email,text,1027,899,854
+public,tenants,7,date_of_birth,date,1027,466,441
+public,tenants,8,gender,text,1027,992,2
+public,tenants,9,id_proof_type,text,1027,0,0
+public,tenants,10,id_proof_number,text,1027,513,513
+public,tenants,11,id_proof_url,text,1027,364,364
+public,tenants,12,permanent_address,text,1027,620,617
+public,tenants,13,company_name,text,1027,613,419
+public,tenants,14,company_address,text,1027,591,492
+public,tenants,15,designation,text,1027,598,385
+public,tenants,16,emergency_contact_name,text,1027,627,615
+public,tenants,17,emergency_contact_phone,text,1027,627,627
+public,tenants,18,photo_url,text,1027,510,510
+public,tenants,19,kyc_completed,boolean,1027,121,1
+public,tenants,20,created_at,timestamp with time zone,1027,1009,121
+public,tenants,21,first_name,text,1027,1027,884
+public,tenants,22,last_name,text,1027,1027,713
+public,tenants,23,staying_status,text,1027,1027,9
+public,tenants,24,food_preference,text,1027,120,4
+public,tenants,25,relation_type,text,1027,12,3
+public,tenants,26,relation_name,text,1027,120,113
+public,tenants,27,city,text,1027,120,91
+public,tenants,28,pincode,text,1027,120,116
+public,tenants,29,state,text,1027,120,29
+public,tenants,30,age,integer,1027,119,23
+public,tenants,31,profession,text,1027,120,57
+public,tenants,32,company_city,text,1027,78,16
+public,tenants,33,company_pincode,text,1027,77,25
+public,tenants,34,company_state,text,1027,78,10
+public,tenants,35,date_of_joining,date,1027,92,63
+public,tenants,36,course,text,1027,0,0
+public,tenants,37,id_card_url,text,1027,6,6
+public,tenants,38,emergency_contact_relationship,text,1027,0,0
+public,tenants,39,bank_name,text,1027,120,53
+public,tenants,40,bank_branch,text,1027,120,120
+public,tenants,41,bank_account_number,text,1027,120,119
+public,tenants,42,bank_account_holder,text,1027,120,119
+public,tenants,43,bank_ifsc,text,1027,120,119
+public,tenants,44,aadhar_number,text,1027,120,120
+public,tenants,45,pan_number,text,1027,67,67
+public,tenants,46,gst_number,text,1027,2,2
+public,tenants,47,gst_name,text,1027,2,2
+public,tenants,48,aadhar_image_url,text,1027,145,145
+public,tenants,49,address,text,1027,120,120
+public,tenants,50,emergency_contact_relation,text,1027,120,13
+public,tenants,51,tenant_rating,numeric,1027,1015,9
+public,tenants,52,rating_last_computed,timestamp with time zone,1027,1015,675
+public,tenants,54,property_id,uuid,1027,994,1
+public,tenants,55,upi_id,text,1027,0,0
+public,ticket_assignment_rules,1,id,uuid,7,7,7
+public,ticket_assignment_rules,2,issue_type_id,uuid,7,3,3
+public,ticket_assignment_rules,3,assigned_employee_id,uuid,7,7,2
+public,ticket_assignment_rules,4,priority,integer,7,7,2
+public,ticket_assignment_rules,5,organization_id,uuid,7,7,1
+public,ticket_assignment_rules,6,created_at,timestamp with time zone,7,7,3
+public,ticket_assignment_rules,7,rule_type,text,7,7,2
+public,ticket_assignment_rules,8,apartment_code,text,7,7,7
+public,ticket_cost_estimates,1,id,uuid,28,28,28
+public,ticket_cost_estimates,2,ticket_id,uuid,28,28,15
+public,ticket_cost_estimates,3,organization_id,uuid,28,28,1
+public,ticket_cost_estimates,4,item_name,text,28,28,19
+public,ticket_cost_estimates,5,cost_type,text,28,28,2
+public,ticket_cost_estimates,6,quantity,integer,28,28,1
+public,ticket_cost_estimates,7,unit_price,numeric,28,28,16
+public,ticket_cost_estimates,8,total,numeric,28,28,16
+public,ticket_cost_estimates,9,status,text,28,28,2
+public,ticket_cost_estimates,10,submitted_by,uuid,28,28,4
+public,ticket_cost_estimates,11,approved_by,uuid,28,3,1
+public,ticket_cost_estimates,12,decline_reason,text,28,0,0
+public,ticket_cost_estimates,13,approved_at,timestamp with time zone,28,20,8
+public,ticket_cost_estimates,14,created_at,timestamp with time zone,28,28,28
+public,ticket_cost_estimates,15,item_type,text,28,0,0
+public,ticket_cost_estimates,16,price,numeric,28,0,0
+public,ticket_cost_estimates,17,updated_at,timestamp with time zone,28,28,16
+public,ticket_cost_estimates,18,is_auto_approved,boolean,28,28,2
+public,ticket_cost_estimates,19,auto_approval_reason,text,28,19,7
+public,ticket_cost_estimates,20,repeat_job_alert,boolean,28,28,1
+public,ticket_cost_estimates,21,repeat_job_previous_ticket_id,uuid,28,0,0
+public,ticket_cost_estimates_dedupe_backup_20260715,1,id,uuid,12,12,12
+public,ticket_cost_estimates_dedupe_backup_20260715,2,ticket_id,uuid,12,12,5
+public,ticket_cost_estimates_dedupe_backup_20260715,3,organization_id,uuid,12,12,1
+public,ticket_cost_estimates_dedupe_backup_20260715,4,item_name,text,12,12,7
+public,ticket_cost_estimates_dedupe_backup_20260715,5,cost_type,text,12,12,2
+public,ticket_cost_estimates_dedupe_backup_20260715,6,quantity,integer,12,12,1
+public,ticket_cost_estimates_dedupe_backup_20260715,7,unit_price,numeric,12,12,6
+public,ticket_cost_estimates_dedupe_backup_20260715,8,total,numeric,12,12,6
+public,ticket_cost_estimates_dedupe_backup_20260715,9,status,text,12,12,2
+public,ticket_cost_estimates_dedupe_backup_20260715,10,submitted_by,uuid,12,12,1
+public,ticket_cost_estimates_dedupe_backup_20260715,11,approved_by,uuid,12,2,1
+public,ticket_cost_estimates_dedupe_backup_20260715,12,decline_reason,text,12,0,0
+public,ticket_cost_estimates_dedupe_backup_20260715,13,approved_at,timestamp with time zone,12,8,3
+public,ticket_cost_estimates_dedupe_backup_20260715,14,created_at,timestamp with time zone,12,12,12
+public,ticket_cost_estimates_dedupe_backup_20260715,15,item_type,text,12,0,0
+public,ticket_cost_estimates_dedupe_backup_20260715,16,price,numeric,12,0,0
+public,ticket_cost_estimates_dedupe_backup_20260715,17,updated_at,timestamp with time zone,12,12,7
+public,ticket_cost_estimates_dedupe_backup_20260715,18,is_auto_approved,boolean,12,12,2
+public,ticket_cost_estimates_dedupe_backup_20260715,19,auto_approval_reason,text,12,8,3
+public,ticket_cost_estimates_dedupe_backup_20260715,20,repeat_job_alert,boolean,12,12,1
+public,ticket_cost_estimates_dedupe_backup_20260715,21,repeat_job_previous_ticket_id,uuid,12,0,0
+public,ticket_logs,1,id,uuid,8239,8239,8239
+public,ticket_logs,2,ticket_id,uuid,8239,8239,1610
+public,ticket_logs,3,action,text,8239,8239,38
+public,ticket_logs,4,old_status,text,8239,1502,8
+public,ticket_logs,5,new_status,text,8239,3506,8
+public,ticket_logs,6,created_by,uuid,8239,7079,151
+public,ticket_logs,7,notes,text,8239,8239,2995
+public,ticket_logs,8,created_at,timestamp with time zone,8239,8239,5821
+public,ticket_logs,16,organization_id,uuid,8239,8174,1
+public,ticket_number_counters,1,organization_id,uuid,5,5,1
+public,ticket_number_counters,2,property_id,uuid,5,5,1
+public,ticket_number_counters,3,yy,smallint,5,5,1
+public,ticket_number_counters,4,mm,smallint,5,5,5
+public,ticket_number_counters,5,last_seq,integer,5,5,5
+public,ticket_number_counters,6,updated_at,timestamp with time zone,5,5,5
+public,ticket_purchases,1,id,uuid,4,4,4
+public,ticket_purchases,2,ticket_id,uuid,4,4,4
+public,ticket_purchases,3,cost_estimate_id,uuid,4,4,4
+public,ticket_purchases,4,organization_id,uuid,4,4,1
+public,ticket_purchases,6,quantity,integer,4,4,1
+public,ticket_purchases,7,estimated_cost,numeric,4,4,2
+public,ticket_purchases,8,actual_cost,numeric,4,4,4
+public,ticket_purchases,9,vendor_id,uuid,4,2,2
+public,ticket_purchases,10,vendor_name_manual,text,4,1,1
+public,ticket_purchases,11,invoice_url,text,4,1,1
+public,ticket_purchases,12,purchased_by,uuid,4,4,2
+public,ticket_purchases,13,purchase_date,date,4,4,4
+public,ticket_purchases,14,created_at,timestamp with time zone,4,4,4
+public,ticket_purchases,15,updated_at,timestamp without time zone,4,4,4
+public,ticket_purchases,19,item_name,text,4,1,1
+public,ticket_resolutions,1,id,uuid,466,466,466
+public,ticket_resolutions,2,ticket_id,uuid,466,466,464
+public,ticket_resolutions,3,organization_id,uuid,466,466,1
+public,ticket_resolutions,4,resolution_type,text,466,466,2
+public,ticket_resolutions,5,service_type,text,466,466,4
+public,ticket_resolutions,6,vendor_id,uuid,466,1,1
+public,ticket_resolutions,7,vendor_name_manual,text,466,0,0
+public,ticket_resolutions,8,items_used,jsonb,466,466,7
+public,ticket_resolutions,9,total_parts_cost,numeric,466,466,7
+public,ticket_resolutions,10,total_labour_cost,numeric,466,466,13
+public,ticket_resolutions,11,total_cost,numeric,466,466,17
+public,ticket_resolutions,12,closure_summary,text,466,466,335
+public,ticket_resolutions,13,resolved_at,timestamp with time zone,466,466,466
+public,ticket_resolutions,14,resolved_by,uuid,466,466,4
+public,ticket_resolutions,15,created_at,timestamp with time zone,466,466,466
+public,ticket_resolutions,16,bank_account_id,uuid,466,17,1
+public,ticket_resolutions,17,payment_date,date,466,18,12
+public,ticket_resolutions,18,payment_reference_no,text,466,18,11
+public,ticket_resolutions,19,proof_of_purchase_url,text,466,17,17
+public,ticket_resolutions,20,proof_of_payment_url,text,466,1,1
+public,ticket_resolutions,21,actual_items_used,jsonb,466,454,7
+public,ticket_resolutions,22,actual_total_cost,numeric,466,454,17
+public,ticket_resolutions,23,diagnostic_estimated_cost,numeric,466,2,2
+public,ticket_resolutions,24,updated_at,timestamp with time zone,466,466,439
+public,tickets,1,id,uuid,0,0,0
+public,tickets,2,ticket_number,text,0,0,0
+public,tickets,3,issue_type_id,uuid,0,0,0
+public,tickets,4,description,text,0,0,0
+public,tickets,5,status,text,0,0,0
+public,tickets,6,priority,text,0,0,0
+public,tickets,7,approval_status,text,0,0,0
+public,tickets,8,assigned_employee_id,uuid,0,0,0
+public,tickets,9,created_by,uuid,0,0,0
+public,tickets,10,tenant_id,uuid,0,0,0
+public,tickets,11,property_id,uuid,0,0,0
+public,tickets,12,apartment_id,uuid,0,0,0
+public,tickets,13,bed_id,uuid,0,0,0
+public,tickets,14,organization_id,uuid,0,0,0
+public,tickets,15,total_cost,numeric,0,0,0
+public,tickets,16,sla_deadline,timestamp with time zone,0,0,0
+public,tickets,17,created_at,timestamp with time zone,0,0,0
+public,tickets,18,updated_at,timestamp with time zone,0,0,0
+public,upi_tenant_mappings,1,id,uuid,0,0,0
+public,upi_tenant_mappings,2,organization_id,uuid,0,0,0
+public,upi_tenant_mappings,3,tenant_id,uuid,0,0,0
+public,upi_tenant_mappings,4,upi_id,text,0,0,0
+public,upi_tenant_mappings,5,normalized_upi_id,text,0,0,0
+public,upi_tenant_mappings,6,bank_transaction_ref,text,0,0,0
+public,upi_tenant_mappings,7,normalized_transaction_ref,text,0,0,0
+public,upi_tenant_mappings,8,confidence,numeric,0,0,0
+public,upi_tenant_mappings,9,match_source,text,0,0,0
+public,upi_tenant_mappings,10,last_seen_at,timestamp with time zone,0,0,0
+public,upi_tenant_mappings,11,created_at,timestamp with time zone,0,0,0
+public,user_roles,1,id,uuid,209,209,209
+public,user_roles,2,user_id,uuid,209,209,209
+public,user_roles,3,role,app_role,209,209,5
+public,users,1,id,uuid,0,0,0
+public,users,2,first_name,text,0,0,0
+public,users,3,last_name,text,0,0,0
+public,users,4,name,text,0,0,0
+public,users,5,email,text,0,0,0
+public,users,6,email_verified_at,timestamp with time zone,0,0,0
+public,users,7,phone,text,0,0,0
+public,users,8,phone_verified_at,timestamp with time zone,0,0,0
+public,users,9,is_anonymous,boolean,0,0,0
+public,users,10,role,text,0,0,0
+public,users,11,must_set_password,boolean,0,0,0
+public,users,12,password_set_at,timestamp with time zone,0,0,0
+public,users,13,active_session_id,text,0,0,0
+public,users,14,last_login_at,timestamp with time zone,0,0,0
+public,users,15,reports_to,uuid,0,0,0
+public,users,16,created_at,timestamp with time zone,0,0,0
+public,vendor_remarks,1,id,uuid,0,0,0
+public,vendor_remarks,2,organization_id,uuid,0,0,0
+public,vendor_remarks,3,vendor_id,uuid,0,0,0
+public,vendor_remarks,4,remark_type,text,0,0,0
+public,vendor_remarks,5,title,text,0,0,0
+public,vendor_remarks,6,description,text,0,0,0
+public,vendor_remarks,7,severity,text,0,0,0
+public,vendor_remarks,8,created_by,uuid,0,0,0
+public,vendor_remarks,9,created_at,timestamp with time zone,0,0,0
+public,vendors,1,id,uuid,40,40,40
+public,vendors,2,organization_id,uuid,40,40,1
+public,vendors,3,vendor_name,text,40,40,40
+public,vendors,4,contact_person,text,40,2,1
+public,vendors,5,phone,text,40,11,11
+public,vendors,6,email,text,40,5,5
+public,vendors,7,address,text,40,14,13
+public,vendors,8,created_at,timestamp with time zone,40,40,28
+public,vendors,9,gst_number,text,40,3,3
+public,vendors,10,pan_number,text,40,4,3
+public,vendors,11,bank_name,text,40,2,2
+public,vendors,12,bank_account_number,text,40,2,2
+public,vendors,13,bank_ifsc,text,40,2,2
+public,vendors,14,id_proof_url,text,40,0,0
+public,vendors,15,status,text,40,40,1
+public,vendors,16,notes,text,40,1,1
+public,vendors,17,vendor_rating,integer,40,2,1
+public,whatsapp_conversations,1,id,uuid,0,0,0
+public,whatsapp_conversations,2,organization_id,uuid,0,0,0
+public,whatsapp_conversations,3,tenant_id,uuid,0,0,0
+public,whatsapp_conversations,4,provider,text,0,0,0
+public,whatsapp_conversations,5,phone_e164,text,0,0,0
+public,whatsapp_conversations,6,status,text,0,0,0
+public,whatsapp_conversations,7,pending_action,jsonb,0,0,0
+public,whatsapp_conversations,8,last_user_message,text,0,0,0
+public,whatsapp_conversations,9,last_assistant_message,text,0,0,0
+public,whatsapp_conversations,10,last_event_id,uuid,0,0,0
+public,whatsapp_conversations,11,expires_at,timestamp with time zone,0,0,0
+public,whatsapp_conversations,12,created_at,timestamp with time zone,0,0,0
+public,whatsapp_conversations,13,updated_at,timestamp with time zone,0,0,0
+public,whatsapp_dedup,1,id,uuid,0,0,0
+public,whatsapp_dedup,2,provider,text,0,0,0
+public,whatsapp_dedup,3,dedup_key,text,0,0,0
+public,whatsapp_dedup,4,event_id,uuid,0,0,0
+public,whatsapp_dedup,5,created_at,timestamp with time zone,0,0,0
+public,whatsapp_events,1,id,uuid,1943,1943,1943
+public,whatsapp_events,2,organization_id,uuid,1943,1343,1
+public,whatsapp_events,3,tenant_id,uuid,1943,1005,192
+public,whatsapp_events,4,provider,text,1943,1943,1
+public,whatsapp_events,5,direction,text,1943,1943,1
+public,whatsapp_events,6,event_type,text,1943,1943,2
+public,whatsapp_events,7,external_message_id,text,1943,1943,1943
+public,whatsapp_events,8,external_conversation_id,text,1943,0,0
+public,whatsapp_events,9,from_phone,text,1943,1505,206
+public,whatsapp_events,10,to_phone,text,1943,0,0
+public,whatsapp_events,11,message_type,text,1943,1943,3
+public,whatsapp_events,12,message_text,text,1943,1570,639
+public,whatsapp_events,13,language,text,1943,0,0
+public,whatsapp_events,14,transcript,text,1943,0,0
+public,whatsapp_events,15,transcript_en,text,1943,0,0
+public,whatsapp_events,16,raw_payload,jsonb,1943,1943,1666
+public,whatsapp_events,17,normalized_payload,jsonb,1943,1943,1506
+public,whatsapp_events,18,processing_status,text,1943,1943,2
+public,whatsapp_events,19,correlation_id,uuid,1943,1943,1943
+public,whatsapp_events,20,processed_at,timestamp with time zone,1943,6,6
+public,whatsapp_events,21,error_message,text,1943,444,4
+public,whatsapp_events,22,created_at,timestamp with time zone,1943,1943,1943
+public,whatsapp_events,23,updated_at,timestamp with time zone,1943,1943,1943
+public,whatsapp_failures,1,id,uuid,0,0,0
+public,whatsapp_failures,2,event_id,uuid,0,0,0
+public,whatsapp_failures,3,stage,text,0,0,0
+public,whatsapp_failures,4,attempt_count,integer,0,0,0
+public,whatsapp_failures,5,next_retry_at,timestamp with time zone,0,0,0
+public,whatsapp_failures,6,last_error,text,0,0,0
+public,whatsapp_failures,7,dead_letter,boolean,0,0,0
+public,whatsapp_failures,8,created_at,timestamp with time zone,0,0,0
+public,whatsapp_failures,9,updated_at,timestamp with time zone,0,0,0
+public,whatsapp_payment_submissions,1,id,uuid,387,387,387
+public,whatsapp_payment_submissions,2,organization_id,uuid,387,387,1
+public,whatsapp_payment_submissions,3,tenant_id,uuid,387,386,180
+public,whatsapp_payment_submissions,4,from_phone,text,387,387,252
+public,whatsapp_payment_submissions,5,whatsapp_event_id,uuid,387,250,250
+public,whatsapp_payment_submissions,6,image_url,text,387,386,386
+public,whatsapp_payment_submissions,7,image_original_url,text,387,266,266
+public,whatsapp_payment_submissions,8,ocr_amount,"numeric(14,2)",387,362,271
+public,whatsapp_payment_submissions,9,ocr_payment_mode,text,387,374,5
+public,whatsapp_payment_submissions,10,ocr_transaction_reference,text,387,319,311
+public,whatsapp_payment_submissions,11,ocr_receiving_bank,text,387,291,23
+public,whatsapp_payment_submissions,12,ocr_raw,jsonb,387,264,256
+public,whatsapp_payment_submissions,13,ocr_confidence,text,387,387,4
+public,whatsapp_payment_submissions,14,status,text,387,387,2
+public,whatsapp_payment_submissions,15,receipt_id,uuid,387,353,353
+public,whatsapp_payment_submissions,16,verified_by,uuid,387,387,5
+public,whatsapp_payment_submissions,17,verified_at,timestamp with time zone,387,387,387
+public,whatsapp_payment_submissions,18,rejection_reason,text,387,2,2
+public,whatsapp_payment_submissions,19,created_at,timestamp with time zone,387,387,387
+public,whatsapp_payment_submissions,20,updated_at,timestamp with time zone,387,387,383
+public,whatsapp_payment_submissions,21,matched_invoice_id,uuid,387,200,194
+public,whatsapp_payment_submissions,22,match_confidence,text,387,206,2
+public,whatsapp_payment_submissions,23,ocr_sender_bank,text,387,202,27
+public,whatsapp_payment_submissions,24,ocr_sender_account_holder,text,387,162,109
+public,whatsapp_payment_submissions,25,ocr_receiver_upi_id,text,387,0,0
+public,whatsapp_payment_submissions,26,ocr_receiver_account_last4,text,387,0,0
+public,whatsapp_payment_submissions,27,auto_accept_skip_reason,text,387,0,0
+public,whatsapp_payment_submissions,28,auto_accept_decision,jsonb,387,0,0
+public,whatsapp_payment_submissions,29,ocr_sender_upi_id,text,387,96,79
+public,whatsapp_payment_submissions,30,ocr_receiving_upi_id,text,387,196,25
+public,whatsapp_payment_submissions,31,ocr_payment_date,date,387,129,33
+public,whatsapp_send_deliveries,1,id,uuid,2422,2422,2422
+public,whatsapp_send_deliveries,2,organization_id,uuid,2422,2422,1
+public,whatsapp_send_deliveries,3,job_id,uuid,2422,2422,392
+public,whatsapp_send_deliveries,4,delivery_kind,text,2422,2422,4
+public,whatsapp_send_deliveries,5,reference_id,text,2422,1620,1037
+public,whatsapp_send_deliveries,6,tenant_id,uuid,2422,2422,232
+public,whatsapp_send_deliveries,7,tenant_name,text,2422,2422,233
+public,whatsapp_send_deliveries,8,label,text,2422,2422,1075
+public,whatsapp_send_deliveries,9,payload,jsonb,2422,2422,1101
+public,whatsapp_send_deliveries,10,status,text,2422,2422,3
+public,whatsapp_send_deliveries,11,error_message,text,2422,100,3
+public,whatsapp_send_deliveries,12,phone_masked,text,2422,2255,231
+public,whatsapp_send_deliveries,13,created_at,timestamp with time zone,2422,2422,1637
+public,whatsapp_send_deliveries,14,sent_at,timestamp with time zone,2422,2231,965
+public,whatsapp_send_jobs,1,id,uuid,395,395,395
+public,whatsapp_send_jobs,2,organization_id,uuid,395,395,1
+public,whatsapp_send_jobs,3,created_by,uuid,395,395,5
+public,whatsapp_send_jobs,4,job_type,text,395,395,4
+public,whatsapp_send_jobs,5,status,text,395,395,4
+public,whatsapp_send_jobs,6,total_count,integer,395,395,17
+public,whatsapp_send_jobs,7,sent_count,integer,395,395,18
+public,whatsapp_send_jobs,8,failed_count,integer,395,395,5
+public,whatsapp_send_jobs,9,error_message,text,395,48,4
+public,whatsapp_send_jobs,10,error_details,jsonb,395,46,7
+public,whatsapp_send_jobs,11,payload,jsonb,395,395,354
+public,whatsapp_send_jobs,12,label,text,395,395,23
+public,whatsapp_send_jobs,13,dismissed_at,timestamp with time zone,395,53,53
+public,whatsapp_send_jobs,14,created_at,timestamp with time zone,395,395,395
+public,whatsapp_send_jobs,15,updated_at,timestamp with time zone,395,395,395

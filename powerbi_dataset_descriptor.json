@@ -1,0 +1,874 @@
+{
+  "dataset": "AI Business Analytics",
+  "source_of_truth": "semantic_metric_registry.csv (49 metrics)",
+  "authoring_rule": "No measure may be authored in the BI tool. If it is not in the 49-metric registry, it is not a measure.",
+  "measures": [
+    {
+      "metric_id": "M.REV.001",
+      "name": "Revenue (total, ledger-derived)",
+      "description": "SUM(signed_amount) WHERE account_type='INCOME', reversal-excluded convention (v_account_balances).",
+      "domain": "Financial",
+      "trust_level": "SAFE",
+      "date_basis": "journal_entries.entry_date (journal_lines carries this denormalised at export)",
+      "conflict_ids": [],
+      "dq_ids": [],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.REV.002",
+      "name": "Revenue by month",
+      "description": "GROUP BY organization_id, property_id, date_trunc('month', entry_date) of M.REV.001's reconstruction.",
+      "domain": "Financial",
+      "trust_level": "SAFE",
+      "date_basis": "entry_date, truncated to calendar month",
+      "conflict_ids": [],
+      "dq_ids": [],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.COL.001",
+      "name": "Collections (application-level)",
+      "description": "SUM(receipts.amount_paid) WHERE NOT is_deleted",
+      "domain": "Financial",
+      "trust_level": "DISCLOSE",
+      "date_basis": "payment_date",
+      "conflict_ids": [
+        "C.014"
+      ],
+      "dq_ids": [
+        "DQ.006",
+        "DQ.014"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.COL.002",
+      "name": "Collections by month",
+      "description": "GROUP BY date_trunc('month', payment_date) of M.COL.001's reconstruction.",
+      "domain": "Financial",
+      "trust_level": "DISCLOSE",
+      "date_basis": "payment_date, truncated to month",
+      "conflict_ids": [
+        "C.014"
+      ],
+      "dq_ids": [
+        "DQ.006",
+        "DQ.014"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.COL.003",
+      "name": "Collections (ledger-derived)",
+      "description": "SUM(debit) WHERE journal_entries.source_table='receipts' AND account_code IN ('1110','1120'), reversal-excluded.",
+      "domain": "Financial",
+      "trust_level": "DISCLOSE",
+      "date_basis": "journal_entries.entry_date",
+      "conflict_ids": [
+        "C.014"
+      ],
+      "dq_ids": [
+        "DQ.006",
+        "DQ.030"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.INV.001",
+      "name": "Invoice billed amount",
+      "description": "SUM(invoices.total_amount) WHERE NOT is_deleted",
+      "domain": "Financial",
+      "trust_level": "DISCLOSE",
+      "date_basis": "COALESCE(invoice_date, (billing_month||'-01')::date, created_at::date) per get_universal_metrics; invoice_date alone for a simpler reconstruction",
+      "conflict_ids": [
+        "C.015",
+        "C.020"
+      ],
+      "dq_ids": [
+        "DQ.007",
+        "DQ.013"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.INV.002",
+      "name": "Invoice count",
+      "description": "COUNT(*) FROM invoices WHERE NOT is_deleted, optionally grouped by invoice_type/status.",
+      "domain": "Financial",
+      "trust_level": "DISCLOSE",
+      "date_basis": "invoice_date or billing_month depending on the question",
+      "conflict_ids": [],
+      "dq_ids": [
+        "DQ.013"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.DEP.001",
+      "name": "Deposit held",
+      "description": "SUM(credit-debit) WHERE account_code='2100' AND party_kind='tenant', reversal-excluded.",
+      "domain": "Financial",
+      "trust_level": "SAFE",
+      "date_basis": "entry_date (not a filter for the current balance)",
+      "conflict_ids": [],
+      "dq_ids": [
+        "DQ.011",
+        "DQ.012"
+      ],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.DEP.002",
+      "name": "Deposit settlements",
+      "description": "deposit_settlements table, live rows (NOT is_deleted), with status IN ('completed','approved') as the ledger-posting gate.",
+      "domain": "Financial",
+      "trust_level": "DISCLOSE",
+      "date_basis": "settlement_date",
+      "conflict_ids": [
+        "C.016"
+      ],
+      "dq_ids": [
+        "DQ.008",
+        "DQ.012"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.DEP.003",
+      "name": "Deposit refunds",
+      "description": "SUM(deposit_settlements.refund_amount) WHERE NOT is_deleted (source) OR SUM(ledger credit on 11xx accounts, source_table='deposit_settlements') (ledger).",
+      "domain": "Financial",
+      "trust_level": "DISCLOSE",
+      "date_basis": "settlement_date",
+      "conflict_ids": [
+        "C.016"
+      ],
+      "dq_ids": [
+        "DQ.008"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.EXP.001",
+      "name": "Expenses (total, ledger-derived)",
+      "description": "SUM(signed_amount) WHERE account_type='EXPENSE', reversal-excluded.",
+      "domain": "Financial",
+      "trust_level": "SAFE",
+      "date_basis": "entry_date",
+      "conflict_ids": [],
+      "dq_ids": [],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.EXP.002",
+      "name": "Expenses by category",
+      "description": "v_pnl_by_category's 9 hand-written account_code LIKE-pattern buckets, PLUS a required 10th 'electricity' bucket (account 5150, '515%' pattern) that the 9 named buckets do NOT capture.",
+      "domain": "Financial",
+      "trust_level": "DISCLOSE",
+      "date_basis": "entry_date",
+      "conflict_ids": [
+        "C.012",
+        "C.013",
+        "C.022"
+      ],
+      "dq_ids": [
+        "DQ.015"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.OWN.001",
+      "name": "Owner payments (source total)",
+      "description": "SUM(COALESCE(escalated_amount, base_amount)) FROM owner_payments, status IN ('paid','pending') for the period-relevant subset, or all rows for an all-time total.",
+      "domain": "Financial",
+      "trust_level": "SAFE",
+      "date_basis": "bill_date (ledger-posting basis, per normalize_owner_payment_journal_dates) OR COALESCE(paid_date,due_date) (v_diag_owner_rent_missing_from_profit's basis) -- T",
+      "conflict_ids": [],
+      "dq_ids": [
+        "DQ.017",
+        "DQ.020"
+      ],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.PNL.001",
+      "name": "P&L by month",
+      "description": "M.REV.002 and M.EXP.001's monthly reconstruction, joined at (property_id, month) grain, net_profit = revenue - expenses.",
+      "domain": "Financial",
+      "trust_level": "SAFE",
+      "date_basis": "entry_date, truncated to month",
+      "conflict_ids": [
+        "C.012",
+        "C.013"
+      ],
+      "dq_ids": [
+        "DQ.015"
+      ],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.CASH.001",
+      "name": "Cash balance",
+      "description": "SUM(signed_amount) WHERE account_code IN ('1110','1120'), reversal-excluded, all-time (a running balance, not period-scoped).",
+      "domain": "Financial",
+      "trust_level": "SAFE",
+      "date_basis": "entry_date (not a filter for the current balance -- this is a running total)",
+      "conflict_ids": [],
+      "dq_ids": [],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.TB.001",
+      "name": "Trial balance / accounting checks",
+      "description": "TWO views exist: v_trial_balance (reversal-excluded, only accounts with activity) and v_trial_balance_detailed (reversal-included via raw journal_lines, ALL 57 COA accounts including zero-activity ones via LEFT JOIN).",
+      "domain": "Financial",
+      "trust_level": "SAFE",
+      "date_basis": "Not applicable (all-time balance)",
+      "conflict_ids": [
+        "C.002"
+      ],
+      "dq_ids": [],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.TEN.001",
+      "name": "Staying tenants",
+      "description": "COUNT(*) WHERE staying_status = 'Staying', at either the allotment grain or DISTINCT tenant_id grain.",
+      "domain": "Operations",
+      "trust_level": "SAFE",
+      "date_basis": "Not applicable (current-state field)",
+      "conflict_ids": [],
+      "dq_ids": [
+        "DQ.003"
+      ],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.TEN.002",
+      "name": "On-Notice tenants",
+      "description": "COUNT(*) WHERE staying_status = 'On-Notice'.",
+      "domain": "Operations",
+      "trust_level": "SAFE",
+      "date_basis": "Not applicable",
+      "conflict_ids": [
+        "C.009"
+      ],
+      "dq_ids": [
+        "DQ.005"
+      ],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.TEN.003",
+      "name": "Booked beds",
+      "description": "COUNT(*) beds WHERE NOT has_staying AND has_booked (per v_occupancy's construction) or COUNT(DISTINCT tenant_id) WHERE staying_status='Booked' (per v_active_tenants).",
+      "domain": "Operations",
+      "trust_level": "SAFE",
+      "date_basis": "Not applicable",
+      "conflict_ids": [],
+      "dq_ids": [],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.LIFE.001",
+      "name": "Tenant lifecycle (staying_status sync)",
+      "description": "tenants.staying_status is DERIVED, not independent: priority order Staying(1) > On-Notice(2) > Booked(3) > else(4), tie-broken by most-recently-created allotment, kept in sync by sync_tenant_staying_status (AFTER INSERT/UPDATE) and sync_tenant_staying_status_on_delete (AFTER DELETE) on tenant_allotments.",
+      "domain": "Operations",
+      "trust_level": "SAFE",
+      "date_basis": "created_at (tie-break only)",
+      "conflict_ids": [],
+      "dq_ids": [],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.LIFE.002",
+      "name": "Move-ins",
+      "description": "tenant_allotments WHERE onboarding_date IS NOT NULL, event_date=onboarding_date, event='move_in'.",
+      "domain": "Operations",
+      "trust_level": "SAFE",
+      "date_basis": "onboarding_date",
+      "conflict_ids": [],
+      "dq_ids": [],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.LIFE.003",
+      "name": "Move-outs",
+      "description": "tenant_allotments WHERE actual_exit_date IS NOT NULL, event_date=actual_exit_date, event='move_out'.",
+      "domain": "Operations",
+      "trust_level": "SAFE",
+      "date_basis": "actual_exit_date",
+      "conflict_ids": [],
+      "dq_ids": [],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.LIFE.004",
+      "name": "Exit reconciliation",
+      "description": "v_exit_reconciliation_worklist: joins tenant_allotments (staying_status='Exited') to v_tenant_current_dues (Def B AR, reversals INCLUDED), plus LATERAL sums of invoices by reference_type/invoice_type, plus the latest deposit_settlements row per allotment.",
+      "domain": "Operations",
+      "trust_level": "SAFE",
+      "date_basis": "actual_exit_date",
+      "conflict_ids": [
+        "C.001"
+      ],
+      "dq_ids": [],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.MAINT.001",
+      "name": "Maintenance volume",
+      "description": "COUNT(*) FROM maintenance_tickets, GROUP BY status/month/property.",
+      "domain": "Operations",
+      "trust_level": "SAFE",
+      "date_basis": "created_at",
+      "conflict_ids": [],
+      "dq_ids": [
+        "DQ.027"
+      ],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.MAINT.002",
+      "name": "Maintenance cost (2 paths)",
+      "description": "Path A (v_maintenance_metrics): maintenance_tickets LEFT JOIN ticket_resolutions LEFT JOIN expenses ON ticket_resolution_id, dated by ticket created_at month. Path B (v_maintenance_by_issue_type): expenses.issue_type_id direct join to issue_types, requires ticket_resolution_id IS NOT NULL, dated by expense_date.",
+      "domain": "Operations",
+      "trust_level": "SAFE",
+      "date_basis": "Path A: maintenance_tickets.created_at (ticket creation month). Path B: expenses.expense_date.",
+      "conflict_ids": [
+        "C.023"
+      ],
+      "dq_ids": [
+        "DQ.027"
+      ],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.EB.001",
+      "name": "EB/electricity usage and cost",
+      "description": "electricity_readings (units_consumed, unit_cost per apartment/billing_month) and eb_payments (bill_amount per property/bill_date).",
+      "domain": "Operations",
+      "trust_level": "DISCLOSE",
+      "date_basis": "electricity_readings.billing_month (TEXT, 'Mon-YY' format -- see Known limitations); eb_payments.bill_date (a real DATE column)",
+      "conflict_ids": [],
+      "dq_ids": [
+        "DQ.021",
+        "DQ.028"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.EB.002",
+      "name": "EB tenant allocation",
+      "description": "per_day_rate = ROUND(total_apartment_bill / total_tenant_days); tenant_eb_charge = per_day_rate * tenant_stay_days. Formula reverse-engineered from data (NOT from an exported function body -- no allocation function is among the 25 exported).",
+      "domain": "Operations",
+      "trust_level": "DISCLOSE",
+      "date_basis": "billing_month (TEXT, 'Mon-YY' format -- same DQ.028 defect as M.EB.001)",
+      "conflict_ids": [],
+      "dq_ids": [
+        "DQ.028"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.RISK.002",
+      "name": "Aging",
+      "description": "v_tenant_aging: buckets by CURRENT_DATE - charge_date, on raw journal_lines account 1200 (reversals INCLUDED, same convention as M.AR.001B).",
+      "domain": "Risk & Data Quality",
+      "trust_level": "DISCLOSE",
+      "date_basis": "CURRENT_DATE - entry_date (bucket boundary), entry_date (charge date itself)",
+      "conflict_ids": [
+        "C.019"
+      ],
+      "dq_ids": [
+        "DQ.018"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.RISK.003",
+      "name": "Deposit risk",
+      "description": "UNION of v_diag_deposit_phantom (32 rows) and v_deposit_ledger_anomalies (22 rows, 3 anomaly types).",
+      "domain": "Risk & Data Quality",
+      "trust_level": "DISCLOSE",
+      "date_basis": "Various (settlement_date, actual_exit_date)",
+      "conflict_ids": [],
+      "dq_ids": [
+        "DQ.011",
+        "DQ.012"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.RISK.004",
+      "name": "Phantom deposits",
+      "description": "tenant_allotments WHERE deposit_paid > 0 AND staying_status IN ('Exited','Cancelled') AND NOT EXISTS(a matching, non-deleted deposit_settlements row).",
+      "domain": "Risk & Data Quality",
+      "trust_level": "DISCLOSE",
+      "date_basis": "Not applicable (current-state check)",
+      "conflict_ids": [],
+      "dq_ids": [
+        "DQ.011"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.RISK.005",
+      "name": "Duplicate invoices",
+      "description": "GROUP BY allotment_id, billing_month, invoice_type HAVING COUNT(*) > 1, on live invoices.",
+      "domain": "Risk & Data Quality",
+      "trust_level": "DISCLOSE",
+      "date_basis": "Not applicable to the grouping itself (billing_month is the grouping key)",
+      "conflict_ids": [
+        "C.020"
+      ],
+      "dq_ids": [
+        "DQ.013"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.RISK.006",
+      "name": "Duplicate receipts",
+      "description": "receipts_dedup_audit table: groups by (tenant_id, payment_date, amount_paid, reference_number), duplicate_count 2-6, one-time detection pass (detected_at all = 2026-04-22).",
+      "domain": "Risk & Data Quality",
+      "trust_level": "DISCLOSE",
+      "date_basis": "detected_at (single value, not a range)",
+      "conflict_ids": [
+        "C.018",
+        "C.020"
+      ],
+      "dq_ids": [
+        "DQ.014"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.RISK.007",
+      "name": "Overlapping allotments",
+      "description": "For each bed_id, pairwise interval-overlap check on [onboarding_date, COALESCE(actual_exit_date, snapshot_date)].",
+      "domain": "Risk & Data Quality",
+      "trust_level": "DISCLOSE",
+      "date_basis": "onboarding_date, actual_exit_date",
+      "conflict_ids": [],
+      "dq_ids": [
+        "DQ.003"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.RISK.008",
+      "name": "Ledger/source reconciliation",
+      "description": "See M.COL.003 (receipts), M.INV.001's ledger cross-check (invoices), M.DEP.002 (deposit settlements).",
+      "domain": "Risk & Data Quality",
+      "trust_level": "DISCLOSE",
+      "date_basis": "See each component metric",
+      "conflict_ids": [
+        "C.014",
+        "C.015",
+        "C.016"
+      ],
+      "dq_ids": [
+        "DQ.006",
+        "DQ.007",
+        "DQ.008"
+      ],
+      "render": "measure",
+      "caveat_required": true
+    },
+    {
+      "metric_id": "M.RISK.009",
+      "name": "Data-quality score / trust status",
+      "description": "COUNT of metrics in this registry by ai_trust_status.",
+      "domain": "Risk & Data Quality",
+      "trust_level": "SAFE",
+      "date_basis": "Not applicable",
+      "conflict_ids": [],
+      "dq_ids": [],
+      "render": "measure",
+      "caveat_required": false
+    },
+    {
+      "metric_id": "M.RENT.001",
+      "name": "Current rent per bed",
+      "description": "tenant_allotments.monthly_rental of the live allotment on each bed (staying_status='Staying' AND actual_exit_date IS NULL), one value per bed. Never summed and never averaged into an apartment figure.",
+      "domain": "Financial",
+      "trust_level": "DISCLOSE",
+      "date_basis": "onboarding_date (used only to pick the latest allotment on a bed; monthly_rental itself carries no effective date)",
+      "conflict_ids": [],
+      "dq_ids": [],
+      "render": "measure",
+      "caveat_required": true
+    }
+  ],
+  "conflict_tables": [
+    {
+      "metric_id": "M.AR.001A",
+      "name": "Tenant dues -- Def A: v_outstanding_receivables (reversals excluded)",
+      "description": "SUM(signed_amount) WHERE account_code='1200' AND party_kind='tenant', GROUP BY tenant_id, allotment_id, from v_account_balances.",
+      "domain": "Financial",
+      "trust_level": "SHOW_BOTH",
+      "date_basis": "entry_date (for last_charge_date/last_payment_date only; not a filter on the balance itself)",
+      "conflict_ids": [
+        "C.001",
+        "C.002",
+        "C.005"
+      ],
+      "dq_ids": [
+        "DQ.002"
+      ],
+      "render": "multi_value_table",
+      "single_measure_forbidden": true,
+      "reason": "Competing evidence-backed definitions exist. Authoring this as a single DAX measure would silently pick one.",
+      "chart_permitted": true
+    },
+    {
+      "metric_id": "M.AR.001B",
+      "name": "Tenant dues -- Def B: v_tenant_current_dues (reversals included)",
+      "description": "Per-account SUM(debit-credit or credit-debit) for accounts 1200/2100/2400, GROUP BY tenant_id, allotment_id, from raw journal_lines (no reversal filter).",
+      "domain": "Financial",
+      "trust_level": "SHOW_BOTH",
+      "date_basis": "entry_date (for last_charge_date/last_payment_date, charge_count/payment_count)",
+      "conflict_ids": [
+        "C.001",
+        "C.002",
+        "C.005"
+      ],
+      "dq_ids": [
+        "DQ.002"
+      ],
+      "render": "multi_value_table",
+      "single_measure_forbidden": true,
+      "reason": "Competing evidence-backed definitions exist. Authoring this as a single DAX measure would silently pick one.",
+      "chart_permitted": true
+    },
+    {
+      "metric_id": "M.AR.001C",
+      "name": "Tenant dues -- Def C: application tenant_allotments.balance_due",
+      "description": "tenant_allotments.balance_due, as stored (no reconstruction logic -- it is itself the source).",
+      "domain": "Financial",
+      "trust_level": "BLOCK",
+      "date_basis": "Not applicable (a current-value column, not an event)",
+      "conflict_ids": [
+        "C.001",
+        "C.005"
+      ],
+      "dq_ids": [
+        "DQ.002"
+      ],
+      "render": "multi_value_table",
+      "single_measure_forbidden": true,
+      "reason": "Competing evidence-backed definitions exist. Authoring this as a single DAX measure would silently pick one.",
+      "chart_permitted": false
+    },
+    {
+      "metric_id": "M.AR.001D",
+      "name": "Tenant dues -- Def D: tenant_transactions (frozen legacy ledger)",
+      "description": "SUM(amount WHERE direction='DEBIT') - SUM(amount WHERE direction='CREDIT') per allotment, filtered to ledger_type IN ('CHARGE','PAYMENT'). TWO sub-variants exist: unclipped (can net negative across the total) and GREATEST(...,0)-floored per allotment.",
+      "domain": "Financial",
+      "trust_level": "BLOCK",
+      "date_basis": "date (NOTE: 1 row has a corrupt year, '0206-03-27' -- DQ.023)",
+      "conflict_ids": [
+        "C.001",
+        "C.003",
+        "C.005"
+      ],
+      "dq_ids": [
+        "DQ.002",
+        "DQ.019",
+        "DQ.023"
+      ],
+      "render": "multi_value_table",
+      "single_measure_forbidden": true,
+      "reason": "Competing evidence-backed definitions exist. Authoring this as a single DAX measure would silently pick one.",
+      "chart_permitted": false
+    },
+    {
+      "metric_id": "M.AR.002",
+      "name": "Tenant dues by tenant",
+      "description": "Same four definitions as M.AR.001A-D, filtered to WHERE tenant_id = <x> (or allotment_id = <x>).",
+      "domain": "Financial",
+      "trust_level": "BLOCK",
+      "date_basis": "Same as M.AR.001A-D",
+      "conflict_ids": [
+        "C.001",
+        "C.003",
+        "C.005"
+      ],
+      "dq_ids": [
+        "DQ.002",
+        "DQ.019"
+      ],
+      "render": "multi_value_table",
+      "single_measure_forbidden": true,
+      "reason": "Competing evidence-backed definitions exist. Authoring this as a single DAX measure would silently pick one.",
+      "chart_permitted": false
+    },
+    {
+      "metric_id": "M.AR.003",
+      "name": "Tenant dues by property",
+      "description": "Same as M.AR.001A/B, joined to tenant_allotments on allotment_id to bring in property_id, then GROUP BY property_id.",
+      "domain": "Financial",
+      "trust_level": "SHOW_BOTH",
+      "date_basis": "Same as M.AR.001A/B",
+      "conflict_ids": [
+        "C.001",
+        "C.002"
+      ],
+      "dq_ids": [
+        "DQ.002"
+      ],
+      "render": "multi_value_table",
+      "single_measure_forbidden": true,
+      "reason": "Competing evidence-backed definitions exist. Authoring this as a single DAX measure would silently pick one.",
+      "chart_permitted": true
+    },
+    {
+      "metric_id": "M.OWN.002",
+      "name": "Owner rent (ledger bucket, 3 definitions)",
+      "description": "Def i (v1, EXCLUDES entirely): get_universal_metrics v1's totalProfit has NO owner_payments term at all. Def ii (ledger raw): v_pnl_by_category's owner_rent bucket ('510%' pattern), whatever is actually posted. Def iii (v2, SUBSTITUTED): get_universal_metrics_v2 explicitly discards the ledger's '510%' bucket for the period and replaces it with SUM(owner_payments.escalated_amount) filtered on bill_",
+      "domain": "Financial",
+      "trust_level": "SHOW_BOTH",
+      "date_basis": "entry_date (Def ii); bill_date (Def iii)",
+      "conflict_ids": [
+        "C.010",
+        "C.011"
+      ],
+      "dq_ids": [
+        "DQ.016",
+        "DQ.017",
+        "DQ.020"
+      ],
+      "render": "multi_value_table",
+      "single_measure_forbidden": true,
+      "reason": "Competing evidence-backed definitions exist. Authoring this as a single DAX measure would silently pick one.",
+      "chart_permitted": true
+    },
+    {
+      "metric_id": "M.PROFIT.001",
+      "name": "Gross/net profit (3 definitions)",
+      "description": "Def A (ledger, v_pnl): revenue - expenses, both ledger-derived, whatever owner-rent amount the ledger happens to hold. Def B (get_universal_metrics v1): SUM(invoices.total_amount) - SUM(expenses.amount), ALL-TIME/period-scoped from application tables, NO owner_payments term. Def C (get_universal_metrics v2, owner-rent-inclusive): ledger revenue - (ledger expenses with the owner_rent bucket explici",
+      "domain": "Financial",
+      "trust_level": "BLOCK",
+      "date_basis": "entry_date (Def A/C); COALESCE(billing_month,invoice_date,created_at) (Def B, invoices) / expense_date (Def B, expenses)",
+      "conflict_ids": [
+        "C.010",
+        "C.011"
+      ],
+      "dq_ids": [
+        "DQ.016",
+        "DQ.017"
+      ],
+      "render": "multi_value_table",
+      "single_measure_forbidden": true,
+      "reason": "Competing evidence-backed definitions exist. Authoring this as a single DAX measure would silently pick one.",
+      "chart_permitted": false
+    },
+    {
+      "metric_id": "M.OCC.001",
+      "name": "Current occupancy (5+ definitions)",
+      "description": "Def A (v_occupancy): Live bed+apt, Staying only = 168/195 = 86.15%. Def B: Live bed+apt, Staying+On-Notice = 175/195 = 89.74%. Def C: ALL beds (no Live filter), Staying+On-Notice = 175/203 = 86.21%. Def D (get_universal_metrics v1): bed.status=Live only (no apartment filter), Staying = 168/195. Def E (get_bed_occupancy_timeline): Staying+On-Notice+Exited, historical, ALL beds = 194/203 = 95.57% (l",
+      "domain": "Operations",
+      "trust_level": "SHOW_BOTH",
+      "date_basis": "Not applicable for snapshot definitions (A-D); onboarding_date/actual_exit_date for Def E",
+      "conflict_ids": [
+        "C.006",
+        "C.007",
+        "C.008",
+        "C.009"
+      ],
+      "dq_ids": [
+        "DQ.004",
+        "DQ.005"
+      ],
+      "render": "multi_value_table",
+      "single_measure_forbidden": true,
+      "reason": "Competing evidence-backed definitions exist. Authoring this as a single DAX measure would silently pick one.",
+      "chart_permitted": true
+    },
+    {
+      "metric_id": "M.OCC.002",
+      "name": "Occupancy by property",
+      "description": "Same 5+ definitions as M.OCC.001, GROUP BY property_id.",
+      "domain": "Operations",
+      "trust_level": "SHOW_BOTH",
+      "date_basis": "Same as M.OCC.001",
+      "conflict_ids": [
+        "C.006",
+        "C.007",
+        "C.008",
+        "C.009"
+      ],
+      "dq_ids": [
+        "DQ.004",
+        "DQ.005"
+      ],
+      "render": "multi_value_table",
+      "single_measure_forbidden": true,
+      "reason": "Competing evidence-backed definitions exist. Authoring this as a single DAX measure would silently pick one.",
+      "chart_permitted": true
+    },
+    {
+      "metric_id": "M.OCC.005",
+      "name": "Historical occupancy",
+      "description": "Same as M.OCC.001 Def E / M.OCC.003-004's day-weighted reconstructions, over an arbitrary [p_from,p_to] window.",
+      "domain": "Operations",
+      "trust_level": "SHOW_BOTH",
+      "date_basis": "onboarding_date, actual_exit_date, window-bounded",
+      "conflict_ids": [
+        "C.006",
+        "C.008"
+      ],
+      "dq_ids": [
+        "DQ.004"
+      ],
+      "render": "multi_value_table",
+      "single_measure_forbidden": true,
+      "reason": "Competing evidence-backed definitions exist. Authoring this as a single DAX measure would silently pick one.",
+      "chart_permitted": true
+    },
+    {
+      "metric_id": "M.RISK.001",
+      "name": "Outstanding dues",
+      "description": "See M.AR.001A-D.",
+      "domain": "Risk & Data Quality",
+      "trust_level": "BLOCK",
+      "date_basis": "See M.AR.001A-D",
+      "conflict_ids": [
+        "C.001",
+        "C.003",
+        "C.005"
+      ],
+      "dq_ids": [
+        "DQ.002",
+        "DQ.019"
+      ],
+      "render": "multi_value_table",
+      "single_measure_forbidden": true,
+      "reason": "Competing evidence-backed definitions exist. Authoring this as a single DAX measure would silently pick one.",
+      "chart_permitted": false
+    }
+  ],
+  "unavailable_measures": [
+    {
+      "metric_id": "M.OCC.003",
+      "name": "Occupancy by apartment",
+      "description": "get_occupancy_intelligence's apt/heat CTEs: per-apartment total_beds, occupied_beds_now, day-weighted occupancy_pct, monthly heatmap.",
+      "domain": "Operations",
+      "trust_level": "NOT_DETERMINABLE",
+      "date_basis": "Window-bounded (p_from/p_to parameters, day-level)",
+      "conflict_ids": [
+        "C.006",
+        "C.008"
+      ],
+      "dq_ids": [
+        "DQ.004"
+      ],
+      "render": "text_notice",
+      "text": "Not determinable from exported evidence.",
+      "blank_is_not_zero": true
+    },
+    {
+      "metric_id": "M.OCC.004",
+      "name": "Occupancy by bed",
+      "description": "get_bed_occupancy_timeline(bed_id, from, to): occupied/vacant day-range segments per bed. get_occupancy_intelligence: adds occupancy_pct, avg_fill_days, avg_stay_days, turnover, realized/potential revenue, a 0-100 score.",
+      "domain": "Operations",
+      "trust_level": "NOT_DETERMINABLE",
+      "date_basis": "onboarding_date, actual_exit_date, day-range window [p_from,p_to] clamped to LEAST(p_to, CURRENT_DATE)",
+      "conflict_ids": [
+        "C.008"
+      ],
+      "dq_ids": [],
+      "render": "text_notice",
+      "text": "Not determinable from exported evidence.",
+      "blank_is_not_zero": true
+    }
+  ],
+  "date_tables": [
+    "COALESCE",
+    "CURRENT_DATE - entry_date",
+    "Not applicable",
+    "Not applicable to the grouping itself",
+    "Path A: maintenance_tickets.created_at",
+    "See each component metric",
+    "Various",
+    "actual_exit_date",
+    "bill_date",
+    "billing_month",
+    "created_at",
+    "detected_at",
+    "electricity_readings.billing_month",
+    "entry_date",
+    "entry_date, truncated to calendar month",
+    "entry_date, truncated to month",
+    "invoice_date or billing_month depending on the question",
+    "journal_entries.entry_date",
+    "onboarding_date",
+    "onboarding_date, actual_exit_date",
+    "payment_date",
+    "payment_date, truncated to month",
+    "settlement_date"
+  ],
+  "date_table_rule": "One date table per date basis, joined per metric as the registry documents. A single conformed calendar would silently re-date metrics onto a field their definition does not use.",
+  "forbidden_measures": [
+    {
+      "name": "Profit = Revenue - Expenses",
+      "reason": "This is M.PROFIT.001, which is BLOCK."
+    },
+    {
+      "name": "Occupancy %",
+      "reason": "Five definitions differ on both numerator and denominator."
+    },
+    {
+      "name": "Collection Efficiency",
+      "reason": "No such metric exists; structurally absent."
+    },
+    {
+      "name": "Any YoY over maintenance or EB",
+      "reason": "20 months and 1-5 months of coverage."
+    },
+    {
+      "name": "Any threshold-coloured KPI",
+      "reason": "No materiality threshold exists in the evidence."
+    }
+  ],
+  "counts": {
+    "measures": 36,
+    "conflict_tables": 12,
+    "unavailable": 2,
+    "total": 50
+  }
+}

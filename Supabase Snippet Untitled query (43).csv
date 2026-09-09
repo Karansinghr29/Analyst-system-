@@ -1,0 +1,58 @@
+code,name,account_type,normal_balance,parent_code,parent_name,is_active,requires_party,requires_allotment,party_kind
+1000,Assets,ASSET,DEBIT,null,null,true,false,false,null
+1100,Bank & Cash,ASSET,DEBIT,1000,Assets,true,false,false,null
+1110,Cash on Hand,ASSET,DEBIT,1100,Bank & Cash,true,false,false,null
+1120,Bank - Operating Account,ASSET,DEBIT,1100,Bank & Cash,true,false,false,null
+1200,Accounts Receivable - Tenants,ASSET,DEBIT,1000,Assets,true,true,true,tenant
+1500,Property Assets,ASSET,DEBIT,1000,Assets,true,false,false,null
+2000,Liabilities,LIABILITY,CREDIT,null,null,true,false,false,null
+2100,Tenant Deposits Held,LIABILITY,CREDIT,2000,Liabilities,true,true,true,tenant
+2200,Owner Rent Payable,LIABILITY,CREDIT,2000,Liabilities,true,true,false,owner
+2300,GST Payable,LIABILITY,CREDIT,2000,Liabilities,true,false,false,null
+2400,Booking Advances,LIABILITY,CREDIT,2000,Liabilities,true,true,true,tenant
+2500,Accounts Payable - Vendors,LIABILITY,CREDIT,2000,Liabilities,true,true,false,vendor
+3000,Equity,EQUITY,CREDIT,null,null,true,false,false,null
+3100,Retained Earnings,EQUITY,CREDIT,3000,Equity,true,false,false,null
+4000,Operating Income,INCOME,CREDIT,null,null,true,false,false,null
+4100,Rental Income,INCOME,CREDIT,4000,Operating Income,true,false,false,null
+4200,Electricity Income,INCOME,CREDIT,4000,Operating Income,true,false,false,null
+4250,Guest Stay Income,INCOME,CREDIT,4000,Operating Income,true,false,false,null
+4300,Onboarding Fees,INCOME,CREDIT,4000,Operating Income,true,false,false,null
+4400,Late Fees,INCOME,CREDIT,4000,Operating Income,true,false,false,null
+4500,Exit Charges Income,INCOME,CREDIT,4000,Operating Income,true,false,false,null
+4600,Damages Recovery,INCOME,CREDIT,4000,Operating Income,true,false,false,null
+4900,Other Income,INCOME,CREDIT,4000,Operating Income,true,false,false,null
+5000,Operating Expenses,EXPENSE,DEBIT,null,null,true,false,false,null
+5100,Owner Rent Expense,EXPENSE,DEBIT,5000,Operating Expenses,true,false,false,null
+5150,Electricity Payments,EXPENSE,DEBIT,5000,Operating Expenses,true,false,false,null
+5200,Maintenance & Repairs,EXPENSE,DEBIT,5000,Operating Expenses,true,false,false,null
+5210,Maintenance - Plumbing,EXPENSE,DEBIT,5200,Maintenance & Repairs,true,false,false,null
+5220,Maintenance - Electrical,EXPENSE,DEBIT,5200,Maintenance & Repairs,true,false,false,null
+5230,Maintenance - Carpentry,EXPENSE,DEBIT,5200,Maintenance & Repairs,true,false,false,null
+5240,Maintenance - Appliances,EXPENSE,DEBIT,5200,Maintenance & Repairs,true,false,false,null
+5250,Maintenance - Civil & Painting,EXPENSE,DEBIT,5200,Maintenance & Repairs,true,false,false,null
+5260,Maintenance - HVAC,EXPENSE,DEBIT,5200,Maintenance & Repairs,true,false,false,null
+5270,Maintenance - Pest Control,EXPENSE,DEBIT,5200,Maintenance & Repairs,true,false,false,null
+5290,Maintenance - Other,EXPENSE,DEBIT,5200,Maintenance & Repairs,true,false,false,null
+5300,Housekeeping & Cleaning,EXPENSE,DEBIT,5000,Operating Expenses,true,false,false,null
+5310,Housekeeping - Salaries,EXPENSE,DEBIT,5300,Housekeeping & Cleaning,true,false,false,null
+5320,Housekeeping - Supplies,EXPENSE,DEBIT,5300,Housekeeping & Cleaning,true,false,false,null
+5330,Housekeeping - Contract,EXPENSE,DEBIT,5300,Housekeeping & Cleaning,true,false,false,null
+5400,Utilities,EXPENSE,DEBIT,5000,Operating Expenses,true,false,false,null
+5410,Utilities - Electricity (common),EXPENSE,DEBIT,5400,Utilities,true,false,false,null
+5420,Utilities - Water,EXPENSE,DEBIT,5400,Utilities,true,false,false,null
+5430,Utilities - Internet/Cable,EXPENSE,DEBIT,5400,Utilities,true,false,false,null
+5440,Utilities - Gas,EXPENSE,DEBIT,5400,Utilities,true,false,false,null
+5500,Property Operations,EXPENSE,DEBIT,5000,Operating Expenses,true,false,false,null
+5510,Property Tax,EXPENSE,DEBIT,5500,Property Operations,true,false,false,null
+5520,Water Tax,EXPENSE,DEBIT,5500,Property Operations,true,false,false,null
+5530,Insurance,EXPENSE,DEBIT,5500,Property Operations,true,false,false,null
+5540,Society/Maintenance Fees,EXPENSE,DEBIT,5500,Property Operations,true,false,false,null
+5600,Administrative,EXPENSE,DEBIT,5000,Operating Expenses,true,false,false,null
+5610,Office Expenses,EXPENSE,DEBIT,5600,Administrative,true,false,false,null
+5620,Software & Subscriptions,EXPENSE,DEBIT,5600,Administrative,true,false,false,null
+5630,Bank Charges & CC Fees,EXPENSE,DEBIT,5600,Administrative,true,false,false,null
+5640,Professional Fees,EXPENSE,DEBIT,5600,Administrative,true,false,false,null
+5700,Salaries & Benefits,EXPENSE,DEBIT,5000,Operating Expenses,true,false,false,null
+5800,Marketing & Tenant Acquisition,EXPENSE,DEBIT,5000,Operating Expenses,true,false,false,null
+5900,Other Expenses,EXPENSE,DEBIT,5000,Operating Expenses,true,false,false,null

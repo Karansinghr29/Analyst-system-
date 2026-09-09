@@ -1,0 +1,4 @@
+{
+  "note": "Read-only owner-decision ledger. The application never writes this file. ALLOWED_KINDS is empty: Phase 13 first activation requires exact freeze equivalence and will not waive numeric drift or row-count growth.",
+  "decisions": []
+}

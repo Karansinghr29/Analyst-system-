@@ -1,0 +1,16 @@
+obj,rows
+-- live equivalents --,null
+public.attendance_logs,0
+public.companies,0
+public.departments,0
+public.eb_tenant_shares,801
+public.electricity_shares,0
+public.employees,0
+public.journal_lines,33894
+public.ledger_entries,0
+public.maintenance_tickets,1611
+public.payroll,0
+public.team_attendance,1320
+public.team_members,20
+public.tickets,0
+public.users,0

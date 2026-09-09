@@ -1,0 +1,256 @@
+schema_name,routine_name,arguments,return_type,definition
+public,get_universal_metrics_v2,"p_organization_id uuid, p_period text, p_from date, p_to date",jsonb,"CREATE OR REPLACE FUNCTION public.get_universal_metrics_v2(p_organization_id uuid, p_period text DEFAULT 'current_fy'::text, p_from date DEFAULT NULL::date, p_to date DEFAULT NULL::date)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_from date; v_to date; v_today date := current_date; v_result jsonb;
+    v_revenue numeric; v_expenses numeric; v_owner_rent numeric; v_maintenance numeric;
+    v_housekeeping numeric; v_utilities numeric; v_property_ops numeric; v_administrative numeric;
+    v_salaries numeric; v_marketing numeric; v_other_exp numeric;
+    v_rental_income numeric; v_eb_income numeric; v_guest_stay_income numeric;
+    v_onboarding_income numeric; v_late_fees_income numeric; v_exit_charges_income numeric;
+    v_collections numeric; v_collections_no_deposit numeric; v_deposit_collections numeric;
+    v_refunds_paid numeric; v_outstanding_total numeric; v_advance_total numeric;
+    v_deposits_held numeric; v_cash_balance numeric;
+    v_active_tenants int;
+    v_total_beds int; v_occupied_beds int; v_vacant_beds int;
+    v_booked_beds int; v_notice_beds int;
+    v_month_filled_days bigint; v_month_possible_days int;
+    v_month_occupancy_pct numeric;
+    v_month_start date; v_month_end date; v_days_in_month int;
+    v_active_tickets int; v_fy_start_year int;
+    v_owner_rent_pnl numeric; v_electricity numeric;
+BEGIN
+    IF p_from IS NOT NULL AND p_to IS NOT NULL THEN
+        v_from := p_from;  v_to := p_to;
+    ELSE
+        IF EXTRACT(MONTH FROM v_today) >= 4 THEN
+            v_fy_start_year := EXTRACT(YEAR FROM v_today)::int;
+        ELSE
+            v_fy_start_year := EXTRACT(YEAR FROM v_today)::int - 1;
+        END IF;
+        CASE p_period
+            WHEN 'today'        THEN v_from := v_today; v_to := v_today;
+            WHEN 'this_week'    THEN v_from := DATE_TRUNC('week', v_today)::date; v_to := v_today;
+            WHEN 'this_month'   THEN v_from := DATE_TRUNC('month', v_today)::date; v_to := v_today;
+            WHEN 'last_month'   THEN v_from := (DATE_TRUNC('month', v_today) - INTERVAL '1 month')::date;
+                                     v_to   := (DATE_TRUNC('month', v_today) - INTERVAL '1 day')::date;
+            WHEN 'this_quarter' THEN v_from := DATE_TRUNC('quarter', v_today)::date; v_to := v_today;
+            WHEN 'this_year'    THEN v_from := DATE_TRUNC('year', v_today)::date; v_to := v_today;
+            WHEN 'ytd'          THEN v_from := MAKE_DATE(v_fy_start_year, 4, 1); v_to := v_today;
+            WHEN 'current_fy'   THEN v_from := MAKE_DATE(v_fy_start_year, 4, 1); v_to := MAKE_DATE(v_fy_start_year + 1, 3, 31);
+            WHEN 'last_fy'      THEN v_from := MAKE_DATE(v_fy_start_year - 1, 4, 1); v_to := MAKE_DATE(v_fy_start_year, 3, 31);
+            WHEN 'all_time'     THEN v_from := COALESCE((SELECT MIN(entry_date) FROM journal_entries WHERE organization_id = p_organization_id), v_today - INTERVAL '5 years');
+                                     v_to := v_today;
+            ELSE v_from := v_today - INTERVAL '90 days'; v_to := v_today;
+        END CASE;
+    END IF;
+
+    SELECT COALESCE(SUM(revenue),0), COALESCE(SUM(total_expenses),0),
+        COALESCE(SUM(owner_rent),0), COALESCE(SUM(maintenance),0),
+        COALESCE(SUM(housekeeping),0), COALESCE(SUM(utilities),0),
+        COALESCE(SUM(property_ops),0), COALESCE(SUM(administrative),0),
+        COALESCE(SUM(salaries),0), COALESCE(SUM(marketing),0),
+        COALESCE(SUM(other_expenses),0), COALESCE(SUM(rental_income),0),
+        COALESCE(SUM(electricity_income),0), COALESCE(SUM(guest_stay_income),0),
+        COALESCE(SUM(onboarding_income),0), COALESCE(SUM(late_fees_income),0),
+        COALESCE(SUM(exit_charges_income),0),
+        COALESCE(SUM(electricity),0)
+      INTO v_revenue, v_expenses, v_owner_rent, v_maintenance, v_housekeeping,
+        v_utilities, v_property_ops, v_administrative, v_salaries, v_marketing,
+        v_other_exp, v_rental_income, v_eb_income, v_guest_stay_income,
+        v_onboarding_income, v_late_fees_income, v_exit_charges_income, v_electricity
+      FROM v_pnl_by_category
+     WHERE organization_id = p_organization_id
+       AND month >= DATE_TRUNC('month', v_from)::date
+       AND month <= DATE_TRUNC('month', v_to)::date;
+
+    v_owner_rent_pnl := v_owner_rent;
+    SELECT COALESCE(SUM(op.escalated_amount), 0) INTO v_owner_rent
+      FROM owner_payments op
+     WHERE op.organization_id = p_organization_id
+       AND op.bill_date IS NOT NULL
+       AND op.bill_date >= v_from
+       AND op.bill_date <= v_to;
+    v_expenses := v_expenses - v_owner_rent_pnl + v_owner_rent;
+
+    SELECT COALESCE(SUM(jl.debit), 0) INTO v_collections
+      FROM journal_lines jl JOIN journal_entries je ON je.id = jl.journal_entry_id
+      JOIN coa_accounts ca ON ca.id = jl.account_id
+     WHERE jl.organization_id = p_organization_id AND je.source_table = 'receipts'
+       AND ca.code IN ('1110', '1120') AND je.entry_date BETWEEN v_from AND v_to
+       AND jl.debit > 0 AND je.is_reversal_of IS NULL
+       AND NOT EXISTS (SELECT 1 FROM journal_entries r WHERE r.is_reversal_of = je.id);
+
+    SELECT COALESCE(SUM(jl.credit), 0) INTO v_deposit_collections
+      FROM journal_lines jl JOIN journal_entries je ON je.id = jl.journal_entry_id
+      JOIN coa_accounts ca ON ca.id = jl.account_id
+     WHERE jl.organization_id = p_organization_id AND je.source_table = 'receipts'
+       AND ca.code = '2100' AND je.entry_date BETWEEN v_from AND v_to
+       AND jl.credit > 0 AND je.is_reversal_of IS NULL
+       AND NOT EXISTS (SELECT 1 FROM journal_entries r WHERE r.is_reversal_of = je.id);
+
+    v_collections_no_deposit := v_collections - v_deposit_collections;
+
+    SELECT COALESCE(SUM(jl.credit), 0) INTO v_refunds_paid
+      FROM journal_lines jl JOIN journal_entries je ON je.id = jl.journal_entry_id
+      JOIN coa_accounts ca ON ca.id = jl.account_id
+     WHERE jl.organization_id = p_organization_id AND je.source_table = 'deposit_settlements'
+       AND ca.code IN ('1110', '1120') AND je.entry_date BETWEEN v_from AND v_to
+       AND jl.credit > 0 AND je.is_reversal_of IS NULL
+       AND NOT EXISTS (SELECT 1 FROM journal_entries r WHERE r.is_reversal_of = je.id);
+
+    SELECT COALESCE(SUM(outstanding), 0) INTO v_outstanding_total
+      FROM v_outstanding_receivables WHERE organization_id = p_organization_id AND outstanding > 0;
+    SELECT COALESCE(SUM(GREATEST(-outstanding, 0)), 0) INTO v_advance_total
+      FROM v_outstanding_receivables WHERE organization_id = p_organization_id;
+    SELECT COALESCE(SUM(deposit_held), 0) INTO v_deposits_held
+      FROM v_advance_balances WHERE organization_id = p_organization_id;
+    SELECT COALESCE(cash_on_hand, 0) INTO v_cash_balance
+      FROM v_org_cash_balance WHERE organization_id = p_organization_id;
+    SELECT COALESCE(SUM(active_tenants), 0) INTO v_active_tenants
+      FROM v_active_tenants WHERE organization_id = p_organization_id;
+
+    -- ââ Bed counts (matches tenant lifecycle) âââââââââââââââââââââââââââââ
+    -- A live bed counts as Occupied / Notice / Booked according to the
+    -- active allotment's staying_status. Beds with no active allotment are
+    -- Vacant.
+    WITH live_beds AS (
+        SELECT b.id
+          FROM beds b
+          JOIN apartments a ON a.id = b.apartment_id
+         WHERE b.organization_id = p_organization_id
+           AND b.status::text = 'Live'
+           AND a.status::text = 'Live'
+    ), bed_status AS (
+        SELECT
+            lb.id AS bed_id,
+            (
+                SELECT al.staying_status
+                  FROM tenant_allotments al
+                 WHERE al.organization_id = p_organization_id
+                   AND al.bed_id = lb.id
+                   AND al.staying_status IN ('Staying','On-Notice','Booked')
+                 ORDER BY CASE al.staying_status
+                            WHEN 'Staying' THEN 1
+                            WHEN 'On-Notice' THEN 2
+                            WHEN 'Booked' THEN 3
+                          END,
+                          al.onboarding_date NULLS LAST
+                 LIMIT 1
+            ) AS status
+          FROM live_beds lb
+    )
+    SELECT
+        COUNT(*),
+        COUNT(*) FILTER (WHERE status = 'Staying'),
+        COUNT(*) FILTER (WHERE status = 'On-Notice'),
+        COUNT(*) FILTER (WHERE status = 'Booked'),
+        COUNT(*) FILTER (WHERE status IS NULL)
+      INTO v_total_beds, v_occupied_beds, v_notice_beds, v_booked_beds, v_vacant_beds
+      FROM bed_status;
+
+    -- ââ Monthly time-weighted occupancy ââââââââââââââââââââââââââââââââââ
+    v_month_start := DATE_TRUNC('month', v_today)::date;
+    v_month_end := (DATE_TRUNC('month', v_today) + INTERVAL '1 month' - INTERVAL '1 day')::date;
+    v_days_in_month := (v_month_end - v_month_start)::int + 1;
+    v_month_possible_days := v_total_beds * v_days_in_month;
+
+    WITH live_beds AS (
+        SELECT b.id
+          FROM beds b
+          JOIN apartments a ON a.id = b.apartment_id
+         WHERE b.organization_id = p_organization_id
+           AND b.status::text = 'Live'
+           AND a.status::text = 'Live'
+    ), month_days AS (
+        SELECT generate_series(v_month_start::timestamp, v_month_end::timestamp, INTERVAL '1 day')::date AS d
+    ), bed_day_filled AS (
+        SELECT DISTINCT lb.id AS bed_id, md.d
+          FROM live_beds lb
+          CROSS JOIN month_days md
+         WHERE EXISTS (
+             SELECT 1 FROM tenant_allotments al
+              WHERE al.organization_id = p_organization_id
+                AND al.bed_id = lb.id
+                AND (
+                    (al.staying_status = 'Staying'
+                        AND al.onboarding_date IS NOT NULL
+                        AND al.onboarding_date <= md.d)
+                    OR (al.staying_status = 'On-Notice'
+                        AND al.onboarding_date IS NOT NULL
+                        AND al.onboarding_date <= md.d
+                        AND (al.actual_exit_date IS NULL OR al.actual_exit_date >= md.d))
+                    OR (al.staying_status = 'Booked'
+                        AND COALESCE(al.booking_date, al.onboarding_date) IS NOT NULL
+                        AND COALESCE(al.booking_date, al.onboarding_date) <= md.d)
+                    OR (al.staying_status = 'Exited'
+                        AND al.onboarding_date IS NOT NULL
+                        AND al.actual_exit_date IS NOT NULL
+                        AND al.onboarding_date <= md.d
+                        AND al.actual_exit_date >= md.d)
+                )
+         )
+    )
+    SELECT COUNT(*) INTO v_month_filled_days FROM bed_day_filled;
+
+    v_month_occupancy_pct := CASE
+        WHEN v_month_possible_days > 0
+            THEN ROUND(100.0 * v_month_filled_days / v_month_possible_days, 2)
+        ELSE 0
+    END;
+
+    SELECT COUNT(*) INTO v_active_tickets FROM maintenance_tickets
+     WHERE organization_id = p_organization_id
+       AND status NOT IN ('closed','resolved','completed','cancelled');
+
+    v_result := jsonb_build_object(
+        'period', jsonb_build_object('from', v_from, 'to', v_to, 'preset', p_period),
+        'accounting', jsonb_build_object(
+            'totalRevenue', v_revenue,
+            'totalRentalRevenue', v_rental_income,
+            'totalEbCharged', v_eb_income,
+            'totalGuestStay', v_guest_stay_income,
+            'totalOnboardingCharges', v_onboarding_income,
+            'totalLateFees', v_late_fees_income,
+            'totalExitCharges', v_exit_charges_income,
+            'totalExpenses', v_expenses,
+            'expenseBreakdown', jsonb_build_object(
+                'ownerRent', v_owner_rent, 'electricity', v_electricity, 'maintenance', v_maintenance,
+                'housekeeping', v_housekeeping, 'utilities', v_utilities,
+                'propertyOps', v_property_ops, 'administrative', v_administrative,
+                'salaries', v_salaries, 'marketing', v_marketing, 'other', v_other_exp
+            ),
+            'totalProfit', v_revenue - v_expenses,
+            'profitMarginPct', ROUND(100.0 * (v_revenue - v_expenses) / NULLIF(v_revenue, 0), 2),
+            'totalCollections', v_collections,
+            'totalCollectionsWithoutDeposit', v_collections_no_deposit,
+            'depositCollections', v_deposit_collections,
+            'totalRefundsGiven', v_refunds_paid,
+            'totalPendingCollection', v_outstanding_total,
+            'totalAdvanceBalance', v_advance_total,
+            'totalDepositsHeld', v_deposits_held,
+            'cashBalance', v_cash_balance
+        ),
+        'tenants', jsonb_build_object('activeTenants', v_active_tenants),
+        'propertyStatus', jsonb_build_object(
+            'total', v_total_beds,
+            'occupied', v_occupied_beds,
+            'notice', v_notice_beds,
+            'booked', v_booked_beds,
+            'vacant', v_vacant_beds,
+            'occupancyPct', ROUND(100.0 * (v_occupied_beds + v_notice_beds) / NULLIF(v_total_beds, 0), 2),
+            'monthOccupancyPct', v_month_occupancy_pct,
+            'monthFilledBedDays', v_month_filled_days,
+            'monthPossibleBedDays', v_month_possible_days,
+            'monthDays', v_days_in_month
+        ),
+        'tickets', jsonb_build_object('activeCount', v_active_tickets),
+        'meta', jsonb_build_object('source','journal_v2','computed_at', now())
+    );
+    RETURN v_result;
+END $function$
+"

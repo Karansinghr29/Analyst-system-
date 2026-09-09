@@ -1,0 +1,1861 @@
+schema_name,routine_name,arguments,return_type,kind,security_definer,source_length,definition
+market,refresh_org_metrics,IN p_organization_id uuid,null,procedure,false,1267,"CREATE OR REPLACE PROCEDURE market.refresh_org_metrics(IN p_organization_id uuid)
+ LANGUAGE plpgsql
+AS $procedure$
+BEGIN
+  INSERT INTO market.locality_market_metrics (
+    organization_id, locality_id, room_type_label, period_month,
+    price_p25, price_median, price_p75, price_avg, property_count, calculated_at
+  )
+  SELECT
+    cp.organization_id,
+    cp.locality_id,
+    rt.label,
+    to_char(now(), 'YYYY-MM'),
+    ROUND(percentile_cont(0.25) WITHIN GROUP (ORDER BY rt.current_price)::numeric, 0),
+    ROUND(percentile_cont(0.50) WITHIN GROUP (ORDER BY rt.current_price)::numeric, 0),
+    ROUND(percentile_cont(0.75) WITHIN GROUP (ORDER BY rt.current_price)::numeric, 0),
+    ROUND(AVG(rt.current_price)::numeric, 0),
+    COUNT(DISTINCT cp.id)::integer,
+    now()
+  FROM market.competitor_properties cp
+  JOIN market.competitor_room_types rt ON rt.competitor_id = cp.id
+  WHERE cp.organization_id = p_organization_id
+    AND cp.is_active = true
+    AND rt.current_price IS NOT NULL
+  GROUP BY cp.organization_id, cp.locality_id, rt.label
+  ON CONFLICT (organization_id, locality_id, room_type_label, period_month)
+  DO UPDATE SET
+    price_p25      = EXCLUDED.price_p25,
+    price_median   = EXCLUDED.price_median,
+    price_p75      = EXCLUDED.price_p75,
+    price_avg      = EXCLUDED.price_avg,
+    property_count = EXCLUDED.property_count,
+    calculated_at  = now();
+END;
+$procedure$
+"
+public,_export_profile_name,p_user_id uuid,text,function,true,154,"CREATE OR REPLACE FUNCTION public._export_profile_name(p_user_id uuid)
+ RETURNS text
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+  SELECT COALESCE(p.full_name, p.phone, p.email, u.email)
+  FROM profiles p
+  LEFT JOIN users u ON u.id = p.id
+  WHERE p.id = p_user_id
+  LIMIT 1;
+$function$
+"
+public,delete_invoice_journal_entries_on_invoice_delete,,trigger,function,true,126,"CREATE OR REPLACE FUNCTION public.delete_invoice_journal_entries_on_invoice_delete()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+  DELETE FROM public.journal_entries
+  WHERE source_table = 'invoices'
+    AND source_id = OLD.id;
+
+  RETURN OLD;
+END;
+$function$
+"
+public,delete_journal_entries_on_source_delete,,trigger,function,true,382,"CREATE OR REPLACE FUNCTION public.delete_journal_entries_on_source_delete()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_ids uuid[];
+  v_source_table text := TG_ARGV[0];
+BEGIN
+  SELECT array_agg(id) INTO v_ids
+  FROM journal_entries
+  WHERE source_table = v_source_table AND source_id = OLD.id;
+
+  IF v_ids IS NOT NULL THEN
+    DELETE FROM journal_lines   WHERE journal_entry_id = ANY(v_ids);
+    DELETE FROM journal_entries WHERE id               = ANY(v_ids);
+  END IF;
+  RETURN OLD;
+END $function$
+"
+public,enforce_journal_balanced,,trigger,function,false,681,"CREATE OR REPLACE FUNCTION public.enforce_journal_balanced()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+    v_diff numeric;
+    v_id   uuid;
+BEGIN
+    v_id := COALESCE(NEW.id, OLD.id);
+
+    SELECT COALESCE(SUM(debit) - SUM(credit), 0)
+      INTO v_diff
+      FROM journal_lines
+     WHERE journal_entry_id = v_id;
+
+    -- Allow header-only inserts that haven't yet written lines (helper functions
+    -- write lines after creating the header within the same transaction)
+    IF NOT EXISTS (SELECT 1 FROM journal_lines WHERE journal_entry_id = v_id) THEN
+        RETURN NEW;
+    END IF;
+
+    IF ABS(v_diff) > 0.005 THEN
+        RAISE EXCEPTION
+          'Journal entry % is unbalanced by %. Debits must equal credits.',
+          v_id, v_diff;
+    END IF;
+
+    RETURN NEW;
+END
+$function$
+"
+public,enforce_period_lock,,trigger,function,false,780,"CREATE OR REPLACE FUNCTION public.enforce_period_lock()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_status text;
+    v_period text;
+    v_org    uuid;
+BEGIN
+    v_period := COALESCE(NEW.period, OLD.period);
+    v_org    := COALESCE(NEW.organization_id, OLD.organization_id);
+
+    SELECT status INTO v_status
+      FROM public.accounting_periods
+     WHERE organization_id = v_org AND period = v_period;
+
+    IF v_status IS NULL OR v_status = 'open' THEN
+        RETURN COALESCE(NEW, OLD);
+    END IF;
+
+    -- Reversal entries are allowed on closed (but not locked) periods for inserts/updates.
+    IF TG_OP <> 'DELETE'
+       AND v_status = 'closed'
+       AND NEW.is_reversal_of IS NOT NULL THEN
+        RETURN NEW;
+    END IF;
+
+    RAISE EXCEPTION
+      'Cannot write journal entry to period % (status=%). Reopen the period first.',
+      v_period, v_status;
+END
+$function$
+"
+public,enforce_subledger_completeness,,trigger,function,false,738,"CREATE OR REPLACE FUNCTION public.enforce_subledger_completeness()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+    v_requires_party     boolean;
+    v_requires_allotment boolean;
+    v_code               text;
+BEGIN
+    SELECT requires_party, requires_allotment, code
+      INTO v_requires_party, v_requires_allotment, v_code
+      FROM coa_accounts
+     WHERE id = NEW.account_id;
+
+    IF v_requires_party AND (NEW.party_kind IS NULL OR NEW.party_id IS NULL) THEN
+        RAISE EXCEPTION
+          'Account % (code %) requires party_kind + party_id on every posting',
+          NEW.account_id, v_code;
+    END IF;
+
+    IF v_requires_allotment AND NEW.allotment_id IS NULL THEN
+        RAISE EXCEPTION
+          'Account % (code %) requires allotment_id on every posting',
+          NEW.account_id, v_code;
+    END IF;
+
+    RETURN NEW;
+END
+$function$
+"
+public,ensure_booking_receipt_number,,trigger,function,true,605,"CREATE OR REPLACE FUNCTION public.ensure_booking_receipt_number()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_property_id uuid;
+  v_number jsonb;
+BEGIN
+  IF COALESCE(NEW.receipt_type, '') = 'booking'
+     AND NULLIF(BTRIM(COALESCE(NEW.receipt_number, '')), '') IS NULL THEN
+    SELECT ta.property_id
+      INTO v_property_id
+      FROM public.tenant_allotments ta
+     WHERE ta.id = NEW.tenant_allotment_id;
+
+    IF v_property_id IS NOT NULL THEN
+      v_number := public.next_receipt_number(
+        NEW.organization_id,
+        v_property_id,
+        COALESCE(NEW.payment_date, current_date)
+      );
+      NEW.receipt_number := v_number->>'receipt_number';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$function$
+"
+public,expense_sync_resolution,,trigger,function,true,2073,"CREATE OR REPLACE FUNCTION public.expense_sync_resolution()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE v_ticket_id uuid; v_org_id uuid; v_res_id uuid;
+BEGIN
+  v_res_id := COALESCE(NEW.ticket_resolution_id, OLD.ticket_resolution_id);
+  IF v_res_id IS NULL THEN RETURN COALESCE(NEW, OLD); END IF;
+
+  SELECT ticket_id, organization_id INTO v_ticket_id, v_org_id
+    FROM public.ticket_resolutions WHERE id = v_res_id;
+  IF v_ticket_id IS NULL THEN RETURN COALESCE(NEW, OLD); END IF;
+
+  IF TG_OP = 'DELETE' THEN
+    UPDATE public.ticket_resolutions SET
+      total_cost=0, actual_total_cost=0, total_parts_cost=0, total_labour_cost=0,
+      payment_date=NULL, bank_account_id=NULL, payment_reference_no=NULL,
+      proof_of_payment_url=NULL, proof_of_purchase_url=NULL,
+      vendor_id=NULL,
+      actual_items_used='[]'::jsonb, items_used='[]'::jsonb,
+      updated_at=now()
+    WHERE id = v_res_id;
+    INSERT INTO public.ticket_logs(ticket_id, organization_id, action, notes)
+    VALUES (v_ticket_id, v_org_id, 'Expense deleted',
+      'Linked expense (#' || substr(OLD.id::text, 1, 8) ||
+      ') removed; resolution cost & payment cleared.');
+
+  ELSIF TG_OP = 'UPDATE' THEN
+    IF NEW.amount IS DISTINCT FROM OLD.amount
+       OR NEW.expense_date IS DISTINCT FROM OLD.expense_date
+       OR NEW.vendor_id IS DISTINCT FROM OLD.vendor_id
+       OR NEW.receipt_url IS DISTINCT FROM OLD.receipt_url
+    THEN
+      UPDATE public.ticket_resolutions SET
+        total_cost            = NEW.amount,
+        actual_total_cost     = NEW.amount,
+        payment_date          = NEW.expense_date,
+        vendor_id             = COALESCE(NEW.vendor_id, vendor_id),
+        proof_of_purchase_url = COALESCE(NEW.receipt_url, proof_of_purchase_url),
+        updated_at            = now()
+      WHERE id = v_res_id;
+      INSERT INTO public.ticket_logs(ticket_id, organization_id, action, notes)
+      VALUES (v_ticket_id, v_org_id, 'Expense updated',
+        'Linked expense updated; resolution synced (amount=₹' ||
+        COALESCE(NEW.amount::text,'0') || ', date=' ||
+        COALESCE(NEW.expense_date::text,'—') || ').');
+    END IF;
+  END IF;
+  RETURN COALESCE(NEW, OLD);
+END $function$
+"
+public,get_bed_occupancy_timeline,"p_bed_id uuid, p_from date, p_to date",jsonb,function,true,2836,"CREATE OR REPLACE FUNCTION public.get_bed_occupancy_timeline(p_bed_id uuid, p_from date, p_to date)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  v_now date := current_date;
+  v_to  date := least(p_to, current_date);
+  v_from date;
+  result jsonb;
+begin
+  if p_bed_id is null then return '[]'::jsonb; end if;
+
+  -- Bed availability window start, clamped to p_from.
+  select greatest(coalesce(a.start_date, p_from), p_from)
+    into v_from
+  from beds b join apartments a on a.id = b.apartment_id
+  where b.id = p_bed_id;
+  v_from := coalesce(v_from, p_from);
+
+  with
+  occ as (  -- occupied segments (Staying/On-Notice/Exited), clamped to window
+    select greatest(ta.onboarding_date, v_from) as seg_from,
+           least(coalesce(ta.actual_exit_date, v_now), v_to) as seg_to,
+           ta.tenant_id
+    from tenant_allotments ta
+    where ta.bed_id = p_bed_id
+      and ta.staying_status in ('Staying','On-Notice','Exited')
+      and ta.onboarding_date is not null
+  ),
+  occ_clean as (
+    select seg_from, seg_to, tenant_id from occ where seg_to >= seg_from order by seg_from
+  ),
+  occ_seg as (
+    select 'occupied' as state, seg_from as seg_from, seg_to as seg_to,
+           (seg_to - seg_from) + 1 as days, tenant_id
+    from occ_clean
+  ),
+  -- vacant gaps = window minus occupied, computed between consecutive occupied segments
+  bounds as (
+    select seg_from, seg_to,
+           lag(seg_to) over (order by seg_from) as prev_to
+    from occ_clean
+  ),
+  gap_mid as (
+    select 'vacant' as state, (prev_to + 1) as seg_from, (seg_from - 1) as seg_to,
+           (seg_from - 1) - (prev_to + 1) + 1 as days, null::uuid as tenant_id
+    from bounds where prev_to is not null and (seg_from - 1) >= (prev_to + 1)
+  ),
+  gap_lead as (  -- vacancy before first occupancy
+    select 'vacant' as state, v_from as seg_from, (min(seg_from) - 1) as seg_to,
+           (min(seg_from) - 1) - v_from + 1 as days, null::uuid as tenant_id
+    from occ_clean having min(seg_from) > v_from
+  ),
+  gap_trail as ( -- vacancy after last occupancy up to window end
+    select 'vacant' as state, (max(seg_to) + 1) as seg_from, v_to as seg_to,
+           v_to - (max(seg_to) + 1) + 1 as days, null::uuid as tenant_id
+    from occ_clean having max(seg_to) < v_to
+  ),
+  all_no_occ as ( -- fully vacant window (no occupancy at all)
+    select 'vacant' as state, v_from as seg_from, v_to as seg_to,
+           (v_to - v_from) + 1 as days, null::uuid as tenant_id
+    where not exists (select 1 from occ_clean) and v_to >= v_from
+  ),
+  unioned as (
+    select * from occ_seg
+    union all select * from gap_mid
+    union all select * from gap_lead
+    union all select * from gap_trail
+    union all select * from all_no_occ
+  )
+  select coalesce(jsonb_agg(jsonb_build_object(
+           'state', state, 'from', seg_from, 'to', seg_to, 'days', days, 'tenant_id', tenant_id
+         ) order by seg_from), '[]'::jsonb)
+  into result
+  from unioned where days > 0;
+
+  return result;
+end;
+$function$
+"
+public,get_occupancy_intelligence,"p_org uuid, p_from date, p_to date",jsonb,function,true,15026,"CREATE OR REPLACE FUNCTION public.get_occupancy_intelligence(p_org uuid, p_from date, p_to date)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  v_now  date := current_date;
+  v_to   date := least(p_to, current_date);   -- never count the future
+  result jsonb;
+begin
+  if p_org is null or p_from is null or v_to is null then
+    return jsonb_build_object('window', jsonb_build_object('from', p_from, 'to', v_to),
+      'properties','[]'::jsonb,'apartments','[]'::jsonb,'bedTypes','[]'::jsonb,
+      'beds','[]'::jsonb,'monthlyTrend','[]'::jsonb,'heatmap','[]'::jsonb);
+  end if;
+
+  with
+  live_bed as (
+    select b.id as bed_id, b.bed_code, b.apartment_id,
+           a.apartment_code, a.property_id, p.property_name,
+           (coalesce(b.bed_type::text,'?')
+             || case when b.toilet_type is not null then ' ' || b.toilet_type::text else '' end) as bed_type_label,
+           greatest(coalesce(a.start_date, p_from), p_from)            as avail_from,
+           least(coalesce(a.end_date, v_now), v_to)                    as avail_to
+    from beds b
+    join apartments a on a.id = b.apartment_id and a.status = 'Live'
+    join properties p on p.id = a.property_id
+    where b.organization_id = p_org and b.status = 'Live'
+  ),
+  bed_avail as (
+    select lb.*, greatest((avail_to - avail_from) + 1, 0) as available_days
+    from live_bed lb
+  ),
+  -- All stints (full history) for the live beds. occ_from/occ_to are clamped to the bed's
+  -- AVAILABILITY window (not just [p_from, v_to]) so occupied can never exceed available.
+  stint as (
+    select ba.bed_id, ba.apartment_id, ba.property_id,
+           ta.tenant_id, ta.staying_status, ta.onboarding_date, ta.actual_exit_date,
+           ta.monthly_rental,
+           greatest(ta.onboarding_date, ba.avail_from)                 as occ_from,
+           least(coalesce(ta.actual_exit_date, v_now), ba.avail_to)    as occ_to
+    from tenant_allotments ta
+    join bed_avail ba on ba.bed_id = ta.bed_id
+    where ta.organization_id = p_org
+      and ta.staying_status in ('Staying','On-Notice','Exited')
+      and ta.onboarding_date is not null
+  ),
+  -- Merge overlapping/adjacent occupied intervals per bed (gaps-and-islands) so overlapping
+  -- stints are not double-counted. occ_from/occ_to are already clamped to availability.
+  occ_ord as (
+    select bed_id, occ_from as f, occ_to as t,
+           max(occ_to) over (partition by bed_id order by occ_from
+                             rows between unbounded preceding and 1 preceding) as prev_max
+    from stint
+    where occ_to >= occ_from
+  ),
+  occ_grp as (
+    select bed_id, f, t,
+           sum(case when prev_max is null or f > prev_max then 1 else 0 end)
+             over (partition by bed_id order by f) as g
+    from occ_ord
+  ),
+  occ_merged as (
+    select bed_id, min(f) as f, max(t) as t
+    from occ_grp group by bed_id, g
+  ),
+  occ_by_bed as (
+    select bed_id, sum((t - f) + 1) as occupied_days
+    from occ_merged group by bed_id
+  ),
+  -- Vacancy fill gaps: gap between a stint's exit and the next stint's onboarding.
+  fill_raw as (
+    select bed_id,
+           onboarding_date - lag(actual_exit_date) over (partition by bed_id order by onboarding_date) as gap
+    from stint
+  ),
+  fill_agg as (
+    select bed_id,
+           avg(gap)                            filter (where gap > 0) as avg_fill,
+           percentile_cont(0.5) within group (order by gap) filter (where gap > 0) as median_fill,
+           min(gap)                            filter (where gap > 0) as min_fill,
+           max(gap)                            filter (where gap > 0) as max_fill
+    from fill_raw group by bed_id
+  ),
+  stay_agg as (
+    select bed_id,
+           avg(actual_exit_date - onboarding_date) filter (where actual_exit_date is not null) as avg_stay,
+           count(*)                                filter (where actual_exit_date is not null) as exited_count
+    from stint group by bed_id
+  ),
+  bed_rent as (
+    select distinct on (bed_id) bed_id, coalesce(monthly_rental, 0) as monthly_rental
+    from stint order by bed_id, onboarding_date desc
+  ),
+  status_now as (
+    select distinct on (ta.bed_id) ta.bed_id,
+           case ta.staying_status
+             when 'Staying'  then 'occupied'
+             when 'On-Notice' then 'notice'
+             when 'Booked'   then 'booked'
+             else 'vacant' end as status_now
+    from tenant_allotments ta
+    where ta.organization_id = p_org
+      and ta.staying_status in ('Staying','On-Notice','Booked')
+      and (ta.actual_exit_date is null or ta.actual_exit_date >= v_now)
+    order by ta.bed_id, ta.onboarding_date desc
+  ),
+  bed_metric as (
+    select ba.bed_id, ba.bed_code, ba.apartment_id, ba.apartment_code, ba.property_id,
+           ba.property_name, ba.bed_type_label, ba.available_days,
+           coalesce(o.occupied_days,0)                                  as occupied_days,
+           greatest(ba.available_days - coalesce(o.occupied_days,0), 0) as vacant_days,
+           case when ba.available_days > 0
+                then least(round(100.0 * coalesce(o.occupied_days,0) / ba.available_days, 2), 100) else 0 end as occupancy_pct,
+           round(f.avg_fill::numeric, 1) as avg_fill, round(f.median_fill::numeric, 1) as median_fill,
+           f.min_fill, f.max_fill,
+           round(s.avg_stay::numeric, 1) as avg_stay,
+           case when ba.available_days > 0
+                then round(coalesce(s.exited_count,0)::numeric / ba.available_days * 365, 3) else 0 end as turnover,
+           round((coalesce(r.monthly_rental,0) * coalesce(o.occupied_days,0) / 30.0)::numeric, 0) as realized_revenue,
+           round((coalesce(r.monthly_rental,0) * ba.available_days / 30.0)::numeric, 0)           as potential_revenue,
+           coalesce(sn.status_now, 'vacant') as status_now
+    from bed_avail ba
+    left join occ_by_bed o using (bed_id)
+    left join fill_agg   f using (bed_id)
+    left join stay_agg   s using (bed_id)
+    left join bed_rent   r using (bed_id)
+    left join status_now sn using (bed_id)
+  ),
+  bed_norm as (
+    select bm.*,
+           min(occupancy_pct) over () mn_occ,  max(occupancy_pct) over () mx_occ,
+           min(avg_fill)      over () mn_fill, max(avg_fill)      over () mx_fill,
+           min(avg_stay)      over () mn_stay, max(avg_stay)      over () mx_stay,
+           min(turnover)      over () mn_to,   max(turnover)      over () mx_to
+    from bed_metric bm
+  ),
+  bed_score as (
+    select bn.*,
+      round(
+          40 * coalesce((occupancy_pct - mn_occ) / nullif(mx_occ - mn_occ, 0), 0.5)
+        + 30 * (1 - coalesce((avg_fill - mn_fill) / nullif(mx_fill - mn_fill, 0), 0.5))
+        + 20 * coalesce((avg_stay - mn_stay) / nullif(mx_stay - mn_stay, 0), 0.5)
+        + 10 * (1 - coalesce((turnover - mn_to) / nullif(mx_to - mn_to, 0), 0.5))
+      , 1) as score
+    from bed_norm bn
+  ),
+  -- Month buckets for trend + heatmap.
+  months as (
+    select generate_series(date_trunc('month', p_from)::date,
+                           date_trunc('month', v_to)::date,
+                           interval '1 month')::date as m_start
+  ),
+  am_avail as (
+    select ba.apartment_id, ba.apartment_code, ba.property_id, m.m_start,
+           sum(greatest(
+             least(ba.avail_to, (m.m_start + interval '1 month - 1 day')::date)
+             - greatest(ba.avail_from, m.m_start) + 1, 0)) as avail_days
+    from bed_avail ba cross join months m
+    group by 1,2,3,4
+  ),
+  am_occ as (
+    select ba.apartment_id, m.m_start,
+           sum(greatest(
+             least(om.t, (m.m_start + interval '1 month - 1 day')::date)
+             - greatest(om.f, m.m_start) + 1, 0)) as occ_days
+    from occ_merged om
+    join bed_avail ba on ba.bed_id = om.bed_id
+    cross join months m
+    group by 1,2
+  ),
+  heat as (
+    select a.apartment_id, a.apartment_code, a.property_id,
+           to_char(a.m_start, 'YYYY-MM') as month,
+           case when a.avail_days > 0
+                then least(round(100.0 * coalesce(o.occ_days,0) / a.avail_days, 1), 100) else 0 end as occupancy_pct
+    from am_avail a
+    left join am_occ o on o.apartment_id = a.apartment_id and o.m_start = a.m_start
+  ),
+  trend as (
+    select a.property_id, to_char(a.m_start, 'YYYY-MM') as month,
+           case when sum(a.avail_days) > 0
+                then least(round(100.0 * sum(coalesce(o.occ_days,0)) / sum(a.avail_days), 1), 100) else 0 end as occupancy_pct
+    from am_avail a
+    left join am_occ o on o.apartment_id = a.apartment_id and o.m_start = a.m_start
+    group by a.property_id, a.m_start
+  ),
+  apt as (
+    select apartment_id, max(apartment_code) apartment_code, max(property_id::text)::uuid property_id,
+           count(*) total_beds,
+           count(*) filter (where status_now in ('occupied','notice')) occupied_beds_now,
+           round(avg(occupancy_pct), 2) occupancy_pct,
+           round(avg(avg_fill), 1) avg_fill_days,
+           round(avg(vacant_days), 1) avg_vacant_days,
+           round(avg(turnover), 3) turnover,
+           round(avg(avg_stay), 1) avg_stay_days,
+           round(avg(score), 1) score
+    from bed_score group by apartment_id
+  ),
+  apt_best as (select distinct on (apartment_id) apartment_id, bed_code from bed_score order by apartment_id, score desc nulls last),
+  apt_worst as (select distinct on (apartment_id) apartment_id, bed_code from bed_score order by apartment_id, score asc nulls last),
+  apt_lvac as (select distinct on (apartment_id) apartment_id, bed_code from bed_score order by apartment_id, vacant_days desc nulls last),
+  prop as (
+    select property_id, max(property_name) property_name,
+           count(*) total_beds,
+           count(*) filter (where status_now in ('occupied','notice')) occupied_beds_now,
+           round(avg(occupancy_pct), 2) occupancy_pct,
+           round(avg(avg_fill), 1) avg_fill_days,
+           round(avg(vacant_days), 1) avg_vacant_days,
+           sum(occupied_days) total_tenant_days,
+           sum(vacant_days)   total_vacant_days,
+           round(avg(turnover), 3) turnover,
+           round(avg(avg_stay), 1) avg_stay_days,
+           round(avg(score), 1) score
+    from bed_score group by property_id
+  ),
+  prop_hi as (select distinct on (property_id) property_id, apartment_code from apt order by property_id, occupancy_pct desc nulls last),
+  prop_lo as (select distinct on (property_id) property_id, apartment_code from apt order by property_id, occupancy_pct asc nulls last),
+  prop_best as (select distinct on (property_id) property_id, bed_code from bed_score order by property_id, score desc nulls last),
+  prop_worst as (select distinct on (property_id) property_id, bed_code from bed_score order by property_id, score asc nulls last),
+  btype as (
+    select bed_type_label,
+           count(*) total_beds,
+           sum(occupied_days) occupied_days,
+           sum(vacant_days)   vacant_days,
+           case when sum(available_days) > 0
+                then least(round(100.0 * sum(occupied_days) / sum(available_days), 2), 100) else 0 end occupancy_pct,
+           round(avg(avg_fill), 1) avg_fill_days,
+           round(avg(avg_stay), 1) avg_stay_days,
+           round(avg(turnover), 3) turnover,
+           round(sum(realized_revenue), 0) realized_revenue,
+           round(sum(potential_revenue), 0) potential_revenue
+    from bed_score group by bed_type_label
+  )
+  select jsonb_build_object(
+    'window', jsonb_build_object('from', p_from, 'to', v_to),
+    'properties', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'property_id', pr.property_id, 'property_name', pr.property_name,
+        'total_beds', pr.total_beds, 'occupied_beds_now', pr.occupied_beds_now,
+        'occupancy_pct', pr.occupancy_pct, 'avg_fill_days', pr.avg_fill_days,
+        'avg_vacant_days', pr.avg_vacant_days, 'total_tenant_days', pr.total_tenant_days,
+        'total_vacant_days', pr.total_vacant_days, 'turnover', pr.turnover,
+        'avg_stay_days', pr.avg_stay_days, 'score', pr.score,
+        'highest_apartment_code', hi.apartment_code, 'lowest_apartment_code', lo.apartment_code,
+        'best_bed_code', bb.bed_code, 'worst_bed_code', wb.bed_code
+      ) order by pr.occupancy_pct desc)
+      from prop pr
+      left join prop_hi hi using (property_id) left join prop_lo lo using (property_id)
+      left join prop_best bb using (property_id) left join prop_worst wb using (property_id)
+    ), '[]'::jsonb),
+    'apartments', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'apartment_id', ap.apartment_id, 'apartment_code', ap.apartment_code, 'property_id', ap.property_id,
+        'total_beds', ap.total_beds, 'occupied_beds_now', ap.occupied_beds_now,
+        'occupancy_pct', ap.occupancy_pct, 'avg_fill_days', ap.avg_fill_days,
+        'avg_vacant_days', ap.avg_vacant_days, 'turnover', ap.turnover,
+        'avg_stay_days', ap.avg_stay_days, 'score', ap.score,
+        'best_bed_code', ab.bed_code, 'worst_bed_code', aw.bed_code, 'longest_vacant_bed_code', al.bed_code
+      ) order by ap.occupancy_pct desc)
+      from apt ap
+      left join apt_best ab using (apartment_id) left join apt_worst aw using (apartment_id)
+      left join apt_lvac al using (apartment_id)
+    ), '[]'::jsonb),
+    'bedTypes', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'bed_type_label', t.bed_type_label, 'total_beds', t.total_beds,
+        'occupied_days', t.occupied_days, 'vacant_days', t.vacant_days,
+        'occupancy_pct', t.occupancy_pct, 'avg_fill_days', t.avg_fill_days,
+        'avg_stay_days', t.avg_stay_days, 'turnover', t.turnover,
+        'realized_revenue', t.realized_revenue, 'potential_revenue', t.potential_revenue
+      ) order by t.occupancy_pct desc) from btype t
+    ), '[]'::jsonb),
+    'beds', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'bed_id', bs.bed_id, 'bed_code', bs.bed_code, 'apartment_id', bs.apartment_id,
+        'apartment_code', bs.apartment_code, 'property_id', bs.property_id, 'property_name', bs.property_name,
+        'bed_type_label', bs.bed_type_label, 'available_days', bs.available_days,
+        'occupied_days', bs.occupied_days, 'vacant_days', bs.vacant_days, 'occupancy_pct', bs.occupancy_pct,
+        'avg_fill_days', bs.avg_fill, 'median_fill_days', bs.median_fill,
+        'min_fill_days', bs.min_fill, 'max_fill_days', bs.max_fill,
+        'avg_stay_days', bs.avg_stay, 'turnover', bs.turnover,
+        'realized_revenue', bs.realized_revenue, 'potential_revenue', bs.potential_revenue,
+        'score', bs.score, 'status_now', bs.status_now
+      ) order by bs.score desc) from bed_score bs
+    ), '[]'::jsonb),
+    'monthlyTrend', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'property_id', tr.property_id, 'month', tr.month, 'occupancy_pct', tr.occupancy_pct
+      ) order by tr.month) from trend tr
+    ), '[]'::jsonb),
+    'heatmap', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'apartment_id', h.apartment_id, 'apartment_code', h.apartment_code, 'property_id', h.property_id,
+        'month', h.month, 'occupancy_pct', h.occupancy_pct
+      ) order by h.apartment_code, h.month) from heat h
+    ), '[]'::jsonb)
+  ) into result;
+
+  return result;
+end;
+$function$
+"
+public,get_universal_metrics,"p_organization_id uuid, p_period text",jsonb,function,true,7695,"CREATE OR REPLACE FUNCTION public.get_universal_metrics(p_organization_id uuid, p_period text DEFAULT 'current_fy'::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  v_start date;
+  v_end date;
+  v_today date := current_date;
+  v_fy_start_year int;
+begin
+  -- period window
+  if p_period = 'current_month' then
+    v_start := date_trunc('month', v_today)::date;
+    v_end := (date_trunc('month', v_today) + interval '1 month - 1 day')::date;
+  elsif p_period = 'last_month' then
+    v_start := (date_trunc('month', v_today) - interval '1 month')::date;
+    v_end := (date_trunc('month', v_today) - interval '1 day')::date;
+  elsif p_period = 'current_fy' then
+    v_fy_start_year := case when extract(month from v_today) >= 4 then extract(year from v_today)::int else extract(year from v_today)::int - 1 end;
+    v_start := make_date(v_fy_start_year, 4, 1);
+    v_end := (make_date(v_fy_start_year + 1, 4, 1) - interval '1 day')::date;
+  elsif p_period = 'last_fy' then
+    v_fy_start_year := case when extract(month from v_today) >= 4 then extract(year from v_today)::int - 1 else extract(year from v_today)::int - 2 end;
+    v_start := make_date(v_fy_start_year, 4, 1);
+    v_end := (make_date(v_fy_start_year + 1, 4, 1) - interval '1 day')::date;
+  else
+    -- fallback
+    v_start := date '2000-01-01';
+    v_end := date '2099-12-31';
+  end if;
+
+  return (
+    with t as (
+      select status, created_at::date d
+      from maintenance_tickets
+      where organization_id = p_organization_id
+    ),
+    t_period as (
+      select *
+      from t
+      where d between v_start and v_end
+    ),
+    i as (
+      select *
+      from invoices
+      where organization_id = p_organization_id
+        and coalesce(is_deleted, false) = false
+    ),
+    i_period as (
+      select *
+      from i
+      where coalesce((billing_month || '-01')::date, invoice_date::date, created_at::date) between v_start and v_end
+    ),
+    r as (
+      select *
+      from receipts
+      where organization_id = p_organization_id
+        and coalesce(is_deleted, false) = false
+    ),
+    r_period as (
+      select *
+      from r
+      where payment_date::date between v_start and v_end
+    ),
+    e_period as (
+      select *
+      from expenses
+      where organization_id = p_organization_id
+        and coalesce(expense_date::date, (billing_month || '-01')::date, created_at::date) between v_start and v_end
+    ),
+    a_period as (
+      select *
+      from tenant_adjustments
+      where organization_id = p_organization_id
+        and coalesce((billing_month || '-01')::date, adjustment_date::date, created_at::date) between v_start and v_end
+    ),
+    s_period as (
+      select *
+      from deposit_settlements
+      where organization_id = p_organization_id
+        and coalesce(is_deleted, false) = false
+        and status in ('completed','approved')
+        and coalesce(settlement_date::date, created_at::date) between v_start and v_end
+    ),
+    active_allotments as (
+      select bed_id, tenant_id, staying_status
+      from tenant_allotments
+      where organization_id = p_organization_id
+        and staying_status in ('Staying','On-Notice','Booked')
+    ),
+    live_beds as (
+      select id
+      from beds
+      where organization_id = p_organization_id
+        and status = 'Live'
+    ),
+    bed_state as (
+      select
+        b.id bed_id,
+        exists(select 1 from active_allotments a where a.bed_id = b.id and a.staying_status = 'Staying') as has_staying,
+        exists(select 1 from active_allotments a where a.bed_id = b.id and a.staying_status = 'On-Notice') as has_notice,
+        exists(select 1 from active_allotments a where a.bed_id = b.id and a.staying_status = 'Booked') as has_booked
+      from live_beds b
+    ),
+    occ as (
+      select
+        count(*)::int as total,
+        count(*) filter (where has_staying)::int as occupied,
+        count(*) filter (where (not has_staying) and has_booked)::int as booked,
+        count(*) filter (where (not has_staying) and has_notice)::int as notice
+      from bed_state
+    ),
+    adj as (
+      select
+        coalesce(sum(case when adjustment_type = 'debit_note' then amount else 0 end),0)::numeric as debit_note,
+        coalesce(sum(case when adjustment_type = 'credit_note' then amount else 0 end),0)::numeric as credit_note
+      from a_period
+    )
+    select jsonb_build_object(
+      'tickets', jsonb_build_object(
+        'total', (select count(*)::int from t_period),
+        'closed', (select count(*)::int from t_period where status in ('closed','resolved','cancelled','rejected','completed')),
+        'open', (select count(*)::int from t_period where status not in ('closed','resolved','cancelled','rejected','completed')),
+        'needsTenantApproval', (select count(*)::int from t_period where status = 'pending_tenant_approval'),
+        'inProgress', (select count(*)::int from t_period where status = 'in_progress'),
+        'waitingCostApproval', (select count(*)::int from t_period where status = 'waiting_for_cost_approval'),
+        'assigned', (select count(*)::int from t_period where status = 'assigned')
+      ),
+      'activeTicketCount', (select count(*)::int from t where status not in ('closed','resolved','cancelled','rejected','completed')),
+      'accounting', jsonb_build_object(
+        'totalRentalRevenue', (select coalesce(sum(rent_amount),0) from i_period),
+        'totalEbCharged', (select coalesce(sum(electricity_amount),0) from i_period),
+        'totalOnboardingCharges', (select coalesce(sum(total_amount),0) from i_period where invoice_type = 'onboarding'),
+        'totalExitCharges', (select coalesce(sum(total_amount),0) from i_period where invoice_type = 'exit_charge'),
+        'totalOtherCharges', (select coalesce(sum(other_charges),0) from i_period),
+        'totalInvoiced', (select coalesce(sum(total_amount),0) from i_period),
+        'totalCollections', (select coalesce(sum(amount_paid),0) from r_period),
+        'depositCollections', (select coalesce(sum(amount_paid),0) from r_period where receipt_type = 'booking'),
+        'totalCollectionsWithoutDeposit',
+          (select coalesce(sum(amount_paid),0) from r_period) -
+          (select coalesce(sum(amount_paid),0) from r_period where receipt_type = 'booking'),
+        'totalRefundsGiven', (select coalesce(sum(refund_amount),0) from s_period),
+        'totalExpenses', (select coalesce(sum(amount),0) from e_period),
+        'totalPendingCollection',
+          (select coalesce(sum(total_amount),0) from i_period) +
+          (select debit_note from adj) -
+          (select credit_note from adj) -
+          (
+            (select coalesce(sum(amount_paid),0) from r_period) -
+            (select coalesce(sum(amount_paid),0) from r_period where receipt_type = 'booking')
+          ),
+        'totalProfit',
+          (select coalesce(sum(total_amount),0) from i_period) -
+          (select coalesce(sum(amount),0) from e_period)
+      ),
+      'tenants', jsonb_build_object(
+        'totalUniqueTenants', (select count(distinct tenant_id)::int from active_allotments where tenant_id is not null),
+        'activeTenants', (select count(distinct tenant_id)::int from active_allotments where staying_status in ('Staying','On-Notice') and tenant_id is not null),
+        'bookedTenants', (select count(distinct tenant_id)::int from active_allotments where staying_status = 'Booked' and tenant_id is not null)
+      ),
+      'propertyStatus', (
+        select jsonb_build_object(
+          'total', total,
+          'occupied', occupied,
+          'booked', booked,
+          'notice', notice,
+          'noticeBooked', 0,
+          'vacant', greatest(total - occupied - booked - notice, 0),
+          'occupancyPct', case when total > 0 then round((occupied::numeric / total::numeric) * 100)::int else 0 end
+        )
+        from occ
+      )
+    )
+  );
+end;
+$function$
+"
+public,get_universal_metrics_series,"p_organization_id uuid, p_months integer","TABLE(period text, revenue numeric, collections numeric, expenses numeric, pending_dues numeric, deposits_held numeric)",function,true,1892,"CREATE OR REPLACE FUNCTION public.get_universal_metrics_series(p_organization_id uuid, p_months integer DEFAULT 12)
+ RETURNS TABLE(period text, revenue numeric, collections numeric, expenses numeric, pending_dues numeric, deposits_held numeric)
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+  with months as (
+    select
+      to_char(d, 'YYYY-MM') as period,
+      d::date as month_start
+    from generate_series(
+      date_trunc('month', now())
+        - make_interval(months => greatest(1, least(coalesce(p_months, 12), 36)) - 1),
+      date_trunc('month', now()),
+      interval '1 month'
+    ) as d
+  ),
+  monthly as (
+    select
+      date_trunc('month', entry_date)::date as month_start,
+      sum(signed_amount) filter (where account_code like '4%') as revenue,
+      sum(signed_amount) filter (where account_code = '1000' and source_table = 'receipts') as collections,
+      sum(signed_amount) filter (where account_code like '5%') as expenses,
+      sum(signed_amount) filter (where account_code = '1200') as ar_delta,
+      sum(signed_amount) filter (where account_code in ('2100', '2400')) as dep_delta
+    from v_account_balances
+    where organization_id = p_organization_id
+    group by 1
+  ),
+  cum as (
+    select
+      month_start,
+      revenue,
+      collections,
+      expenses,
+      sum(coalesce(ar_delta, 0)) over (order by month_start) as pending_dues,
+      sum(coalesce(dep_delta, 0)) over (order by month_start) as deposits_held
+    from monthly
+  )
+  select
+    m.period,
+    coalesce(c.revenue, 0) as revenue,
+    coalesce(c.collections, 0) as collections,
+    coalesce(c.expenses, 0) as expenses,
+    -- Balances carry forward through months with no journal activity.
+    coalesce((
+      select c2.pending_dues from cum c2
+      where c2.month_start <= m.month_start
+      order by c2.month_start desc limit 1
+    ), 0) as pending_dues,
+    coalesce((
+      select c2.deposits_held from cum c2
+      where c2.month_start <= m.month_start
+      order by c2.month_start desc limit 1
+    ), 0) as deposits_held
+  from months m
+  left join cum c on c.month_start = m.month_start
+  order by m.period;
+$function$
+"
+public,get_universal_metrics_v2,"p_organization_id uuid, p_period text, p_from date, p_to date",jsonb,function,true,13170,"CREATE OR REPLACE FUNCTION public.get_universal_metrics_v2(p_organization_id uuid, p_period text DEFAULT 'current_fy'::text, p_from date DEFAULT NULL::date, p_to date DEFAULT NULL::date)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_from date; v_to date; v_today date := current_date; v_result jsonb;
+    v_revenue numeric; v_expenses numeric; v_owner_rent numeric; v_maintenance numeric;
+    v_housekeeping numeric; v_utilities numeric; v_property_ops numeric; v_administrative numeric;
+    v_salaries numeric; v_marketing numeric; v_other_exp numeric;
+    v_rental_income numeric; v_eb_income numeric; v_guest_stay_income numeric;
+    v_onboarding_income numeric; v_late_fees_income numeric; v_exit_charges_income numeric;
+    v_collections numeric; v_collections_no_deposit numeric; v_deposit_collections numeric;
+    v_refunds_paid numeric; v_outstanding_total numeric; v_advance_total numeric;
+    v_deposits_held numeric; v_cash_balance numeric;
+    v_active_tenants int;
+    v_total_beds int; v_occupied_beds int; v_vacant_beds int;
+    v_booked_beds int; v_notice_beds int;
+    v_month_filled_days bigint; v_month_possible_days int;
+    v_month_occupancy_pct numeric;
+    v_month_start date; v_month_end date; v_days_in_month int;
+    v_active_tickets int; v_fy_start_year int;
+    v_owner_rent_pnl numeric; v_electricity numeric;
+BEGIN
+    IF p_from IS NOT NULL AND p_to IS NOT NULL THEN
+        v_from := p_from;  v_to := p_to;
+    ELSE
+        IF EXTRACT(MONTH FROM v_today) >= 4 THEN
+            v_fy_start_year := EXTRACT(YEAR FROM v_today)::int;
+        ELSE
+            v_fy_start_year := EXTRACT(YEAR FROM v_today)::int - 1;
+        END IF;
+        CASE p_period
+            WHEN 'today'        THEN v_from := v_today; v_to := v_today;
+            WHEN 'this_week'    THEN v_from := DATE_TRUNC('week', v_today)::date; v_to := v_today;
+            WHEN 'this_month'   THEN v_from := DATE_TRUNC('month', v_today)::date; v_to := v_today;
+            WHEN 'last_month'   THEN v_from := (DATE_TRUNC('month', v_today) - INTERVAL '1 month')::date;
+                                     v_to   := (DATE_TRUNC('month', v_today) - INTERVAL '1 day')::date;
+            WHEN 'this_quarter' THEN v_from := DATE_TRUNC('quarter', v_today)::date; v_to := v_today;
+            WHEN 'this_year'    THEN v_from := DATE_TRUNC('year', v_today)::date; v_to := v_today;
+            WHEN 'ytd'          THEN v_from := MAKE_DATE(v_fy_start_year, 4, 1); v_to := v_today;
+            WHEN 'current_fy'   THEN v_from := MAKE_DATE(v_fy_start_year, 4, 1); v_to := MAKE_DATE(v_fy_start_year + 1, 3, 31);
+            WHEN 'last_fy'      THEN v_from := MAKE_DATE(v_fy_start_year - 1, 4, 1); v_to := MAKE_DATE(v_fy_start_year, 3, 31);
+            WHEN 'all_time'     THEN v_from := COALESCE((SELECT MIN(entry_date) FROM journal_entries WHERE organization_id = p_organization_id), v_today - INTERVAL '5 years');
+                                     v_to := v_today;
+            ELSE v_from := v_today - INTERVAL '90 days'; v_to := v_today;
+        END CASE;
+    END IF;
+
+    SELECT COALESCE(SUM(revenue),0), COALESCE(SUM(total_expenses),0),
+        COALESCE(SUM(owner_rent),0), COALESCE(SUM(maintenance),0),
+        COALESCE(SUM(housekeeping),0), COALESCE(SUM(utilities),0),
+        COALESCE(SUM(property_ops),0), COALESCE(SUM(administrative),0),
+        COALESCE(SUM(salaries),0), COALESCE(SUM(marketing),0),
+        COALESCE(SUM(other_expenses),0), COALESCE(SUM(rental_income),0),
+        COALESCE(SUM(electricity_income),0), COALESCE(SUM(guest_stay_income),0),
+        COALESCE(SUM(onboarding_income),0), COALESCE(SUM(late_fees_income),0),
+        COALESCE(SUM(exit_charges_income),0),
+        COALESCE(SUM(electricity),0)
+      INTO v_revenue, v_expenses, v_owner_rent, v_maintenance, v_housekeeping,
+        v_utilities, v_property_ops, v_administrative, v_salaries, v_marketing,
+        v_other_exp, v_rental_income, v_eb_income, v_guest_stay_income,
+        v_onboarding_income, v_late_fees_income, v_exit_charges_income, v_electricity
+      FROM v_pnl_by_category
+     WHERE organization_id = p_organization_id
+       AND month >= DATE_TRUNC('month', v_from)::date
+       AND month <= DATE_TRUNC('month', v_to)::date;
+
+    v_owner_rent_pnl := v_owner_rent;
+    SELECT COALESCE(SUM(op.escalated_amount), 0) INTO v_owner_rent
+      FROM owner_payments op
+     WHERE op.organization_id = p_organization_id
+       AND op.bill_date IS NOT NULL
+       AND op.bill_date >= v_from
+       AND op.bill_date <= v_to;
+    v_expenses := v_expenses - v_owner_rent_pnl + v_owner_rent;
+
+    SELECT COALESCE(SUM(jl.debit), 0) INTO v_collections
+      FROM journal_lines jl JOIN journal_entries je ON je.id = jl.journal_entry_id
+      JOIN coa_accounts ca ON ca.id = jl.account_id
+     WHERE jl.organization_id = p_organization_id AND je.source_table = 'receipts'
+       AND ca.code IN ('1110', '1120') AND je.entry_date BETWEEN v_from AND v_to
+       AND jl.debit > 0 AND je.is_reversal_of IS NULL
+       AND NOT EXISTS (SELECT 1 FROM journal_entries r WHERE r.is_reversal_of = je.id);
+
+    SELECT COALESCE(SUM(jl.credit), 0) INTO v_deposit_collections
+      FROM journal_lines jl JOIN journal_entries je ON je.id = jl.journal_entry_id
+      JOIN coa_accounts ca ON ca.id = jl.account_id
+     WHERE jl.organization_id = p_organization_id AND je.source_table = 'receipts'
+       AND ca.code = '2100' AND je.entry_date BETWEEN v_from AND v_to
+       AND jl.credit > 0 AND je.is_reversal_of IS NULL
+       AND NOT EXISTS (SELECT 1 FROM journal_entries r WHERE r.is_reversal_of = je.id);
+
+    v_collections_no_deposit := v_collections - v_deposit_collections;
+
+    SELECT COALESCE(SUM(jl.credit), 0) INTO v_refunds_paid
+      FROM journal_lines jl JOIN journal_entries je ON je.id = jl.journal_entry_id
+      JOIN coa_accounts ca ON ca.id = jl.account_id
+     WHERE jl.organization_id = p_organization_id AND je.source_table = 'deposit_settlements'
+       AND ca.code IN ('1110', '1120') AND je.entry_date BETWEEN v_from AND v_to
+       AND jl.credit > 0 AND je.is_reversal_of IS NULL
+       AND NOT EXISTS (SELECT 1 FROM journal_entries r WHERE r.is_reversal_of = je.id);
+
+    SELECT COALESCE(SUM(outstanding), 0) INTO v_outstanding_total
+      FROM v_outstanding_receivables WHERE organization_id = p_organization_id AND outstanding > 0;
+    SELECT COALESCE(SUM(GREATEST(-outstanding, 0)), 0) INTO v_advance_total
+      FROM v_outstanding_receivables WHERE organization_id = p_organization_id;
+    SELECT COALESCE(SUM(deposit_held), 0) INTO v_deposits_held
+      FROM v_advance_balances WHERE organization_id = p_organization_id;
+    SELECT COALESCE(cash_on_hand, 0) INTO v_cash_balance
+      FROM v_org_cash_balance WHERE organization_id = p_organization_id;
+    SELECT COALESCE(SUM(active_tenants), 0) INTO v_active_tenants
+      FROM v_active_tenants WHERE organization_id = p_organization_id;
+
+    -- ââ Bed counts (matches tenant lifecycle) âââââââââââââââââââââââââââââ
+    -- A live bed counts as Occupied / Notice / Booked according to the
+    -- active allotment's staying_status. Beds with no active allotment are
+    -- Vacant.
+    WITH live_beds AS (
+        SELECT b.id
+          FROM beds b
+          JOIN apartments a ON a.id = b.apartment_id
+         WHERE b.organization_id = p_organization_id
+           AND b.status::text = 'Live'
+           AND a.status::text = 'Live'
+    ), bed_status AS (
+        SELECT
+            lb.id AS bed_id,
+            (
+                SELECT al.staying_status
+                  FROM tenant_allotments al
+                 WHERE al.organization_id = p_organization_id
+                   AND al.bed_id = lb.id
+                   AND al.staying_status IN ('Staying','On-Notice','Booked')
+                 ORDER BY CASE al.staying_status
+                            WHEN 'Staying' THEN 1
+                            WHEN 'On-Notice' THEN 2
+                            WHEN 'Booked' THEN 3
+                          END,
+                          al.onboarding_date NULLS LAST
+                 LIMIT 1
+            ) AS status
+          FROM live_beds lb
+    )
+    SELECT
+        COUNT(*),
+        COUNT(*) FILTER (WHERE status = 'Staying'),
+        COUNT(*) FILTER (WHERE status = 'On-Notice'),
+        COUNT(*) FILTER (WHERE status = 'Booked'),
+        COUNT(*) FILTER (WHERE status IS NULL)
+      INTO v_total_beds, v_occupied_beds, v_notice_beds, v_booked_beds, v_vacant_beds
+      FROM bed_status;
+
+    -- ââ Monthly time-weighted occupancy ââââââââââââââââââââââââââââââââââ
+    v_month_start := DATE_TRUNC('month', v_today)::date;
+    v_month_end := (DATE_TRUNC('month', v_today) + INTERVAL '1 month' - INTERVAL '1 day')::date;
+    v_days_in_month := (v_month_end - v_month_start)::int + 1;
+    v_month_possible_days := v_total_beds * v_days_in_month;
+
+    WITH live_beds AS (
+        SELECT b.id
+          FROM beds b
+          JOIN apartments a ON a.id = b.apartment_id
+         WHERE b.organization_id = p_organization_id
+           AND b.status::text = 'Live'
+           AND a.status::text = 'Live'
+    ), month_days AS (
+        SELECT generate_series(v_month_start::timestamp, v_month_end::timestamp, INTERVAL '1 day')::date AS d
+    ), bed_day_filled AS (
+        SELECT DISTINCT lb.id AS bed_id, md.d
+          FROM live_beds lb
+          CROSS JOIN month_days md
+         WHERE EXISTS (
+             SELECT 1 FROM tenant_allotments al
+              WHERE al.organization_id = p_organization_id
+                AND al.bed_id = lb.id
+                AND (
+                    (al.staying_status = 'Staying'
+                        AND al.onboarding_date IS NOT NULL
+                        AND al.onboarding_date <= md.d)
+                    OR (al.staying_status = 'On-Notice'
+                        AND al.onboarding_date IS NOT NULL
+                        AND al.onboarding_date <= md.d
+                        AND (al.actual_exit_date IS NULL OR al.actual_exit_date >= md.d))
+                    OR (al.staying_status = 'Booked'
+                        AND COALESCE(al.booking_date, al.onboarding_date) IS NOT NULL
+                        AND COALESCE(al.booking_date, al.onboarding_date) <= md.d)
+                    OR (al.staying_status = 'Exited'
+                        AND al.onboarding_date IS NOT NULL
+                        AND al.actual_exit_date IS NOT NULL
+                        AND al.onboarding_date <= md.d
+                        AND al.actual_exit_date >= md.d)
+                )
+         )
+    )
+    SELECT COUNT(*) INTO v_month_filled_days FROM bed_day_filled;
+
+    v_month_occupancy_pct := CASE
+        WHEN v_month_possible_days > 0
+            THEN ROUND(100.0 * v_month_filled_days / v_month_possible_days, 2)
+        ELSE 0
+    END;
+
+    SELECT COUNT(*) INTO v_active_tickets FROM maintenance_tickets
+     WHERE organization_id = p_organization_id
+       AND status NOT IN ('closed','resolved','completed','cancelled');
+
+    v_result := jsonb_build_object(
+        'period', jsonb_build_object('from', v_from, 'to', v_to, 'preset', p_period),
+        'accounting', jsonb_build_object(
+            'totalRevenue', v_revenue,
+            'totalRentalRevenue', v_rental_income,
+            'totalEbCharged', v_eb_income,
+            'totalGuestStay', v_guest_stay_income,
+            'totalOnboardingCharges', v_onboarding_income,
+            'totalLateFees', v_late_fees_income,
+            'totalExitCharges', v_exit_charges_income,
+            'totalExpenses', v_expenses,
+            'expenseBreakdown', jsonb_build_object(
+                'ownerRent', v_owner_rent, 'electricity', v_electricity, 'maintenance', v_maintenance,
+                'housekeeping', v_housekeeping, 'utilities', v_utilities,
+                'propertyOps', v_property_ops, 'administrative', v_administrative,
+                'salaries', v_salaries, 'marketing', v_marketing, 'other', v_other_exp
+            ),
+            'totalProfit', v_revenue - v_expenses,
+            'profitMarginPct', ROUND(100.0 * (v_revenue - v_expenses) / NULLIF(v_revenue, 0), 2),
+            'totalCollections', v_collections,
+            'totalCollectionsWithoutDeposit', v_collections_no_deposit,
+            'depositCollections', v_deposit_collections,
+            'totalRefundsGiven', v_refunds_paid,
+            'totalPendingCollection', v_outstanding_total,
+            'totalAdvanceBalance', v_advance_total,
+            'totalDepositsHeld', v_deposits_held,
+            'cashBalance', v_cash_balance
+        ),
+        'tenants', jsonb_build_object('activeTenants', v_active_tenants),
+        'propertyStatus', jsonb_build_object(
+            'total', v_total_beds,
+            'occupied', v_occupied_beds,
+            'notice', v_notice_beds,
+            'booked', v_booked_beds,
+            'vacant', v_vacant_beds,
+            'occupancyPct', ROUND(100.0 * (v_occupied_beds + v_notice_beds) / NULLIF(v_total_beds, 0), 2),
+            'monthOccupancyPct', v_month_occupancy_pct,
+            'monthFilledBedDays', v_month_filled_days,
+            'monthPossibleBedDays', v_month_possible_days,
+            'monthDays', v_days_in_month
+        ),
+        'tickets', jsonb_build_object('activeCount', v_active_tickets),
+        'meta', jsonb_build_object('source','journal_v2','computed_at', now())
+    );
+    RETURN v_result;
+END $function$
+"
+public,guard_deposit_transfer_before_onboarding,,trigger,function,true,1097,"CREATE OR REPLACE FUNCTION public.guard_deposit_transfer_before_onboarding()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_je          journal_entries%ROWTYPE;
+  v_onboarding  date;
+  v_acct_code   text;
+BEGIN
+  SELECT je.* INTO v_je
+  FROM journal_entries je
+  WHERE je.id = NEW.journal_entry_id;
+
+  IF v_je.source_table IS DISTINCT FROM 'manual' THEN
+    RETURN NEW;
+  END IF;
+
+  IF COALESCE(v_je.description, '') NOT ILIKE '%deposit transfer%' THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT ca.code INTO v_acct_code
+  FROM coa_accounts ca
+  WHERE ca.id = NEW.account_id;
+
+  IF v_acct_code IS DISTINCT FROM '2100' OR COALESCE(NEW.credit, 0) <= 0 THEN
+    RETURN NEW;
+  END IF;
+
+  IF NEW.allotment_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT ta.onboarding_date INTO v_onboarding
+  FROM tenant_allotments ta
+  WHERE ta.id = NEW.allotment_id;
+
+  IF v_onboarding IS NOT NULL AND v_je.entry_date < v_onboarding THEN
+    RAISE EXCEPTION
+      'Deposit transfer entry_date (%) cannot be before allotment onboarding_date (%) for allotment %',
+      v_je.entry_date, v_onboarding, NEW.allotment_id
+      USING ERRCODE = 'check_violation';
+  END IF;
+
+  RETURN NEW;
+END;
+$function$
+"
+public,log_journal_entry_post,,trigger,function,true,710,"CREATE OR REPLACE FUNCTION public.log_journal_entry_post()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_total_debit  numeric;
+    v_total_credit numeric;
+BEGIN
+    SELECT COALESCE(SUM(debit), 0), COALESCE(SUM(credit), 0)
+      INTO v_total_debit, v_total_credit
+      FROM journal_lines WHERE journal_entry_id = NEW.id;
+
+    INSERT INTO financial_audit_log (
+        organization_id, journal_entry_id, operation, actor_user_id,
+        source_table, source_id, period, total_debit, total_credit, metadata
+    ) VALUES (
+        NEW.organization_id, NEW.id,
+        CASE WHEN NEW.is_reversal_of IS NOT NULL THEN 'REVERSAL' ELSE 'POST' END,
+        auth.uid(),
+        NEW.source_table, NEW.source_id, NEW.period,
+        v_total_debit, v_total_credit,
+        NEW.metadata
+    );
+    RETURN NEW;
+END $function$
+"
+public,normalize_owner_payment_journal_dates,,trigger,function,true,405,"CREATE OR REPLACE FUNCTION public.normalize_owner_payment_journal_dates()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_bill_date date;
+BEGIN
+  IF NEW.source_table IS DISTINCT FROM 'owner_payments' OR NEW.source_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT bill_date
+    INTO v_bill_date
+    FROM owner_payments
+   WHERE id = NEW.source_id;
+
+  IF v_bill_date IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  NEW.entry_date := v_bill_date;
+  NEW.period     := to_char(v_bill_date, 'YYYY-MM');
+
+  RETURN NEW;
+END;
+$function$
+"
+public,sync_tenant_staying_status,,trigger,function,true,477,"CREATE OR REPLACE FUNCTION public.sync_tenant_staying_status()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE
+  latest_status text;
+BEGIN
+  SELECT staying_status::text INTO latest_status
+  FROM tenant_allotments
+  WHERE tenant_id = NEW.tenant_id
+  ORDER BY
+    CASE staying_status::text
+      WHEN 'Staying' THEN 1
+      WHEN 'On-Notice' THEN 2
+      WHEN 'Booked' THEN 3
+      ELSE 4
+    END,
+    created_at DESC
+  LIMIT 1;
+
+  IF latest_status IS NOT NULL THEN
+    UPDATE tenants SET staying_status = lower(latest_status) WHERE id = NEW.tenant_id;
+  END IF;
+  RETURN NEW;
+END;
+$function$
+"
+public,sync_tenant_staying_status_on_delete,,trigger,function,true,420,"CREATE OR REPLACE FUNCTION public.sync_tenant_staying_status_on_delete()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE latest_status text;
+BEGIN
+  SELECT staying_status::text INTO latest_status
+  FROM tenant_allotments
+  WHERE tenant_id = OLD.tenant_id
+  ORDER BY
+    CASE staying_status::text
+      WHEN 'Staying' THEN 1 WHEN 'On-Notice' THEN 2 WHEN 'Booked' THEN 3 ELSE 4
+    END, created_at DESC
+  LIMIT 1;
+  UPDATE tenants
+    SET staying_status = COALESCE(latest_status, 'new')
+  WHERE id = OLD.tenant_id;
+  RETURN OLD;
+END;
+$function$
+"
+public,trg_adjustment_journal_post,,trigger,function,true,2723,"CREATE OR REPLACE FUNCTION public.trg_adjustment_journal_post()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_existing_je uuid;
+    v_lines       jsonb;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        IF COALESCE(NEW.is_deleted, FALSE) THEN RETURN NEW; END IF;
+        v_lines := build_adjustment_lines(NEW.id);
+        IF jsonb_array_length(v_lines) > 0 THEN
+            PERFORM post_journal_entry(
+                NEW.organization_id,
+                COALESCE(NEW.adjustment_date, current_date),
+                NEW.adjustment_type || ' — ' || COALESCE(NEW.reason, NEW.category),
+                'tenant_adjustments', NEW.id, v_lines,
+                jsonb_build_object('category', NEW.category,
+                                   'reference_type', NEW.reference_type)
+            );
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'UPDATE' THEN
+        IF COALESCE(NEW.is_deleted, FALSE) AND NOT COALESCE(OLD.is_deleted, FALSE) THEN
+            v_existing_je := find_journal_entry_for_source('tenant_adjustments', NEW.id);
+            IF v_existing_je IS NOT NULL THEN
+                PERFORM reverse_journal_entry(v_existing_je, 'adjustment soft-deleted');
+            END IF;
+            RETURN NEW;
+        END IF;
+        IF NOT COALESCE(NEW.is_deleted, FALSE) AND COALESCE(OLD.is_deleted, FALSE) THEN
+            v_lines := build_adjustment_lines(NEW.id);
+            PERFORM post_journal_entry(
+                NEW.organization_id,
+                COALESCE(NEW.adjustment_date, current_date),
+                'Adjustment re-posted',
+                'tenant_adjustments', NEW.id, v_lines
+            );
+            RETURN NEW;
+        END IF;
+        IF NEW.amount IS DISTINCT FROM OLD.amount
+           OR NEW.adjustment_type IS DISTINCT FROM OLD.adjustment_type
+           OR NEW.category IS DISTINCT FROM OLD.category
+        THEN
+            v_existing_je := find_journal_entry_for_source('tenant_adjustments', NEW.id);
+            IF v_existing_je IS NOT NULL THEN
+                PERFORM reverse_journal_entry(v_existing_je, 'adjustment changed');
+            END IF;
+            v_lines := build_adjustment_lines(NEW.id);
+            IF jsonb_array_length(v_lines) > 0 AND NOT COALESCE(NEW.is_deleted, FALSE) THEN
+                PERFORM post_journal_entry(
+                    NEW.organization_id,
+                    COALESCE(NEW.adjustment_date, current_date),
+                    'Adjustment corrected',
+                    'tenant_adjustments', NEW.id, v_lines
+                );
+            END IF;
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'DELETE' THEN
+        -- trg_cascade_je_tenant_adjustments removes journal rows; do not reverse here.
+        RETURN OLD;
+    END IF;
+
+    RETURN NULL;
+END
+$function$
+"
+public,trg_expense_journal_post,,trigger,function,true,2280,"CREATE OR REPLACE FUNCTION public.trg_expense_journal_post()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_existing_je uuid;
+    v_lines       jsonb;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        v_lines := build_expense_lines(NEW.id);
+        IF jsonb_array_length(v_lines) > 0 THEN
+            PERFORM post_journal_entry(
+                NEW.organization_id,
+                COALESCE(NEW.expense_date, current_date),
+                COALESCE(NEW.description, 'Expense'),
+                'expenses', NEW.id, v_lines,
+                jsonb_build_object('category_id', NEW.category_id,
+                                   'subcategory_id', NEW.subcategory_id,
+                                   'issue_type_id', NEW.issue_type_id,
+                                   'data_source', NEW.data_source)
+            );
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'UPDATE' THEN
+        IF NEW.amount IS DISTINCT FROM OLD.amount
+           OR NEW.category_id IS DISTINCT FROM OLD.category_id
+           OR NEW.subcategory_id IS DISTINCT FROM OLD.subcategory_id
+           OR NEW.issue_type_id IS DISTINCT FROM OLD.issue_type_id
+           OR NEW.expense_date IS DISTINCT FROM OLD.expense_date
+           OR NEW.property_id IS DISTINCT FROM OLD.property_id
+           OR NEW.apartment_id IS DISTINCT FROM OLD.apartment_id
+           OR NEW.bed_id IS DISTINCT FROM OLD.bed_id
+        THEN
+            v_existing_je := find_journal_entry_for_source('expenses', NEW.id);
+            IF v_existing_je IS NOT NULL THEN
+                PERFORM reverse_journal_entry(v_existing_je, 'expense changed');
+            END IF;
+            v_lines := build_expense_lines(NEW.id);
+            IF jsonb_array_length(v_lines) > 0 THEN
+                PERFORM post_journal_entry(
+                    NEW.organization_id,
+                    COALESCE(NEW.expense_date, current_date),
+                    COALESCE(NEW.description, 'Expense (corrected)'),
+                    'expenses', NEW.id, v_lines
+                );
+            END IF;
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'DELETE' THEN
+        v_existing_je := find_journal_entry_for_source('expenses', OLD.id);
+        IF v_existing_je IS NOT NULL THEN
+            PERFORM reverse_journal_entry(v_existing_je, 'expense deleted');
+        END IF;
+        RETURN OLD;
+    END IF;
+
+    RETURN NULL;
+END $function$
+"
+public,trg_invoice_journal_post,,trigger,function,true,3694,"CREATE OR REPLACE FUNCTION public.trg_invoice_journal_post()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_existing_je uuid;
+    v_lines       jsonb;
+    v_inv_date    date;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        IF COALESCE(NEW.is_deleted, FALSE) THEN
+            RETURN NEW;  -- don't post deleted-on-insert rows
+        END IF;
+        v_lines := build_invoice_lines(NEW.id);
+        IF jsonb_array_length(v_lines) > 0 THEN
+            v_inv_date := COALESCE(NEW.invoice_date,
+                                   (NEW.billing_month || '-01')::date,
+                                   NEW.created_at::date,
+                                   current_date);
+            PERFORM post_journal_entry(
+                NEW.organization_id, v_inv_date,
+                'Invoice ' || COALESCE(NEW.invoice_number, NEW.id::text),
+                'invoices', NEW.id, v_lines,
+                jsonb_build_object('invoice_type', NEW.invoice_type,
+                                   'billing_month', NEW.billing_month)
+            );
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'UPDATE' THEN
+        -- Soft-delete: reverse the existing entry
+        IF COALESCE(NEW.is_deleted, FALSE) AND NOT COALESCE(OLD.is_deleted, FALSE) THEN
+            v_existing_je := find_journal_entry_for_source('invoices', NEW.id);
+            IF v_existing_je IS NOT NULL THEN
+                PERFORM reverse_journal_entry(v_existing_je, 'invoice soft-deleted');
+            END IF;
+            RETURN NEW;
+        END IF;
+        -- Un-delete (rare): re-post
+        IF NOT COALESCE(NEW.is_deleted, FALSE) AND COALESCE(OLD.is_deleted, FALSE) THEN
+            v_lines := build_invoice_lines(NEW.id);
+            v_inv_date := COALESCE(NEW.invoice_date,
+                                   (NEW.billing_month || '-01')::date,
+                                   current_date);
+            PERFORM post_journal_entry(
+                NEW.organization_id, v_inv_date,
+                'Invoice ' || COALESCE(NEW.invoice_number, NEW.id::text) || ' (re-posted)',
+                'invoices', NEW.id, v_lines
+            );
+            RETURN NEW;
+        END IF;
+        -- Material edit: reverse and repost
+        IF NEW.total_amount IS DISTINCT FROM OLD.total_amount
+           OR NEW.rent_amount IS DISTINCT FROM OLD.rent_amount
+           OR NEW.electricity_amount IS DISTINCT FROM OLD.electricity_amount
+           OR NEW.other_charges IS DISTINCT FROM OLD.other_charges
+           OR NEW.late_fee IS DISTINCT FROM OLD.late_fee
+           OR NEW.invoice_type IS DISTINCT FROM OLD.invoice_type
+        THEN
+            v_existing_je := find_journal_entry_for_source('invoices', NEW.id);
+            IF v_existing_je IS NOT NULL THEN
+                PERFORM reverse_journal_entry(v_existing_je, 'invoice amount changed');
+            END IF;
+            v_lines := build_invoice_lines(NEW.id);
+            IF jsonb_array_length(v_lines) > 0 AND NOT COALESCE(NEW.is_deleted, FALSE) THEN
+                v_inv_date := COALESCE(NEW.invoice_date,
+                                       (NEW.billing_month || '-01')::date,
+                                       current_date);
+                PERFORM post_journal_entry(
+                    NEW.organization_id, v_inv_date,
+                    'Invoice ' || COALESCE(NEW.invoice_number, NEW.id::text) || ' (corrected)',
+                    'invoices', NEW.id, v_lines
+                );
+            END IF;
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'DELETE' THEN
+        v_existing_je := find_journal_entry_for_source('invoices', OLD.id);
+        IF v_existing_je IS NOT NULL THEN
+            PERFORM reverse_journal_entry(v_existing_je, 'invoice hard-deleted');
+        END IF;
+        RETURN OLD;
+    END IF;
+
+    RETURN NULL;
+END $function$
+"
+public,trg_receipt_journal_post,,trigger,function,true,8064,"CREATE OR REPLACE FUNCTION public.trg_receipt_journal_post()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_existing_je uuid;
+    v_lines       jsonb;
+    v_ar_id       uuid;
+    v_onb_inc_id  uuid;
+    v_property_id uuid;
+    v_apartment_id uuid;
+    v_bed_id      uuid;
+    v_amount      numeric;
+    v_inc_lines   jsonb;
+    v_receipt_label text;
+    v_needs_repost boolean;
+BEGIN
+    -- ── Shared poster: reverse nothing, just post the receipt's journal(s) from
+    --    the current NEW row. Used by INSERT and by the UPDATE repost path. ──
+    -- (inlined below rather than a sub-function to keep this self-contained)
+
+    IF TG_OP = 'INSERT' THEN
+        IF COALESCE(NEW.is_deleted, FALSE) THEN RETURN NEW; END IF;
+
+        v_receipt_label := 'Payment Received - ' || COALESCE(NULLIF(BTRIM(NEW.receipt_number), ''), NEW.id::text);
+        v_lines := build_receipt_lines(NEW.id);
+        IF jsonb_array_length(v_lines) > 0 THEN
+            PERFORM post_journal_entry(
+                NEW.organization_id,
+                COALESCE(NEW.payment_date, current_date),
+                v_receipt_label,
+                'receipts', NEW.id, v_lines,
+                jsonb_build_object('receipt_type', NEW.receipt_type,
+                                   'payment_mode', NEW.payment_mode)
+            );
+        END IF;
+
+        IF NEW.receipt_type = 'booking' AND NEW.tenant_allotment_id IS NOT NULL THEN
+            v_amount     := COALESCE(NEW.amount_paid, 0);
+            v_ar_id      := coa_id(NEW.organization_id, '1200');
+            v_onb_inc_id := coa_id(NEW.organization_id, '4300');
+            SELECT property_id, apartment_id, bed_id
+              INTO v_property_id, v_apartment_id, v_bed_id
+              FROM tenant_allotments WHERE id = NEW.tenant_allotment_id;
+
+            v_inc_lines := jsonb_build_array(
+                jsonb_build_object(
+                    'account_id',   v_ar_id,
+                    'debit',        v_amount,
+                    'party_kind',   'tenant',
+                    'party_id',     NEW.tenant_id,
+                    'allotment_id', NEW.tenant_allotment_id,
+                    'property_id',  v_property_id,
+                    'apartment_id', v_apartment_id,
+                    'bed_id',       v_bed_id,
+                    'memo',         'Onboarding Charges Received'
+                ),
+                jsonb_build_object(
+                    'account_id',   v_onb_inc_id,
+                    'credit',       v_amount,
+                    'property_id',  v_property_id,
+                    'memo',         'Onboarding Charges Received'
+                )
+            );
+            PERFORM post_journal_entry(
+                NEW.organization_id,
+                COALESCE(NEW.payment_date, current_date),
+                'Onboarding Charges Received',
+                'receipts', NEW.id, v_inc_lines,
+                jsonb_build_object('receipt_type', NEW.receipt_type, 'kind', 'onboarding_income')
+            );
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'UPDATE' THEN
+        -- 1) Soft-delete: reverse and stop (unchanged behaviour).
+        IF COALESCE(NEW.is_deleted, FALSE) AND NOT COALESCE(OLD.is_deleted, FALSE) THEN
+            FOR v_existing_je IN
+                SELECT je.id FROM journal_entries je
+                WHERE je.source_table='receipts' AND je.source_id=NEW.id
+                  AND je.is_reversal_of IS NULL
+                  AND NOT EXISTS (SELECT 1 FROM journal_entries r WHERE r.is_reversal_of=je.id)
+            LOOP
+                PERFORM reverse_journal_entry(v_existing_je, 'receipt soft-deleted');
+            END LOOP;
+            RETURN NEW;
+        END IF;
+
+        -- 2) Live row: repost when a journal-affecting field changed, or when the
+        --    row is being restored from soft-deleted.
+        v_needs_repost :=
+            NOT COALESCE(NEW.is_deleted, FALSE)
+            AND (
+                COALESCE(OLD.is_deleted, FALSE) = TRUE
+                OR NEW.amount_paid       IS DISTINCT FROM OLD.amount_paid
+                OR NEW.payment_date      IS DISTINCT FROM OLD.payment_date
+                OR NEW.payment_mode      IS DISTINCT FROM OLD.payment_mode
+                OR NEW.bank_account_id   IS DISTINCT FROM OLD.bank_account_id
+                OR NEW.receipt_type      IS DISTINCT FROM OLD.receipt_type
+                OR NEW.tenant_id         IS DISTINCT FROM OLD.tenant_id
+                OR NEW.tenant_allotment_id IS DISTINCT FROM OLD.tenant_allotment_id
+                OR NEW.receipt_number    IS DISTINCT FROM OLD.receipt_number
+            );
+
+        IF NOT v_needs_repost THEN
+            RETURN NEW;
+        END IF;
+
+        -- Reverse the receipt's existing live journal entries...
+        FOR v_existing_je IN
+            SELECT je.id FROM journal_entries je
+            WHERE je.source_table='receipts' AND je.source_id=NEW.id
+              AND je.is_reversal_of IS NULL
+              AND NOT EXISTS (SELECT 1 FROM journal_entries r WHERE r.is_reversal_of=je.id)
+        LOOP
+            PERFORM reverse_journal_entry(v_existing_je, 'receipt edited — reposting');
+        END LOOP;
+
+        -- ...then re-post fresh from the new values (mirrors the INSERT path).
+        v_receipt_label := 'Payment Received - ' || COALESCE(NULLIF(BTRIM(NEW.receipt_number), ''), NEW.id::text);
+        v_lines := build_receipt_lines(NEW.id);
+        IF jsonb_array_length(v_lines) > 0 THEN
+            PERFORM post_journal_entry(
+                NEW.organization_id,
+                COALESCE(NEW.payment_date, current_date),
+                v_receipt_label,
+                'receipts', NEW.id, v_lines,
+                jsonb_build_object('receipt_type', NEW.receipt_type,
+                                   'payment_mode', NEW.payment_mode)
+            );
+        END IF;
+
+        IF NEW.receipt_type = 'booking' AND NEW.tenant_allotment_id IS NOT NULL THEN
+            v_amount     := COALESCE(NEW.amount_paid, 0);
+            v_ar_id      := coa_id(NEW.organization_id, '1200');
+            v_onb_inc_id := coa_id(NEW.organization_id, '4300');
+            SELECT property_id, apartment_id, bed_id
+              INTO v_property_id, v_apartment_id, v_bed_id
+              FROM tenant_allotments WHERE id = NEW.tenant_allotment_id;
+
+            v_inc_lines := jsonb_build_array(
+                jsonb_build_object(
+                    'account_id',   v_ar_id,
+                    'debit',        v_amount,
+                    'party_kind',   'tenant',
+                    'party_id',     NEW.tenant_id,
+                    'allotment_id', NEW.tenant_allotment_id,
+                    'property_id',  v_property_id,
+                    'apartment_id', v_apartment_id,
+                    'bed_id',       v_bed_id,
+                    'memo',         'Onboarding Charges Received'
+                ),
+                jsonb_build_object(
+                    'account_id',   v_onb_inc_id,
+                    'credit',       v_amount,
+                    'property_id',  v_property_id,
+                    'memo',         'Onboarding Charges Received'
+                )
+            );
+            PERFORM post_journal_entry(
+                NEW.organization_id,
+                COALESCE(NEW.payment_date, current_date),
+                'Onboarding Charges Received',
+                'receipts', NEW.id, v_inc_lines,
+                jsonb_build_object('receipt_type', NEW.receipt_type, 'kind', 'onboarding_income')
+            );
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'DELETE' THEN
+        FOR v_existing_je IN
+            SELECT je.id FROM journal_entries je
+            WHERE je.source_table='receipts' AND je.source_id=OLD.id
+              AND je.is_reversal_of IS NULL
+              AND NOT EXISTS (SELECT 1 FROM journal_entries r WHERE r.is_reversal_of=je.id)
+        LOOP
+            PERFORM reverse_journal_entry(v_existing_je, 'receipt hard-deleted');
+        END LOOP;
+        RETURN OLD;
+    END IF;
+    RETURN NULL;
+END
+$function$
+"
+public,trg_settlement_journal_post,,trigger,function,true,3705,"CREATE OR REPLACE FUNCTION public.trg_settlement_journal_post()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_existing_je uuid;
+    v_lines       jsonb;
+    v_should_post boolean;
+    v_was_posted  boolean;
+BEGIN
+    v_should_post := COALESCE(NEW.status, '') IN ('completed', 'approved')
+                     AND NOT COALESCE(NEW.is_deleted, FALSE);
+    v_was_posted  := TG_OP = 'UPDATE'
+                     AND COALESCE(OLD.status, '') IN ('completed', 'approved')
+                     AND NOT COALESCE(OLD.is_deleted, FALSE);
+
+    IF TG_OP = 'INSERT' THEN
+        IF v_should_post THEN
+            v_lines := build_settlement_lines(NEW.id);
+            IF jsonb_array_length(v_lines) > 0 THEN
+                PERFORM post_journal_entry(
+                    NEW.organization_id,
+                    COALESCE(NEW.settlement_date, current_date),
+                    'Deposit settlement',
+                    'deposit_settlements', NEW.id, v_lines,
+                    jsonb_build_object('status', NEW.status)
+                );
+            END IF;
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'UPDATE' THEN
+        -- Status transition: not-posted → posted
+        IF v_should_post AND NOT v_was_posted THEN
+            v_lines := build_settlement_lines(NEW.id);
+            IF jsonb_array_length(v_lines) > 0 THEN
+                PERFORM post_journal_entry(
+                    NEW.organization_id,
+                    COALESCE(NEW.settlement_date, current_date),
+                    'Deposit settlement',
+                    'deposit_settlements', NEW.id, v_lines
+                );
+            END IF;
+            RETURN NEW;
+        END IF;
+        -- Status transition: posted → not-posted (cancelled, soft-deleted, or rolled back)
+        IF v_was_posted AND NOT v_should_post THEN
+            v_existing_je := find_journal_entry_for_source('deposit_settlements', NEW.id);
+            IF v_existing_je IS NOT NULL THEN
+                PERFORM reverse_journal_entry(v_existing_je, 'settlement reverted');
+            END IF;
+            RETURN NEW;
+        END IF;
+        -- Both posted, but amounts changed → reverse and repost
+        IF v_was_posted AND v_should_post THEN
+            IF NEW.deposit_amount IS DISTINCT FROM OLD.deposit_amount
+               OR NEW.pending_rent IS DISTINCT FROM OLD.pending_rent
+               OR NEW.pending_eb IS DISTINCT FROM OLD.pending_eb
+               OR NEW.pending_late_fees IS DISTINCT FROM OLD.pending_late_fees
+               OR NEW.damages IS DISTINCT FROM OLD.damages
+               OR NEW.other_deductions IS DISTINCT FROM OLD.other_deductions
+               OR NEW.refund_amount IS DISTINCT FROM OLD.refund_amount
+            THEN
+                v_existing_je := find_journal_entry_for_source('deposit_settlements', NEW.id);
+                IF v_existing_je IS NOT NULL THEN
+                    PERFORM reverse_journal_entry(v_existing_je, 'settlement amounts changed');
+                END IF;
+                v_lines := build_settlement_lines(NEW.id);
+                IF jsonb_array_length(v_lines) > 0 THEN
+                    PERFORM post_journal_entry(
+                        NEW.organization_id,
+                        COALESCE(NEW.settlement_date, current_date),
+                        'Deposit settlement (corrected)',
+                        'deposit_settlements', NEW.id, v_lines
+                    );
+                END IF;
+            END IF;
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'DELETE' THEN
+        v_existing_je := find_journal_entry_for_source('deposit_settlements', OLD.id);
+        IF v_existing_je IS NOT NULL THEN
+            PERFORM reverse_journal_entry(v_existing_je, 'settlement hard-deleted');
+        END IF;
+        RETURN OLD;
+    END IF;
+
+    RETURN NULL;
+END $function$
+"
+public,validate_deposit_settlement,,trigger,function,true,1428,"CREATE OR REPLACE FUNCTION public.validate_deposit_settlement()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_exit_date date;
+  v_status    text;
+  v_total_ded numeric;
+BEGIN
+  v_total_ded := COALESCE(NEW.pending_rent, 0)
+               + COALESCE(NEW.pending_eb, 0)
+               + COALESCE(NEW.pending_late_fees, 0)
+               + COALESCE(NEW.damages, 0)
+               + COALESCE(NEW.other_deductions, 0);
+
+  IF v_total_ded <= 0 THEN
+    RETURN NEW;   -- pure transfer / refund-only row: always allowed
+  END IF;
+
+  IF NEW.allotment_id IS NULL THEN
+    RETURN NEW;   -- legacy tenant-only settlement: keep prior behaviour
+  END IF;
+
+  SELECT staying_status::text, actual_exit_date
+    INTO v_status, v_exit_date
+    FROM public.tenant_allotments
+   WHERE id = NEW.allotment_id;
+
+  -- Block ONLY the obviously wrong case: deductions on an allotment that
+  -- has neither an actual_exit_date nor an Exited / Cancelled status.
+  IF v_exit_date IS NULL
+     AND COALESCE(v_status, '') NOT IN ('Exited', 'Cancelled') THEN
+    RAISE EXCEPTION
+      'deposit_settlements: cannot record ₹% in deductions on allotment % (status=%, actual_exit_date IS NULL). The tenant must have exited (or the row must be a deduction-free transfer settlement).',
+      v_total_ded, NEW.allotment_id, COALESCE(v_status, 'unknown')
+      USING ERRCODE = 'check_violation',
+            HINT = 'If you intended to record a deposit transfer, leave all deduction fields at zero.';
+  END IF;
+
+  RETURN NEW;
+END;
+$function$
+"

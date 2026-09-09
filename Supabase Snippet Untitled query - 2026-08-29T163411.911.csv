@@ -1,0 +1,29 @@
+schema_name,routine_name,arguments,return_type,definition
+public,log_journal_entry_post,,trigger,"CREATE OR REPLACE FUNCTION public.log_journal_entry_post()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_total_debit  numeric;
+    v_total_credit numeric;
+BEGIN
+    SELECT COALESCE(SUM(debit), 0), COALESCE(SUM(credit), 0)
+      INTO v_total_debit, v_total_credit
+      FROM journal_lines WHERE journal_entry_id = NEW.id;
+
+    INSERT INTO financial_audit_log (
+        organization_id, journal_entry_id, operation, actor_user_id,
+        source_table, source_id, period, total_debit, total_credit, metadata
+    ) VALUES (
+        NEW.organization_id, NEW.id,
+        CASE WHEN NEW.is_reversal_of IS NOT NULL THEN 'REVERSAL' ELSE 'POST' END,
+        auth.uid(),
+        NEW.source_table, NEW.source_id, NEW.period,
+        v_total_debit, v_total_credit,
+        NEW.metadata
+    );
+    RETURN NEW;
+END $function$
+"

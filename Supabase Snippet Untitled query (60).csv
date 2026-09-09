@@ -1,0 +1,9 @@
+diagnostic,rows
+v_deposit_ledger_anomalies,22
+v_diag_allotment_balance_drift,713
+v_diag_deposit_phantom,32
+v_diag_invoice_drift,2227
+v_diag_orphan_receipts,0
+v_diag_owner_rent_missing_from_profit,46
+v_exit_reconciliation_worklist,45
+v_je_intentional_skips,20

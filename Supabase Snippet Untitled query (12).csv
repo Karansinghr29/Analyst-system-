@@ -1,0 +1,12 @@
+schema_name,table_name,column_name,data_type,relationship_kind
+market,amenities_master,aliases,text[],ARRAY
+market,competitor_intelligence,amenities,text[],ARRAY
+market,competitor_intelligence,usp_tags,text[],ARRAY
+market,competitor_properties,amenities,text[],ARRAY
+public,assets,bed_id,uuid[],ARRAY
+public,companies,shared_account_only_departments,text[],ARRAY
+public,employees,face_descriptor,double precision[],ARRAY
+public,maintenance_tickets,photo_urls,text[],ARRAY
+public,organization_bank_accounts,upi_ids,text[],ARRAY
+public,properties,photo_urls,text[],ARRAY
+public,receipts_dedup_audit,receipt_ids,uuid[],ARRAY

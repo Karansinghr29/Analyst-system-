@@ -1,0 +1,75 @@
+schema_name,routine_name,arguments,return_type,definition
+public,trg_adjustment_journal_post,,trigger,"CREATE OR REPLACE FUNCTION public.trg_adjustment_journal_post()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_existing_je uuid;
+    v_lines       jsonb;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        IF COALESCE(NEW.is_deleted, FALSE) THEN RETURN NEW; END IF;
+        v_lines := build_adjustment_lines(NEW.id);
+        IF jsonb_array_length(v_lines) > 0 THEN
+            PERFORM post_journal_entry(
+                NEW.organization_id,
+                COALESCE(NEW.adjustment_date, current_date),
+                NEW.adjustment_type || ' — ' || COALESCE(NEW.reason, NEW.category),
+                'tenant_adjustments', NEW.id, v_lines,
+                jsonb_build_object('category', NEW.category,
+                                   'reference_type', NEW.reference_type)
+            );
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'UPDATE' THEN
+        IF COALESCE(NEW.is_deleted, FALSE) AND NOT COALESCE(OLD.is_deleted, FALSE) THEN
+            v_existing_je := find_journal_entry_for_source('tenant_adjustments', NEW.id);
+            IF v_existing_je IS NOT NULL THEN
+                PERFORM reverse_journal_entry(v_existing_je, 'adjustment soft-deleted');
+            END IF;
+            RETURN NEW;
+        END IF;
+        IF NOT COALESCE(NEW.is_deleted, FALSE) AND COALESCE(OLD.is_deleted, FALSE) THEN
+            v_lines := build_adjustment_lines(NEW.id);
+            PERFORM post_journal_entry(
+                NEW.organization_id,
+                COALESCE(NEW.adjustment_date, current_date),
+                'Adjustment re-posted',
+                'tenant_adjustments', NEW.id, v_lines
+            );
+            RETURN NEW;
+        END IF;
+        IF NEW.amount IS DISTINCT FROM OLD.amount
+           OR NEW.adjustment_type IS DISTINCT FROM OLD.adjustment_type
+           OR NEW.category IS DISTINCT FROM OLD.category
+        THEN
+            v_existing_je := find_journal_entry_for_source('tenant_adjustments', NEW.id);
+            IF v_existing_je IS NOT NULL THEN
+                PERFORM reverse_journal_entry(v_existing_je, 'adjustment changed');
+            END IF;
+            v_lines := build_adjustment_lines(NEW.id);
+            IF jsonb_array_length(v_lines) > 0 AND NOT COALESCE(NEW.is_deleted, FALSE) THEN
+                PERFORM post_journal_entry(
+                    NEW.organization_id,
+                    COALESCE(NEW.adjustment_date, current_date),
+                    'Adjustment corrected',
+                    'tenant_adjustments', NEW.id, v_lines
+                );
+            END IF;
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'DELETE' THEN
+        -- trg_cascade_je_tenant_adjustments removes journal rows; do not reverse here.
+        RETURN OLD;
+    END IF;
+
+    RETURN NULL;
+END
+$function$
+"

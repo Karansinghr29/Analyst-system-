@@ -1,0 +1,66 @@
+schema_name,routine_name,arguments,return_type,definition
+public,trg_expense_journal_post,,trigger,"CREATE OR REPLACE FUNCTION public.trg_expense_journal_post()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_existing_je uuid;
+    v_lines       jsonb;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        v_lines := build_expense_lines(NEW.id);
+        IF jsonb_array_length(v_lines) > 0 THEN
+            PERFORM post_journal_entry(
+                NEW.organization_id,
+                COALESCE(NEW.expense_date, current_date),
+                COALESCE(NEW.description, 'Expense'),
+                'expenses', NEW.id, v_lines,
+                jsonb_build_object('category_id', NEW.category_id,
+                                   'subcategory_id', NEW.subcategory_id,
+                                   'issue_type_id', NEW.issue_type_id,
+                                   'data_source', NEW.data_source)
+            );
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'UPDATE' THEN
+        IF NEW.amount IS DISTINCT FROM OLD.amount
+           OR NEW.category_id IS DISTINCT FROM OLD.category_id
+           OR NEW.subcategory_id IS DISTINCT FROM OLD.subcategory_id
+           OR NEW.issue_type_id IS DISTINCT FROM OLD.issue_type_id
+           OR NEW.expense_date IS DISTINCT FROM OLD.expense_date
+           OR NEW.property_id IS DISTINCT FROM OLD.property_id
+           OR NEW.apartment_id IS DISTINCT FROM OLD.apartment_id
+           OR NEW.bed_id IS DISTINCT FROM OLD.bed_id
+        THEN
+            v_existing_je := find_journal_entry_for_source('expenses', NEW.id);
+            IF v_existing_je IS NOT NULL THEN
+                PERFORM reverse_journal_entry(v_existing_je, 'expense changed');
+            END IF;
+            v_lines := build_expense_lines(NEW.id);
+            IF jsonb_array_length(v_lines) > 0 THEN
+                PERFORM post_journal_entry(
+                    NEW.organization_id,
+                    COALESCE(NEW.expense_date, current_date),
+                    COALESCE(NEW.description, 'Expense (corrected)'),
+                    'expenses', NEW.id, v_lines
+                );
+            END IF;
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'DELETE' THEN
+        v_existing_je := find_journal_entry_for_source('expenses', OLD.id);
+        IF v_existing_je IS NOT NULL THEN
+            PERFORM reverse_journal_entry(v_existing_je, 'expense deleted');
+        END IF;
+        RETURN OLD;
+    END IF;
+
+    RETURN NULL;
+END $function$
+"

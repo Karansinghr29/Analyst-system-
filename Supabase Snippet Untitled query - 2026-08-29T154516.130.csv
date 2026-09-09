@@ -1,0 +1,2 @@
+organization_id,test_mode_enabled,created_at,updated_at,notifications_enabled,post_invoice_whatsapp_modal_enabled,post_collection_whatsapp_modal_enabled,ai_auto_response_enabled
+00000000-0000-0000-0000-000000000001,false,2026-05-12 12:19:11.228122+00,2026-08-08 12:28:48.909494+00,true,false,false,false

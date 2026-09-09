@@ -1,0 +1,83 @@
+schema_name,routine_name,arguments,return_type,definition
+public,get_bed_occupancy_timeline,"p_bed_id uuid, p_from date, p_to date",jsonb,"CREATE OR REPLACE FUNCTION public.get_bed_occupancy_timeline(p_bed_id uuid, p_from date, p_to date)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  v_now date := current_date;
+  v_to  date := least(p_to, current_date);
+  v_from date;
+  result jsonb;
+begin
+  if p_bed_id is null then return '[]'::jsonb; end if;
+
+  -- Bed availability window start, clamped to p_from.
+  select greatest(coalesce(a.start_date, p_from), p_from)
+    into v_from
+  from beds b join apartments a on a.id = b.apartment_id
+  where b.id = p_bed_id;
+  v_from := coalesce(v_from, p_from);
+
+  with
+  occ as (  -- occupied segments (Staying/On-Notice/Exited), clamped to window
+    select greatest(ta.onboarding_date, v_from) as seg_from,
+           least(coalesce(ta.actual_exit_date, v_now), v_to) as seg_to,
+           ta.tenant_id
+    from tenant_allotments ta
+    where ta.bed_id = p_bed_id
+      and ta.staying_status in ('Staying','On-Notice','Exited')
+      and ta.onboarding_date is not null
+  ),
+  occ_clean as (
+    select seg_from, seg_to, tenant_id from occ where seg_to >= seg_from order by seg_from
+  ),
+  occ_seg as (
+    select 'occupied' as state, seg_from as seg_from, seg_to as seg_to,
+           (seg_to - seg_from) + 1 as days, tenant_id
+    from occ_clean
+  ),
+  -- vacant gaps = window minus occupied, computed between consecutive occupied segments
+  bounds as (
+    select seg_from, seg_to,
+           lag(seg_to) over (order by seg_from) as prev_to
+    from occ_clean
+  ),
+  gap_mid as (
+    select 'vacant' as state, (prev_to + 1) as seg_from, (seg_from - 1) as seg_to,
+           (seg_from - 1) - (prev_to + 1) + 1 as days, null::uuid as tenant_id
+    from bounds where prev_to is not null and (seg_from - 1) >= (prev_to + 1)
+  ),
+  gap_lead as (  -- vacancy before first occupancy
+    select 'vacant' as state, v_from as seg_from, (min(seg_from) - 1) as seg_to,
+           (min(seg_from) - 1) - v_from + 1 as days, null::uuid as tenant_id
+    from occ_clean having min(seg_from) > v_from
+  ),
+  gap_trail as ( -- vacancy after last occupancy up to window end
+    select 'vacant' as state, (max(seg_to) + 1) as seg_from, v_to as seg_to,
+           v_to - (max(seg_to) + 1) + 1 as days, null::uuid as tenant_id
+    from occ_clean having max(seg_to) < v_to
+  ),
+  all_no_occ as ( -- fully vacant window (no occupancy at all)
+    select 'vacant' as state, v_from as seg_from, v_to as seg_to,
+           (v_to - v_from) + 1 as days, null::uuid as tenant_id
+    where not exists (select 1 from occ_clean) and v_to >= v_from
+  ),
+  unioned as (
+    select * from occ_seg
+    union all select * from gap_mid
+    union all select * from gap_lead
+    union all select * from gap_trail
+    union all select * from all_no_occ
+  )
+  select coalesce(jsonb_agg(jsonb_build_object(
+           'state', state, 'from', seg_from, 'to', seg_to, 'days', days, 'tenant_id', tenant_id
+         ) order by seg_from), '[]'::jsonb)
+  into result
+  from unioned where days > 0;
+
+  return result;
+end;
+$function$
+"

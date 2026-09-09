@@ -1,0 +1,14 @@
+schema_name,routine_name,arguments,return_type,definition
+public,_export_profile_name,p_user_id uuid,text,"CREATE OR REPLACE FUNCTION public._export_profile_name(p_user_id uuid)
+ RETURNS text
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+  SELECT COALESCE(p.full_name, p.phone, p.email, u.email)
+  FROM profiles p
+  LEFT JOIN users u ON u.id = p.id
+  WHERE p.id = p_user_id
+  LIMIT 1;
+$function$
+"

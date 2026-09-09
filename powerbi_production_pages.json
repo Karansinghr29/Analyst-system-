@@ -1,0 +1,47 @@
+{
+  "dataset": "AI Business Analytics",
+  "authority": "Analytics Engine → API / production dataset contract → Power BI",
+  "authoring_rule": "Power BI must not calculate an alternative version of any of the 49 semantic metrics. Visuals bind to already-authorized API payloads.",
+  "source": "Trusted export via the existing API. Live Supabase remains QUARANTINED; activating it later must not require rebuilding these pages.",
+  "refresh": {
+    "mode": "API import or DirectQuery against the production dataset contract, not against Postgres/SQL",
+    "cadence": "On demand or scheduled refresh of cached API payloads. Evidence is an immutable export until a later live bind.",
+    "must_not": ["SQL against the database", "service-role credentials", "client-side DAX substitutes for engine metrics"]
+  },
+  "pages": [
+    {
+      "page": "Executive Overview",
+      "api": ["/api/owner/home", "/api/report/executive", "/api/trust"],
+      "visual_rule": "KPI cards only where headline_permitted is true. BLOCK/SHOW_BOTH tiles use conflict or multi-definition visuals. No profit headline card."
+    },
+    {
+      "page": "Financial",
+      "api": ["/api/analytics/financial", "/api/metrics", "/api/metrics/{metric_id}"],
+      "visual_rule": "Bind display_name, trust_level, value only if headline_permitted. Tenant dues and profit use /api/metrics/{id}/conflict."
+    },
+    {
+      "page": "Operations",
+      "api": ["/api/analytics/operations"],
+      "visual_rule": "Occupancy is SHOW_BOTH: multi-definition table, never a single occupancy % card."
+    },
+    {
+      "page": "Risk & Data Quality",
+      "api": ["/api/analytics/risk", "/api/data-quality", "/api/insights"],
+      "visual_rule": "DISCLOSE caveats render beside the number. NOT_DETERMINABLE renders the exact unavailable sentence, never zero."
+    },
+    {
+      "page": "Insights / Attention",
+      "api": ["/api/insights", "/api/changes", "/api/owner/home"],
+      "visual_rule": "Attention queue from engine insights. No invented materiality colours."
+    },
+    {
+      "page": "Trust / Definition disclosures",
+      "api": ["/api/trust", "/api/metrics/{metric_id}/conflict"],
+      "visual_rule": "Every competing definition labelled. Never a winner. Role filtering from /api/roles/{role_id}/workspace only."
+    }
+  ],
+  "role_visibility": {
+    "source": "role_view_registry.csv via /api/roles/{role_id}/workspace",
+    "rule": "Power BI must not hardcode role permissions. Authorization is the existing API role policy."
+  }
+}

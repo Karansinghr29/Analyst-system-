@@ -1,0 +1,93 @@
+schema_name,routine_name,arguments,return_type,definition
+public,trg_invoice_journal_post,,trigger,"CREATE OR REPLACE FUNCTION public.trg_invoice_journal_post()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_existing_je uuid;
+    v_lines       jsonb;
+    v_inv_date    date;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        IF COALESCE(NEW.is_deleted, FALSE) THEN
+            RETURN NEW;  -- don't post deleted-on-insert rows
+        END IF;
+        v_lines := build_invoice_lines(NEW.id);
+        IF jsonb_array_length(v_lines) > 0 THEN
+            v_inv_date := COALESCE(NEW.invoice_date,
+                                   (NEW.billing_month || '-01')::date,
+                                   NEW.created_at::date,
+                                   current_date);
+            PERFORM post_journal_entry(
+                NEW.organization_id, v_inv_date,
+                'Invoice ' || COALESCE(NEW.invoice_number, NEW.id::text),
+                'invoices', NEW.id, v_lines,
+                jsonb_build_object('invoice_type', NEW.invoice_type,
+                                   'billing_month', NEW.billing_month)
+            );
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'UPDATE' THEN
+        -- Soft-delete: reverse the existing entry
+        IF COALESCE(NEW.is_deleted, FALSE) AND NOT COALESCE(OLD.is_deleted, FALSE) THEN
+            v_existing_je := find_journal_entry_for_source('invoices', NEW.id);
+            IF v_existing_je IS NOT NULL THEN
+                PERFORM reverse_journal_entry(v_existing_je, 'invoice soft-deleted');
+            END IF;
+            RETURN NEW;
+        END IF;
+        -- Un-delete (rare): re-post
+        IF NOT COALESCE(NEW.is_deleted, FALSE) AND COALESCE(OLD.is_deleted, FALSE) THEN
+            v_lines := build_invoice_lines(NEW.id);
+            v_inv_date := COALESCE(NEW.invoice_date,
+                                   (NEW.billing_month || '-01')::date,
+                                   current_date);
+            PERFORM post_journal_entry(
+                NEW.organization_id, v_inv_date,
+                'Invoice ' || COALESCE(NEW.invoice_number, NEW.id::text) || ' (re-posted)',
+                'invoices', NEW.id, v_lines
+            );
+            RETURN NEW;
+        END IF;
+        -- Material edit: reverse and repost
+        IF NEW.total_amount IS DISTINCT FROM OLD.total_amount
+           OR NEW.rent_amount IS DISTINCT FROM OLD.rent_amount
+           OR NEW.electricity_amount IS DISTINCT FROM OLD.electricity_amount
+           OR NEW.other_charges IS DISTINCT FROM OLD.other_charges
+           OR NEW.late_fee IS DISTINCT FROM OLD.late_fee
+           OR NEW.invoice_type IS DISTINCT FROM OLD.invoice_type
+        THEN
+            v_existing_je := find_journal_entry_for_source('invoices', NEW.id);
+            IF v_existing_je IS NOT NULL THEN
+                PERFORM reverse_journal_entry(v_existing_je, 'invoice amount changed');
+            END IF;
+            v_lines := build_invoice_lines(NEW.id);
+            IF jsonb_array_length(v_lines) > 0 AND NOT COALESCE(NEW.is_deleted, FALSE) THEN
+                v_inv_date := COALESCE(NEW.invoice_date,
+                                       (NEW.billing_month || '-01')::date,
+                                       current_date);
+                PERFORM post_journal_entry(
+                    NEW.organization_id, v_inv_date,
+                    'Invoice ' || COALESCE(NEW.invoice_number, NEW.id::text) || ' (corrected)',
+                    'invoices', NEW.id, v_lines
+                );
+            END IF;
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'DELETE' THEN
+        v_existing_je := find_journal_entry_for_source('invoices', OLD.id);
+        IF v_existing_je IS NOT NULL THEN
+            PERFORM reverse_journal_entry(v_existing_je, 'invoice hard-deleted');
+        END IF;
+        RETURN OLD;
+    END IF;
+
+    RETURN NULL;
+END $function$
+"

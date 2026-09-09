@@ -1,0 +1,58 @@
+account_code,account_name,tb_debit_excl_reversals,tbd_debit_incl_reversals,tb_credit_excl_reversals,tbd_credit_incl_reversals,debit_difference,credit_difference
+1200,Accounts Receivable - Tenants,84198351.45,92390236.76,84115053.60,92306938.91,-8191885.31,-8191885.31
+1120,Bank - Operating Account,81839404.52,87851416.36,13148415.90,19160427.74,-6012011.84,-6012011.84
+4100,Rental Income,49657.00,1942756.87,64982502.49,66875602.36,-1893099.87,-1893099.87
+2100,Tenant Deposits Held,7513844.00,8560794.00,11734994.00,12781944.00,-1046950.00,-1046950.00
+4200,Electricity Income,2465.00,437291.14,6629429.98,7064256.12,-434826.14,-434826.14
+4900,Other Income,232000.83,317369.83,666589.79,751958.79,-85369.00,-85369.00
+4500,Exit Charges Income,0.00,27000.00,265105.00,292105.00,-27000.00,-27000.00
+4300,Onboarding Fees,0.00,2000.00,321000.00,323000.00,-2000.00,-2000.00
+5630,Bank Charges & CC Fees,2698.52,3192.52,8767.56,9261.56,-494.00,-494.00
+5800,Marketing & Tenant Acquisition,24658.00,24660.00,27.00,29.00,-2.00,-2.00
+2500,Accounts Payable - Vendors,0.00,0.00,1400834.76,1400834.76,0.00,0.00
+3100,Retained Earnings,null,0.00,null,0.00,0.00,0.00
+4400,Late Fees,0.00,0.00,2600.00,2600.00,0.00,0.00
+4600,Damages Recovery,null,0.00,null,0.00,0.00,0.00
+5100,Owner Rent Expense,19019250.00,19019250.00,0.00,0.00,0.00,0.00
+5200,Maintenance & Repairs,null,0.00,null,0.00,0.00,0.00
+5300,Housekeeping & Cleaning,null,0.00,null,0.00,0.00,0.00
+5400,Utilities,null,0.00,null,0.00,0.00,0.00
+5500,Property Operations,null,0.00,null,0.00,0.00,0.00
+5600,Administrative,null,0.00,null,0.00,0.00,0.00
+5700,Salaries & Benefits,null,0.00,null,0.00,0.00,0.00
+5900,Other Expenses,39366.00,39366.00,0.00,0.00,0.00,0.00
+4250,Guest Stay Income,0.00,0.00,122489.00,122489.00,0.00,0.00
+5150,Electricity Payments,1030618.00,1030618.00,0.00,0.00,0.00,0.00
+1110,Cash on Hand,null,0.00,null,0.00,0.00,0.00
+5210,Maintenance - Plumbing,1290.00,1290.00,0.00,0.00,0.00,0.00
+5220,Maintenance - Electrical,12010.00,12010.00,0.00,0.00,0.00,0.00
+5230,Maintenance - Carpentry,559.00,559.00,0.00,0.00,0.00,0.00
+5240,Maintenance - Appliances,45835.00,45835.00,0.00,0.00,0.00,0.00
+5250,Maintenance - Civil & Painting,null,0.00,null,0.00,0.00,0.00
+5260,Maintenance - HVAC,579741.00,579741.00,0.00,0.00,0.00,0.00
+5270,Maintenance - Pest Control,null,0.00,null,0.00,0.00,0.00
+5290,Maintenance - Other,37601.00,37601.00,0.00,0.00,0.00,0.00
+5310,Housekeeping - Salaries,null,0.00,null,0.00,0.00,0.00
+5320,Housekeeping - Supplies,null,0.00,null,0.00,0.00,0.00
+5330,Housekeeping - Contract,null,0.00,null,0.00,0.00,0.00
+5410,Utilities - Electricity (common),null,0.00,null,0.00,0.00,0.00
+5420,Utilities - Water,null,0.00,null,0.00,0.00,0.00
+5430,Utilities - Internet/Cable,null,0.00,null,0.00,0.00,0.00
+5440,Utilities - Gas,null,0.00,null,0.00,0.00,0.00
+5510,Property Tax,null,0.00,null,0.00,0.00,0.00
+5520,Water Tax,null,0.00,null,0.00,0.00,0.00
+5530,Insurance,null,0.00,null,0.00,0.00,0.00
+5540,Society/Maintenance Fees,null,0.00,null,0.00,0.00,0.00
+5610,Office Expenses,null,0.00,null,0.00,0.00,0.00
+5620,Software & Subscriptions,null,0.00,null,0.00,0.00,0.00
+1000,Assets,null,0.00,null,0.00,0.00,0.00
+5640,Professional Fees,null,0.00,null,0.00,0.00,0.00
+2000,Liabilities,null,0.00,null,0.00,0.00,0.00
+3000,Equity,null,0.00,null,0.00,0.00,0.00
+4000,Operating Income,null,0.00,null,0.00,0.00,0.00
+5000,Operating Expenses,null,0.00,null,0.00,0.00,0.00
+1100,Bank & Cash,null,0.00,null,0.00,0.00,0.00
+1500,Property Assets,1400834.76,1400834.76,0.00,0.00,0.00,0.00
+2200,Owner Rent Payable,3488625.00,3488625.00,16121000.00,16121000.00,0.00,0.00
+2300,GST Payable,null,0.00,null,0.00,0.00,0.00
+2400,Booking Advances,null,0.00,null,0.00,0.00,0.00

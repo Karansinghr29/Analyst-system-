@@ -1,0 +1,4 @@
+source_table,total_entries,missing_source,soft_deleted_source,missing_receipt,soft_deleted_receipt,missing_settlement,soft_deleted_settlement
+deposit_settlements,376,0,0,0,0,0,0
+invoices,5558,0,0,0,0,0,0
+receipts,6085,0,0,0,200,0,0

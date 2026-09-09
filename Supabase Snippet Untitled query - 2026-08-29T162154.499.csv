@@ -1,0 +1,180 @@
+schema_name,routine_name,arguments,return_type,definition
+public,get_universal_metrics,"p_organization_id uuid, p_period text",jsonb,"CREATE OR REPLACE FUNCTION public.get_universal_metrics(p_organization_id uuid, p_period text DEFAULT 'current_fy'::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  v_start date;
+  v_end date;
+  v_today date := current_date;
+  v_fy_start_year int;
+begin
+  -- period window
+  if p_period = 'current_month' then
+    v_start := date_trunc('month', v_today)::date;
+    v_end := (date_trunc('month', v_today) + interval '1 month - 1 day')::date;
+  elsif p_period = 'last_month' then
+    v_start := (date_trunc('month', v_today) - interval '1 month')::date;
+    v_end := (date_trunc('month', v_today) - interval '1 day')::date;
+  elsif p_period = 'current_fy' then
+    v_fy_start_year := case when extract(month from v_today) >= 4 then extract(year from v_today)::int else extract(year from v_today)::int - 1 end;
+    v_start := make_date(v_fy_start_year, 4, 1);
+    v_end := (make_date(v_fy_start_year + 1, 4, 1) - interval '1 day')::date;
+  elsif p_period = 'last_fy' then
+    v_fy_start_year := case when extract(month from v_today) >= 4 then extract(year from v_today)::int - 1 else extract(year from v_today)::int - 2 end;
+    v_start := make_date(v_fy_start_year, 4, 1);
+    v_end := (make_date(v_fy_start_year + 1, 4, 1) - interval '1 day')::date;
+  else
+    -- fallback
+    v_start := date '2000-01-01';
+    v_end := date '2099-12-31';
+  end if;
+
+  return (
+    with t as (
+      select status, created_at::date d
+      from maintenance_tickets
+      where organization_id = p_organization_id
+    ),
+    t_period as (
+      select *
+      from t
+      where d between v_start and v_end
+    ),
+    i as (
+      select *
+      from invoices
+      where organization_id = p_organization_id
+        and coalesce(is_deleted, false) = false
+    ),
+    i_period as (
+      select *
+      from i
+      where coalesce((billing_month || '-01')::date, invoice_date::date, created_at::date) between v_start and v_end
+    ),
+    r as (
+      select *
+      from receipts
+      where organization_id = p_organization_id
+        and coalesce(is_deleted, false) = false
+    ),
+    r_period as (
+      select *
+      from r
+      where payment_date::date between v_start and v_end
+    ),
+    e_period as (
+      select *
+      from expenses
+      where organization_id = p_organization_id
+        and coalesce(expense_date::date, (billing_month || '-01')::date, created_at::date) between v_start and v_end
+    ),
+    a_period as (
+      select *
+      from tenant_adjustments
+      where organization_id = p_organization_id
+        and coalesce((billing_month || '-01')::date, adjustment_date::date, created_at::date) between v_start and v_end
+    ),
+    s_period as (
+      select *
+      from deposit_settlements
+      where organization_id = p_organization_id
+        and coalesce(is_deleted, false) = false
+        and status in ('completed','approved')
+        and coalesce(settlement_date::date, created_at::date) between v_start and v_end
+    ),
+    active_allotments as (
+      select bed_id, tenant_id, staying_status
+      from tenant_allotments
+      where organization_id = p_organization_id
+        and staying_status in ('Staying','On-Notice','Booked')
+    ),
+    live_beds as (
+      select id
+      from beds
+      where organization_id = p_organization_id
+        and status = 'Live'
+    ),
+    bed_state as (
+      select
+        b.id bed_id,
+        exists(select 1 from active_allotments a where a.bed_id = b.id and a.staying_status = 'Staying') as has_staying,
+        exists(select 1 from active_allotments a where a.bed_id = b.id and a.staying_status = 'On-Notice') as has_notice,
+        exists(select 1 from active_allotments a where a.bed_id = b.id and a.staying_status = 'Booked') as has_booked
+      from live_beds b
+    ),
+    occ as (
+      select
+        count(*)::int as total,
+        count(*) filter (where has_staying)::int as occupied,
+        count(*) filter (where (not has_staying) and has_booked)::int as booked,
+        count(*) filter (where (not has_staying) and has_notice)::int as notice
+      from bed_state
+    ),
+    adj as (
+      select
+        coalesce(sum(case when adjustment_type = 'debit_note' then amount else 0 end),0)::numeric as debit_note,
+        coalesce(sum(case when adjustment_type = 'credit_note' then amount else 0 end),0)::numeric as credit_note
+      from a_period
+    )
+    select jsonb_build_object(
+      'tickets', jsonb_build_object(
+        'total', (select count(*)::int from t_period),
+        'closed', (select count(*)::int from t_period where status in ('closed','resolved','cancelled','rejected','completed')),
+        'open', (select count(*)::int from t_period where status not in ('closed','resolved','cancelled','rejected','completed')),
+        'needsTenantApproval', (select count(*)::int from t_period where status = 'pending_tenant_approval'),
+        'inProgress', (select count(*)::int from t_period where status = 'in_progress'),
+        'waitingCostApproval', (select count(*)::int from t_period where status = 'waiting_for_cost_approval'),
+        'assigned', (select count(*)::int from t_period where status = 'assigned')
+      ),
+      'activeTicketCount', (select count(*)::int from t where status not in ('closed','resolved','cancelled','rejected','completed')),
+      'accounting', jsonb_build_object(
+        'totalRentalRevenue', (select coalesce(sum(rent_amount),0) from i_period),
+        'totalEbCharged', (select coalesce(sum(electricity_amount),0) from i_period),
+        'totalOnboardingCharges', (select coalesce(sum(total_amount),0) from i_period where invoice_type = 'onboarding'),
+        'totalExitCharges', (select coalesce(sum(total_amount),0) from i_period where invoice_type = 'exit_charge'),
+        'totalOtherCharges', (select coalesce(sum(other_charges),0) from i_period),
+        'totalInvoiced', (select coalesce(sum(total_amount),0) from i_period),
+        'totalCollections', (select coalesce(sum(amount_paid),0) from r_period),
+        'depositCollections', (select coalesce(sum(amount_paid),0) from r_period where receipt_type = 'booking'),
+        'totalCollectionsWithoutDeposit',
+          (select coalesce(sum(amount_paid),0) from r_period) -
+          (select coalesce(sum(amount_paid),0) from r_period where receipt_type = 'booking'),
+        'totalRefundsGiven', (select coalesce(sum(refund_amount),0) from s_period),
+        'totalExpenses', (select coalesce(sum(amount),0) from e_period),
+        'totalPendingCollection',
+          (select coalesce(sum(total_amount),0) from i_period) +
+          (select debit_note from adj) -
+          (select credit_note from adj) -
+          (
+            (select coalesce(sum(amount_paid),0) from r_period) -
+            (select coalesce(sum(amount_paid),0) from r_period where receipt_type = 'booking')
+          ),
+        'totalProfit',
+          (select coalesce(sum(total_amount),0) from i_period) -
+          (select coalesce(sum(amount),0) from e_period)
+      ),
+      'tenants', jsonb_build_object(
+        'totalUniqueTenants', (select count(distinct tenant_id)::int from active_allotments where tenant_id is not null),
+        'activeTenants', (select count(distinct tenant_id)::int from active_allotments where staying_status in ('Staying','On-Notice') and tenant_id is not null),
+        'bookedTenants', (select count(distinct tenant_id)::int from active_allotments where staying_status = 'Booked' and tenant_id is not null)
+      ),
+      'propertyStatus', (
+        select jsonb_build_object(
+          'total', total,
+          'occupied', occupied,
+          'booked', booked,
+          'notice', notice,
+          'noticeBooked', 0,
+          'vacant', greatest(total - occupied - booked - notice, 0),
+          'occupancyPct', case when total > 0 then round((occupied::numeric / total::numeric) * 100)::int else 0 end
+        )
+        from occ
+      )
+    )
+  );
+end;
+$function$
+"

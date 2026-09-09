@@ -1,0 +1,112 @@
+surface,object_id,action,label,question,metric_id
+owner_home,home,briefing,How is my business doing?,How is the business doing?,
+owner_home,home,changed,What changed?,What changed this month?,
+owner_home,home,focus,What should I focus on today?,What should I do?,
+owner_home,home,risks,What are my biggest risks?,What are our biggest business risks?,
+owner_home,home,trust,Which numbers can I trust?,Which numbers should I trust?,
+tile,M.REV.001,explain,How was this calculated?,How was M.REV.001 calculated?,M.REV.001
+tile,M.REV.001,why,Why?,"Why did Revenue (total, ledger-derived) change?",M.REV.001
+tile,M.REV.001,trust,Can I trust this?,Which numbers should I trust?,M.REV.001
+tile,M.COL.001,explain,How was this calculated?,How was M.COL.001 calculated?,M.COL.001
+tile,M.COL.001,why,Why?,Why did Collections (application-level) change?,M.COL.001
+tile,M.COL.001,trust,Can I trust this?,Which numbers should I trust?,M.COL.001
+tile,M.AR.001A,conflict,View all definitions,Which definition should we use?,M.AR.001A
+tile,M.AR.001A,explain,How was this calculated?,How was M.AR.001A calculated?,M.AR.001A
+tile,M.AR.001A,why,Why?,Why did Tenant dues -- Def A: v_outstanding_receivables (reversals excluded) change?,M.AR.001A
+tile,M.AR.001A,trust,Can I trust this?,Which numbers should I trust?,M.AR.001A
+tile,M.EXP.001,explain,How was this calculated?,How was M.EXP.001 calculated?,M.EXP.001
+tile,M.EXP.001,why,Why?,"Why did Expenses (total, ledger-derived) change?",M.EXP.001
+tile,M.EXP.001,trust,Can I trust this?,Which numbers should I trust?,M.EXP.001
+tile,M.PROFIT.001,conflict,View all definitions,Which definition should we use?,M.PROFIT.001
+tile,M.PROFIT.001,explain,How was this calculated?,How was M.PROFIT.001 calculated?,M.PROFIT.001
+tile,M.PROFIT.001,why,Why?,Why did Gross/net profit (3 definitions) change?,M.PROFIT.001
+tile,M.PROFIT.001,trust,Can I trust this?,Which numbers should I trust?,M.PROFIT.001
+tile,M.DEP.001,explain,How was this calculated?,How was M.DEP.001 calculated?,M.DEP.001
+tile,M.DEP.001,why,Why?,Why did Deposit held change?,M.DEP.001
+tile,M.DEP.001,trust,Can I trust this?,Which numbers should I trust?,M.DEP.001
+tile,M.OWN.001,explain,How was this calculated?,How was M.OWN.001 calculated?,M.OWN.001
+tile,M.OWN.001,why,Why?,Why did Owner payments (source total) change?,M.OWN.001
+tile,M.OWN.001,trust,Can I trust this?,Which numbers should I trust?,M.OWN.001
+tile,M.CASH.001,explain,How was this calculated?,How was M.CASH.001 calculated?,M.CASH.001
+tile,M.CASH.001,why,Why?,Why did Cash balance change?,M.CASH.001
+tile,M.CASH.001,trust,Can I trust this?,Which numbers should I trust?,M.CASH.001
+tile,M.OCC.001,conflict,View all definitions,Which definition should we use?,M.OCC.001
+tile,M.OCC.001,explain,How was this calculated?,How was M.OCC.001 calculated?,M.OCC.001
+tile,M.OCC.001,why,Why?,Why did Current occupancy (5+ definitions) change?,M.OCC.001
+tile,M.OCC.001,trust,Can I trust this?,Which numbers should I trust?,M.OCC.001
+tile,M.TEN.001,explain,How was this calculated?,How was M.TEN.001 calculated?,M.TEN.001
+tile,M.TEN.001,trust,Can I trust this?,Which numbers should I trust?,M.TEN.001
+tile,M.TEN.002,explain,How was this calculated?,How was M.TEN.002 calculated?,M.TEN.002
+tile,M.TEN.002,why,Why?,Why did On-Notice tenants change?,M.TEN.002
+tile,M.TEN.002,trust,Can I trust this?,Which numbers should I trust?,M.TEN.002
+tile,M.TEN.003,explain,How was this calculated?,How was M.TEN.003 calculated?,M.TEN.003
+tile,M.TEN.003,why,Why?,Why did Booked beds change?,M.TEN.003
+tile,M.TEN.003,trust,Can I trust this?,Which numbers should I trust?,M.TEN.003
+tile,M.LIFE.002,explain,How was this calculated?,How was M.LIFE.002 calculated?,M.LIFE.002
+tile,M.LIFE.002,why,Why?,Why did Move-ins change?,M.LIFE.002
+tile,M.LIFE.002,trust,Can I trust this?,Which numbers should I trust?,M.LIFE.002
+tile,M.LIFE.003,explain,How was this calculated?,How was M.LIFE.003 calculated?,M.LIFE.003
+tile,M.LIFE.003,why,Why?,Why did Move-outs change?,M.LIFE.003
+tile,M.LIFE.003,trust,Can I trust this?,Which numbers should I trust?,M.LIFE.003
+tile,M.MAINT.001,explain,How was this calculated?,How was M.MAINT.001 calculated?,M.MAINT.001
+tile,M.MAINT.001,why,Why?,Why did Maintenance volume change?,M.MAINT.001
+tile,M.MAINT.001,trust,Can I trust this?,Which numbers should I trust?,M.MAINT.001
+tile,M.EB.001,explain,How was this calculated?,How was M.EB.001 calculated?,M.EB.001
+tile,M.EB.001,why,Why?,Why did EB/electricity usage and cost change?,M.EB.001
+tile,M.EB.001,trust,Can I trust this?,Which numbers should I trust?,M.EB.001
+tile,M.RISK.004,explain,How was this calculated?,How was M.RISK.004 calculated?,M.RISK.004
+tile,M.RISK.004,trust,Can I trust this?,Which numbers should I trust?,M.RISK.004
+tile,M.RISK.005,explain,How was this calculated?,How was M.RISK.005 calculated?,M.RISK.005
+tile,M.RISK.005,why,Why?,Why did Duplicate invoices change?,M.RISK.005
+tile,M.RISK.005,trust,Can I trust this?,Which numbers should I trust?,M.RISK.005
+tile,M.RISK.007,explain,How was this calculated?,How was M.RISK.007 calculated?,M.RISK.007
+tile,M.RISK.007,why,Why?,Why did Overlapping allotments change?,M.RISK.007
+tile,M.RISK.007,trust,Can I trust this?,Which numbers should I trust?,M.RISK.007
+tile,M.RISK.008,explain,How was this calculated?,How was M.RISK.008 calculated?,M.RISK.008
+tile,M.RISK.008,why,Why?,Why did Ledger/source reconciliation change?,M.RISK.008
+tile,M.RISK.008,trust,Can I trust this?,Which numbers should I trust?,M.RISK.008
+insight,INS.CONFLICT.M.AR.001A,why,Why?,Why does INS.CONFLICT.M.AR.001A matter?,
+insight,INS.CONFLICT.M.AR.001A,recommend,What should I do?,What should I do?,
+insight,INS.CONFLICT.M.OWN.002,why,Why?,Why does INS.CONFLICT.M.OWN.002 matter?,
+insight,INS.CONFLICT.M.OWN.002,recommend,What should I do?,What should I do?,
+insight,INS.CONFLICT.M.PROFIT.001,why,Why?,Why does INS.CONFLICT.M.PROFIT.001 matter?,
+insight,INS.CONFLICT.M.PROFIT.001,recommend,What should I do?,What should I do?,
+insight,INS.DQ.DQ.016,why,Why?,Why does INS.DQ.DQ.016 matter?,
+insight,INS.DQ.DQ.016,recommend,What should I do?,What should I do?,
+insight,INS.DQ.DQ.019,why,Why?,Why does INS.DQ.DQ.019 matter?,
+insight,INS.DQ.DQ.019,recommend,What should I do?,What should I do?,
+insight,INS.DQ.DQ.002,why,Why?,Why does INS.DQ.DQ.002 matter?,
+insight,INS.DQ.DQ.002,recommend,What should I do?,What should I do?,
+insight,INS.DQ.DQ.001,why,Why?,Why does INS.DQ.DQ.001 matter?,
+insight,INS.DQ.DQ.001,recommend,What should I do?,What should I do?,
+insight,INS.RISK.M.RISK.004,why,Why?,Why does INS.RISK.M.RISK.004 matter?,
+insight,INS.RISK.M.RISK.004,recommend,What should I do?,What should I do?,
+insight,INS.RISK.M.RISK.005,why,Why?,Why does INS.RISK.M.RISK.005 matter?,
+insight,INS.RISK.M.RISK.005,recommend,What should I do?,What should I do?,
+insight,INS.DQ.DQ.013,why,Why?,Why does INS.DQ.DQ.013 matter?,
+insight,INS.DQ.DQ.013,recommend,What should I do?,What should I do?,
+insight,INS.DQ.DQ.015,why,Why?,Why does INS.DQ.DQ.015 matter?,
+insight,INS.DQ.DQ.015,recommend,What should I do?,What should I do?,
+insight,INS.DQ.DQ.008,why,Why?,Why does INS.DQ.DQ.008 matter?,
+insight,INS.DQ.DQ.008,recommend,What should I do?,What should I do?,
+insight,INS.DQ.DQ.004,why,Why?,Why does INS.DQ.DQ.004 matter?,
+insight,INS.DQ.DQ.004,recommend,What should I do?,What should I do?,
+insight,INS.DQ.DQ.011,why,Why?,Why does INS.DQ.DQ.011 matter?,
+insight,INS.DQ.DQ.011,recommend,What should I do?,What should I do?,
+insight,INS.CONFLICT.M.OCC.001,why,Why?,Why does INS.CONFLICT.M.OCC.001 matter?,
+insight,INS.CONFLICT.M.OCC.001,recommend,What should I do?,What should I do?,
+insight,INS.DQ.DQ.005,why,Why?,Why does INS.DQ.DQ.005 matter?,
+insight,INS.DQ.DQ.005,recommend,What should I do?,What should I do?,
+insight,INS.DQ.DQ.030,why,Why?,Why does INS.DQ.DQ.030 matter?,
+insight,INS.DQ.DQ.030,recommend,What should I do?,What should I do?,
+insight,INS.DQ.DQ.028,why,Why?,Why does INS.DQ.DQ.028 matter?,
+insight,INS.DQ.DQ.028,recommend,What should I do?,What should I do?,
+insight,INS.RISK.M.RISK.006,why,Why?,Why does INS.RISK.M.RISK.006 matter?,
+insight,INS.RISK.M.RISK.006,recommend,What should I do?,What should I do?,
+insight,INS.RISK.M.RISK.007,why,Why?,Why does INS.RISK.M.RISK.007 matter?,
+insight,INS.RISK.M.RISK.007,recommend,What should I do?,What should I do?,
+insight,INS.CHANGE.M.REV.002,why,Why?,Why did Revenue by month change?,
+insight,INS.CHANGE.M.COL.002,why,Why?,Why did Collections by month change?,
+change,M.REV.002,why,Why?,Why did Revenue by month change?,M.REV.002
+change,M.PNL.001,why,Why?,Why did P&L by month change?,M.PNL.001
+change,M.COL.002,why,Why?,Why did Collections by month change?,M.COL.002

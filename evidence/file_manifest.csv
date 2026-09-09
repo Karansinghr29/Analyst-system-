@@ -1,0 +1,254 @@
+key,logical_name,class,rows,cols,bytes,file,note
+T.accounting_migration_log,public.accounting_migration_log,base_table,30,6,5632,Supabase Snippet Untitled query (70).csv,base table export
+T.ai_actions,public.ai_actions,base_table,7,8,1739,Supabase Snippet Untitled query (71).csv,base table export
+T.ai_logs,public.ai_logs,base_table,6766,9,2061844,Supabase Snippet Untitled query (72).csv,base table; prompt_excerpt/response_excerpt EXCLUDED (PII); +1 row vs M.006 (live write)
+T.ai_sessions,public.ai_sessions,base_table,14,8,3023,Supabase Snippet Untitled query (73).csv,base table export
+T.announcements,public.announcements,base_table,1,11,660,Supabase Snippet Untitled query (74).csv,base table export
+T.apartments,public.apartments,base_table,43,28,13651,Supabase Snippet Untitled query (75).csv,base table export
+T.asset_allocations,public.asset_allocations,base_table,1822,10,481914,Supabase Snippet Untitled query (76).csv,base table export
+T.asset_brands,public.asset_brands,base_table,50,4,5709,Supabase Snippet Untitled query (77).csv,base table export
+T.asset_categories,public.asset_categories,base_table,11,4,1354,Supabase Snippet Untitled query (78).csv,base table export
+T.asset_types,public.asset_types,base_table,34,10,6563,Supabase Snippet Untitled query (79).csv,base table export
+T.assets,public.assets,base_table,1700,27,501441,Supabase Snippet Untitled query (80).csv,base table export
+T.attendance_sync,public.attendance_sync,base_table,50,10,9084,Supabase Snippet Untitled query (81).csv,base table export
+T.audit_logs,public.audit_logs,base_table,3119,10,1372034,Supabase Snippet Untitled query (82).csv,base table export
+T.bed_rates,public.bed_rates,base_table,24,9,4457,Supabase Snippet Untitled query (83).csv,base table export
+T.beds,public.beds,base_table,203,9,35405,Supabase Snippet Untitled query (84).csv,base table export
+T.bot_conversations,public.bot_conversations,base_table,1,3,108,Supabase Snippet Untitled query (85).csv,AGGREGATE ONLY (1 summary row); transcript/phone EXCLUDED (PII). Row-level NOT exported
+T.coa_accounts,public.coa_accounts,base_table,57,13,11803,Supabase Snippet Untitled query (86).csv,base table export
+T.cost_estimate_approvers,public.cost_estimate_approvers,base_table,1,7,274,Supabase Snippet Untitled query (87).csv,base table export
+T.deposit_settlements,public.deposit_settlements,base_table,307,17,78797,Supabase Snippet Untitled query (88).csv,base table export
+T.diagnostic_sessions,public.diagnostic_sessions,base_table,479,11,1209812,Supabase Snippet Untitled query (89).csv,base table export
+T.eb_monitoring_readings,public.eb_monitoring_readings,base_table,35,12,8205,Supabase Snippet Untitled query (90).csv,base table export
+T.eb_payments,public.eb_payments,base_table,70,14,18634,Supabase Snippet Untitled query (91).csv,base table export
+T.eb_rates,public.eb_rates,base_table,2,7,334,Supabase Snippet Untitled query (92).csv,base table export
+T.eb_tenant_shares,public.eb_tenant_shares,base_table,801,14,190312,Supabase Snippet Untitled query (93).csv,base table export
+T.electricity_readings,public.electricity_readings,base_table,1411,12,324303,Supabase Snippet Untitled query (94).csv,base table export
+T.email_templates,public.email_templates,base_table,4,6,533,Supabase Snippet Untitled query (95).csv,base table export
+T.employee_specialties,public.employee_specialties,base_table,10,4,1195,Supabase Snippet Untitled query (96).csv,base table export
+T.employees_sync,public.employees_sync,base_table,23,13,4973,Supabase Snippet Untitled query (97).csv,base table export
+T.enquiries,public.enquiries,base_table,18,13,4130,Supabase Snippet Untitled query (98).csv,"base table; name/phone/raw_payload EXCLUDED, phone_hash derived"
+T.exit_tasks,public.exit_tasks,base_table,3,16,1798,Supabase Snippet Untitled query (99).csv,base table export
+T.expense_bed_allocations,public.expense_bed_allocations,base_table,448,6,83022,Supabase Snippet Untitled query (100).csv,base table export
+T.expense_categories,public.expense_categories,base_table,9,8,1595,Supabase Snippet Untitled query - 2026-08-29T153942.173.csv,base table export
+T.expense_subcategories,public.expense_subcategories,base_table,10,9,1875,Supabase Snippet Untitled query - 2026-08-29T153950.813.csv,base table export
+T.expenses,public.expenses,base_table,516,20,211160,Supabase Snippet Untitled query - 2026-08-29T153959.048.csv,base table export
+T.export_entity_registry,public.export_entity_registry,base_table,17,5,1130,Supabase Snippet Untitled query - 2026-08-29T154008.604.csv,base table export
+T.financial_audit_log,public.financial_audit_log,base_table,23132,12,6638484,Supabase Snippet Untitled query - 2026-08-29T154018.063.csv,base table export
+T.gst_monthly_workings,public.gst_monthly_workings,base_table,5,10,444851,Supabase Snippet Untitled query - 2026-08-29T154050.280.csv,base table export
+T.invoice_line_items,public.invoice_line_items,base_table,5536,8,1898363,Supabase Snippet Untitled query - 2026-08-29T154103.610.csv,base table export
+T.invoice_pdf_configs,public.invoice_pdf_configs,base_table,2,19,1063,Supabase Snippet Untitled query - 2026-08-29T154126.576.csv,base table export
+T.invoices,public.invoices,base_table,5214,26,2195046,Supabase Snippet Untitled query - 2026-08-29T154136.061.csv,base table export
+T.issue_sub_types,public.issue_sub_types,base_table,51,8,10871,Supabase Snippet Untitled query - 2026-08-29T154146.062.csv,base table export
+T.issue_type_asset_types,public.issue_type_asset_types,base_table,33,5,5961,Supabase Snippet Untitled query - 2026-08-29T154156.427.csv,base table export
+T.issue_type_expense_mapping,public.issue_type_expense_mapping,base_table,14,7,3194,Supabase Snippet Untitled query - 2026-08-29T154211.916.csv,base table export
+T.issue_types,public.issue_types,base_table,14,7,1920,Supabase Snippet Untitled query - 2026-08-29T154222.996.csv,base table export
+T.journal_entries,public.journal_entries,base_table,14236,11,3963390,Supabase Snippet Untitled query - 2026-08-29T154234.098.csv,base table export
+T.journal_lines,public.journal_lines,base_table,33894,20,14443064,Supabase Snippet Untitled query - 2026-08-29T154246.392.csv,"base table DENORMALISED: +6 cols joined from journal_entries (entry_date, period, posted_at, source_table, source_id, is_reversal_of)"
+T.maintenance_item_stock_entries,public.maintenance_item_stock_entries,base_table,47,12,12282,Supabase Snippet Untitled query - 2026-08-29T154317.277.csv,base table export
+T.maintenance_item_usage,public.maintenance_item_usage,base_table,39,12,12596,Supabase Snippet Untitled query - 2026-08-29T154324.995.csv,base table export
+T.maintenance_items,public.maintenance_items,base_table,93,16,26625,Supabase Snippet Untitled query - 2026-08-29T154332.270.csv,base table export
+T.maintenance_tickets,public.maintenance_tickets,base_table,1611,27,1395924,Supabase Snippet Untitled query - 2026-08-29T154354.295.csv,base table; photo_urls/tenant_name/tenant_phone EXCLUDED; +1 row vs M.006 (live write)
+T.offline_kyc_pending,public.offline_kyc_pending,base_table,38,11,11739,Supabase Snippet Untitled query - 2026-08-29T154413.267.csv,base table export
+T.org_branding_settings,public.org_branding_settings,base_table,1,4,281,Supabase Snippet Untitled query - 2026-08-29T154445.011.csv,base table export
+T.org_email_settings,public.org_email_settings,base_table,1,14,364,Supabase Snippet Untitled query - 2026-08-29T154458.219.csv,base table export
+T.org_whatsapp_settings,public.org_whatsapp_settings,base_table,1,8,304,Supabase Snippet Untitled query - 2026-08-29T154516.130.csv,base table export
+T.organization_bank_accounts,public.organization_bank_accounts,base_table,5,9,801,Supabase Snippet Untitled query - 2026-08-29T154527.555.csv,base table export
+T.organization_subscriptions,public.organization_subscriptions,base_table,1,12,374,Supabase Snippet Untitled query - 2026-08-29T154544.442.csv,base table export
+T.organizations,public.organizations,base_table,1,18,676,Supabase Snippet Untitled query - 2026-08-29T154555.779.csv,base table export
+T.otp_codes,public.otp_codes,base_table,6,4,638,Supabase Snippet Untitled query - 2026-08-29T154602.426.csv,base table export
+T.owner_contracts,public.owner_contracts,base_table,35,31,13245,Supabase Snippet Untitled query - 2026-08-29T154611.292.csv,base table export
+T.owner_payments,public.owner_payments,base_table,345,17,120259,Supabase Snippet Untitled query - 2026-08-29T154652.512.csv,base table export
+T.owners,public.owners,base_table,13,8,1816,Supabase Snippet Untitled query - 2026-08-29T154700.834.csv,base table export
+T.payment_proofs,public.payment_proofs,base_table,24,7,4951,Supabase Snippet Untitled query - 2026-08-29T154709.171.csv,base table export
+T.payroll_sync,public.payroll_sync,base_table,18,15,3423,Supabase Snippet Untitled query - 2026-08-29T154732.483.csv,base table export
+T.profiles,public.profiles,base_table,223,4,30103,Supabase Snippet Untitled query - 2026-08-29T154740.262.csv,base table; avatar_url/email/full_name/phone EXCLUDED; +1 row vs M.006 (live write)
+T.properties,public.properties,base_table,1,12,291,Supabase Snippet Untitled query - 2026-08-29T154748.802.csv,base table export
+T.property_images,public.property_images,base_table,2,7,423,Supabase Snippet Untitled query - 2026-08-29T154755.338.csv,base table export
+T.receipt_number_counters,public.receipt_number_counters,base_table,8,6,982,Supabase Snippet Untitled query - 2026-08-29T154854.938.csv,base table export
+T.receipts,public.receipts,base_table,5858,16,1629686,Supabase Snippet Untitled query - 2026-08-29T154903.887.csv,base table export
+T.receipts_dedup_audit,public.receipts_dedup_audit,base_table,9,9,2745,Supabase Snippet Untitled query - 2026-08-29T154921.658.csv,base table export
+T.role_permissions,public.role_permissions,base_table,122,10,21661,Supabase Snippet Untitled query - 2026-08-29T154940.107.csv,base table export
+T.room_switches,public.room_switches,base_table,34,28,21655,Supabase Snippet Untitled query - 2026-08-29T154946.836.csv,base table export
+T.running_bed_maintenance_details,public.running_bed_maintenance_details,base_table,23,21,43200,Supabase Snippet Untitled query - 2026-08-29T154954.652.csv,base table export
+T.subscription_plans,public.subscription_plans,base_table,4,15,1342,Supabase Snippet Untitled query - 2026-08-29T155011.241.csv,base table export
+T.tab_permissions,public.tab_permissions,base_table,405,12,78565,Supabase Snippet Untitled query - 2026-08-29T155032.943.csv,base table export
+T.team_attendance,public.team_attendance,base_table,1320,11,329540,Supabase Snippet Untitled query - 2026-08-29T155041.610.csv,base table export
+T.team_departments,public.team_departments,base_table,4,7,737,Supabase Snippet Untitled query - 2026-08-29T155053.345.csv,base table export
+T.team_members,public.team_members,base_table,20,22,5177,Supabase Snippet Untitled query - 2026-08-29T155102.770.csv,base table export
+T.team_payments,public.team_payments,base_table,3,9,667,Supabase Snippet Untitled query - 2026-08-29T155129.297.csv,base table export
+T.team_salary_bills,public.team_salary_bills,base_table,71,13,13541,Supabase Snippet Untitled query - 2026-08-29T155139.403.csv,base table export
+T.tenant_absence_records,public.tenant_absence_records,base_table,38,9,9320,Supabase Snippet Untitled query - 2026-08-29T155147.075.csv,base table export
+T.tenant_adjustments,public.tenant_adjustments,base_table,266,21,104751,Supabase Snippet Untitled query - 2026-08-29T155203.975.csv,base table export
+T.tenant_allotments,public.tenant_allotments,base_table,1213,26,447500,Supabase Snippet Untitled query - 2026-08-29T155232.016.csv,base table export
+T.tenant_document_history,public.tenant_document_history,base_table,1,7,264,Supabase Snippet Untitled query - 2026-08-29T155239.352.csv,base table export
+T.tenant_exits,public.tenant_exits,base_table,147,24,50711,Supabase Snippet Untitled query - 2026-08-29T155256.093.csv,base table export
+T.tenant_notices,public.tenant_notices,base_table,86,10,21596,Supabase Snippet Untitled query - 2026-08-29T155315.444.csv,base table export
+T.tenant_remarks,public.tenant_remarks,base_table,2,7,462,Supabase Snippet Untitled query - 2026-08-29T155325.393.csv,base table export
+T.tenant_transactions,public.tenant_transactions,base_table,16451,12,4391408,Supabase Snippet Untitled query - 2026-08-29T155336.182.csv,base table export
+T.tenants,public.tenants,base_table,1027,28,363221,Supabase Snippet Untitled query - 2026-08-29T155356.509.csv,"base table; 27 PII cols EXCLUDED, phone_hash derived"
+T.ticket_assignment_rules,public.ticket_assignment_rules,base_table,7,8,1374,Supabase Snippet Untitled query - 2026-08-29T155404.818.csv,base table export
+T.ticket_cost_estimates,public.ticket_cost_estimates,base_table,28,21,10124,Supabase Snippet Untitled query - 2026-08-29T155414.505.csv,base table export
+T.ticket_cost_estimates_dedupe_backup_20260715,public.ticket_cost_estimates_dedupe_backup_20260715,base_table,12,21,4446,Supabase Snippet Untitled query - 2026-08-29T155424.210.csv,base table export
+T.ticket_logs,public.ticket_logs,base_table,8240,8,1708075,Supabase Snippet Untitled query - 2026-08-29T155441.459.csv,base table; notes EXCLUDED; +1 row vs M.006 (live write)
+T.ticket_number_counters,public.ticket_number_counters,base_table,5,6,622,Supabase Snippet Untitled query - 2026-08-29T155451.697.csv,base table export
+T.ticket_purchases,public.ticket_purchases,base_table,4,14,1349,Supabase Snippet Untitled query - 2026-08-29T155500.738.csv,base table export
+T.ticket_resolutions,public.ticket_resolutions,base_table,466,21,167676,Supabase Snippet Untitled query - 2026-08-29T155538.065.csv,base table export
+T.user_roles,public.user_roles,base_table,210,3,17304,Supabase Snippet Untitled query - 2026-08-29T155612.010.csv,"base table, full column set; +1 row vs M.006 (live write)"
+T.vendors,public.vendors,base_table,40,7,5561,Supabase Snippet Untitled query - 2026-08-29T155701.385.csv,base table export
+T.whatsapp_events,public.whatsapp_events,base_table,1943,16,614672,Supabase Snippet Untitled query - 2026-08-29T155733.189.csv,base table export
+T.whatsapp_payment_submissions,public.whatsapp_payment_submissions,base_table,387,19,147505,Supabase Snippet Untitled query - 2026-08-29T155808.662.csv,base table export
+T.whatsapp_send_deliveries,public.whatsapp_send_deliveries,base_table,2422,11,711526,Supabase Snippet Untitled query - 2026-08-29T155822.295.csv,base table export
+T.whatsapp_send_jobs,public.whatsapp_send_jobs,base_table,395,14,103726,Supabase Snippet Untitled query - 2026-08-29T155832.894.csv,base table export
+H.001,je_amount_reconciliation,diagnostic,6,5,381,Supabase Snippet Untitled query (28).csv,Source amount vs ledger net by source_table
+H.001b,je_amount_reconciliation_rerun,diagnostic,6,5,381,Supabase Snippet Untitled query - 2026-08-29T163922.895.csv,EXACT DUPLICATE of H.001
+H.002,je_source_counts,diagnostic,7,7,368,Supabase Snippet Untitled query (29).csv,Live source rows vs JE forward/reversal/distinct
+H.002b,je_source_counts_rerun,diagnostic,7,7,368,Supabase Snippet Untitled query - 2026-08-29T163930.103.csv,EXACT DUPLICATE of H.002
+H.003,je_stub_pollution,diagnostic,9,5,292,Supabase Snippet Untitled query (30).csv,Empty/zero JE by source_table
+H.003b,je_stub_pollution_rerun,diagnostic,9,5,292,Supabase Snippet Untitled query - 2026-08-29T163939.871.csv,Re-run of H.003 - compare row order/content
+H.004,je_by_source_dates,diagnostic,9,9,1112,Supabase Snippet Untitled query (31).csv,JE entry_date + posted_at range per source_table
+H.005,je_reversal_summary,diagnostic,1,6,133,Supabase Snippet Untitled query (32).csv,"14236 entries, 347 reversals (2.44 pct)"
+H.006,ar_definition_conflict,diagnostic,2,5,205,Supabase Snippet Untitled query (33).csv,v_outstanding_receivables vs v_tenant_current_dues
+H.007,trial_balance_reversal_effect,diagnostic,57,8,3751,Supabase Snippet Untitled query (34).csv,57 accounts: TB excl vs incl reversals
+H.008,bed_apartment_status_matrix,diagnostic,3,4,109,Supabase Snippet Untitled query (35).csv,Live/Not-Active bed x apartment
+H.009,entity_status_counts,diagnostic,5,3,116,Supabase Snippet Untitled query (36).csv,property/apartment/bed status counts
+H.010,v_occupancy_snapshot_dup,diagnostic,1,8,181,Supabase Snippet Untitled query (37).csv,v_occupancy result - DUPLICATE of F.005
+H.011,unbucketed_on_notice_beds,diagnostic,7,4,417,Supabase Snippet Untitled query (38).csv,THE 7 On-Notice-only beds (occupied=F booked=F on_notice=T)
+H.012,occupancy_defs_ABC,diagnostic,3,3,173,Supabase Snippet Untitled query (39).csv,3 occupancy definitions A/B/C
+H.012a,occupancy_def_A,diagnostic,1,3,100,Supabase Snippet Untitled query..csv,A: v_occupancy Live bed+apt Staying only = 168/195
+H.012b,occupancy_def_B,diagnostic,1,3,93,..csv,B: Live bed+apt Staying+On-Notice = 175/195
+H.012c,occupancy_def_C,diagnostic,1,3,76,Supabase Snippet Untitled query (2)..csv,C: ALL beds Staying+On-Notice = 175/203
+H.012d,occupancy_def_D,diagnostic,1,3,101,Supabase Snippet Untitled query (3)..csv,D: get_universal_metrics beds.status=Live Staying = 168/195
+H.012e,occupancy_def_E,diagnostic,1,3,102,Supabase Snippet Untitled query (4)..csv,E: get_bed_occupancy_timeline Staying+On-Notice+Exited = 194/203
+H.013,allotment_status_rollup,diagnostic,1,5,117,Supabase Snippet Untitled query (40).csv,168 Staying / 7 On-Notice / 7 beds held / 0 both
+H.014,staying_status_profile,diagnostic,5,8,345,Supabase Snippet Untitled query (41).csv,5 staying_status buckets with date ranges
+H.015,v_active_tenants_snapshot_dup,diagnostic,1,5,161,Supabase Snippet Untitled query (42).csv,v_active_tenants - DUPLICATE of F.022
+H.016,coa_accounts_flat,diagnostic,57,10,4789,Supabase Snippet Untitled query (43).csv,57 chart-of-accounts rows with parent names
+H.017,pnl_bucket_gap,diagnostic,57,5,1691,Supabase Snippet Untitled query (44).csv,57 months: total_expenses vs sum_of_buckets vs unbucketed
+H.018,resolutions_per_ticket,diagnostic,2,2,42,Supabase Snippet Untitled query (45).csv,"462 tickets x1, 2 tickets x2 resolutions"
+H.019,maintenance_view_vs_actual,diagnostic,1,4,82,Supabase Snippet Untitled query (46).csv,view 1613 vs actual 1611 tickets
+H.020,receipt_allocations_empty,diagnostic,1,7,154,Supabase Snippet Untitled query (47).csv,0 allocation rows vs 5758 live receipts
+H.020b,receipt_allocations_empty_rerun,diagnostic,1,7,154,Supabase Snippet Untitled query (48).csv,EXACT DUPLICATE of H.020
+H.021,journal_line_allotment_orphans,diagnostic,1,2,42,Supabase Snippet Untitled query (49).csv,"14407 lines with allotment, 0 orphans"
+H.022,journal_lines_by_party_kind,diagnostic,4,7,253,Supabase Snippet Untitled query (50).csv,4 party_kind buckets debit/credit/net
+H.023,party_kind_by_account,diagnostic,22,7,1221,Supabase Snippet Untitled query (51).csv,22 party_kind x account rows
+H.024,categorical_key_frequencies,diagnostic,33,3,1623,Supabase Snippet Untitled query (52).csv,33 discriminator value counts
+H.025,je_source_orphan_check,diagnostic,3,3,159,Supabase Snippet Untitled query (53).csv,"3 source refs, 0 orphans"
+H.026,tenant_transactions_taxonomy,diagnostic,17,9,1461,Supabase Snippet Untitled query (54).csv,17 ledger_type/direction/category combos
+H.027,tenant_transactions_sample,diagnostic,1,10,286,Supabase Snippet Untitled query (55).csv,1 sample row
+H.028,tenant_balance_4way_sample,diagnostic,200,5,12775,Supabase Snippet Untitled query (56).csv,200 allotments x 4 competing balance definitions
+H.029,owner_rent_missing_profit_dup,diagnostic,46,4,5388,Supabase Snippet Untitled query (57).csv,46 months - DUPLICATE of F.028
+H.030,pnl_owner_rent_vs_payments,diagnostic,54,6,2354,Supabase Snippet Untitled query (58).csv,54 months: pnl_owner_rent vs owner_payments
+H.031,live_equivalents_rowcounts,diagnostic,15,2,374,Supabase Snippet Untitled query (59).csv,15 legacy vs live table row counts
+H.032,diagnostic_view_rowcounts,diagnostic,8,2,266,Supabase Snippet Untitled query (60).csv,8 diagnostic views + row counts
+H.033,source_vs_ledger_diff_summary,diagnostic,3,3,81,Supabase Snippet Untitled query (61).csv,3 kinds: invoices/receipts/deposit_settlements
+H.034,categorical_frequencies_full,diagnostic,230,3,8807,Supabase Snippet Untitled query (62).csv,230 col/value/row frequency rows
+H.035,invoice_type_status_matrix,diagnostic,13,10,1068,Supabase Snippet Untitled query (63).csv,13 invoice_type x status x reference_type
+H.036,lifecycle_events_sample500,diagnostic,500,9,125004,Supabase Snippet Untitled query (64).csv,LIMIT-500 sample of v_tenant_lifecycle_events (full=2204)
+H.037,market_schema_rowcounts,diagnostic,7,2,180,Supabase Snippet Untitled query (65).csv,7 of 17 market tables
+H.038,trace_journal_lines_200,diagnostic,200,13,35764,Supabase Snippet Untitled query (66).csv,ROW TRACE 200 journal lines with account+party
+H.039,trace_tenant_transactions_200,diagnostic,200,9,32444,Supabase Snippet Untitled query (67).csv,ROW TRACE 200 tenant_transactions
+H.040,trace_invoices_drift_200,diagnostic,200,16,23218,Supabase Snippet Untitled query (68).csv,ROW TRACE 200 invoices with drift column
+H.041,trace_receipts_200,diagnostic,200,10,15253,Supabase Snippet Untitled query (69).csv,ROW TRACE 200 receipts
+H.042,je_intentional_skips,diagnostic,20,6,1975,Supabase Snippet Untitled query - 2026-08-29T163948.943.csv,20 deliberately-unposted source rows
+H.043,invoice_drift_rows,diagnostic,2227,9,296338,Supabase Snippet Untitled query - 2026-08-29T163956.045.csv,2227 invoices with amount_paid/balance drift
+H.044,allotment_balance_drift_rows,diagnostic,713,5,63782,Supabase Snippet Untitled query - 2026-08-29T164004.026.csv,713 allotments stored vs computed balance
+H.045,deposit_phantom_rows,diagnostic,32,7,5999,Supabase Snippet Untitled query - 2026-08-29T164012.559.csv,32 phantom deposit rows
+H.046,deposit_ledger_anomalies,diagnostic,22,6,5348,Supabase Snippet Untitled query - 2026-08-29T164021.735.csv,22 deposit ledger anomalies
+H.047,exit_recon_worklist_dup,diagnostic,45,16,13130,Supabase Snippet Untitled query - 2026-08-29T164040.168.csv,EXACT DUPLICATE of F.027
+H.048,receipt_amount_vs_ledger_rows,diagnostic,11,10,1388,Supabase Snippet Untitled query - 2026-08-29T164413.527.csv,CONFLICT A: 11 receipts source vs ledger amount
+H.049,invoice_amount_vs_ledger_rows,diagnostic,120,12,15655,Supabase Snippet Untitled query - 2026-08-29T164423.840.csv,CONFLICT B: 120 invoices source vs ledger amount
+H.050,settlement_amount_vs_ledger_rows,diagnostic,43,10,4511,Supabase Snippet Untitled query - 2026-08-29T164432.127.csv,CONFLICT C: 43 settlements source vs ledger
+H.051,je_missing_deleted_sources,diagnostic,3,8,234,Supabase Snippet Untitled query - 2026-08-29T164446.333.csv,CONFLICT E: 3 source_tables missing/soft-deleted source
+H.052,tenant_balance_4way_full,diagnostic,1213,9,138476,Supabase Snippet Untitled query - 2026-08-29T164500.151.csv,CONFLICT G: 1213 allotments x 4 balance definitions
+H.053,bed_status_flags_23,diagnostic,23,4,1313,Supabase Snippet Untitled query - 2026-08-29T164507.566.csv,23 beds with occupied/booked/on_notice flags
+H.054,pnl_bucket_gap_dup,diagnostic,57,5,1691,Supabase Snippet Untitled query - 2026-08-29T164515.342.csv,EXACT DUPLICATE of H.017
+H.055,duplicate_invoices,diagnostic,322,6,37905,Supabase Snippet Untitled query - 2026-08-29T164527.072.csv,322 allotment/month/type duplicate invoice groups
+H.056,overlapping_allotments,diagnostic,187,11,35872,Supabase Snippet Untitled query - 2026-08-29T164534.496.csv,187 bed allotment overlap pairs
+H.057,period_value_coverage,diagnostic,223,3,5820,Supabase Snippet Untitled query - 2026-08-29T164541.966.csv,223 tbl/period/rows coverage rows
+H.058,maintenance_cost_linkage,diagnostic,1,6,148,Supabase Snippet Untitled query - 2026-08-29T164750.925.csv,resolutions vs linked expenses vs closure cost
+FN.000,functions__business_logic,functions,25,8,79289,Supabase Snippet Untitled query - 2026-08-29T163440.513.csv,"25 business-logic function bodies, bundled"
+FN.999,functions__remaining_inventory,functions,458,8,38751,Supabase Snippet Untitled query - 2026-08-29T163450.107.csv,"458 remaining routines, signature only"
+FN.TRG,routines__trigger_wiring,functions,55,9,14494,Supabase Snippet Untitled query - 2026-08-29T163515.048.csv,"55 triggers: table, timing, events, function"
+FN._export_profile_name,fn___export_profile_name,functions,1,5,440,Supabase Snippet Untitled query - 2026-08-29T163419.633.csv,Full CREATE definition (331 chars)
+FN.delete_invoice_journal_entries_on_invoice_delete,fn__delete_invoice_journal_entries_on_invoice_delete,functions,1,5,443,Supabase Snippet Untitled query - 2026-08-29T163142.354.csv,Full CREATE definition (317 chars)
+FN.delete_journal_entries_on_source_delete,fn__delete_journal_entries_on_source_delete,functions,1,5,681,Supabase Snippet Untitled query - 2026-08-29T163133.192.csv,Full CREATE definition (564 chars)
+FN.enforce_journal_balanced,fn__enforce_journal_balanced,functions,1,5,903,Supabase Snippet Untitled query - 2026-08-29T163107.033.csv,Full CREATE definition (801 chars)
+FN.enforce_period_lock,fn__enforce_period_lock,functions,1,5,1021,Supabase Snippet Untitled query - 2026-08-29T163116.082.csv,Full CREATE definition (924 chars)
+FN.enforce_subledger_completeness,fn__enforce_subledger_completeness,functions,1,5,972,Supabase Snippet Untitled query - 2026-08-29T163124.697.csv,Full CREATE definition (864 chars)
+FN.ensure_booking_receipt_number,fn__ensure_booking_receipt_number,functions,1,5,884,Supabase Snippet Untitled query - 2026-08-29T163405.112.csv,Full CREATE definition (777 chars)
+FN.expense_sync_resolution,fn__expense_sync_resolution,functions,1,5,2344,Supabase Snippet Untitled query - 2026-08-29T163355.663.csv,Full CREATE definition (2239 chars)
+FN.get_bed_occupancy_timeline,fn__get_bed_occupancy_timeline,functions,1,5,3181,Supabase Snippet Untitled query - 2026-08-29T162300.562.csv,Full CREATE definition (3040 chars)
+FN.get_occupancy_intelligence,fn__get_occupancy_intelligence,functions,1,5,15365,Supabase Snippet Untitled query - 2026-08-29T162246.650.csv,Full CREATE definition (15227 chars)
+FN.get_universal_metrics,fn__get_universal_metrics,functions,1,5,8057,Supabase Snippet Untitled query - 2026-08-29T162154.499.csv,Full CREATE definition (7921 chars)
+FN.get_universal_metrics_series,fn__get_universal_metrics_series,functions,1,5,2491,Supabase Snippet Untitled query - 2026-08-29T162212.754.csv,Full CREATE definition (2229 chars)
+FN.get_universal_metrics_v2,fn__get_universal_metrics_v2,functions,1,5,13832,Supabase Snippet Untitled query - 2026-08-29T162204.626.csv,Full CREATE definition (13468 chars)
+FN.guard_deposit_transfer_before_onboarding,fn__guard_deposit_transfer_before_onboarding,functions,1,5,1398,Supabase Snippet Untitled query - 2026-08-29T163215.904.csv,Full CREATE definition (1280 chars)
+FN.log_journal_entry_post,fn__log_journal_entry_post,functions,1,5,975,Supabase Snippet Untitled query - 2026-08-29T163411.911.csv,Full CREATE definition (875 chars)
+FN.normalize_owner_payment_journal_dates,fn__normalize_owner_payment_journal_dates,functions,1,5,700,Supabase Snippet Untitled query - 2026-08-29T163222.832.csv,Full CREATE definition (585 chars)
+FN.refresh_org_metrics,fn__refresh_org_metrics,functions,1,5,1512,Supabase Snippet Untitled query - 2026-08-29T163426.288.csv,Full CREATE definition (1393 chars)
+FN.sync_tenant_staying_status,fn__sync_tenant_staying_status,functions,1,5,721,Supabase Snippet Untitled query - 2026-08-29T163154.976.csv,Full CREATE definition (617 chars)
+FN.sync_tenant_staying_status_on_delete,fn__sync_tenant_staying_status_on_delete,functions,1,5,684,Supabase Snippet Untitled query - 2026-08-29T163201.000.csv,Full CREATE definition (570 chars)
+FN.trg_adjustment_journal_post,fn__trg_adjustment_journal_post,functions,1,5,3000,Supabase Snippet Untitled query - 2026-08-29T162336.842.csv,Full CREATE definition (2893 chars)
+FN.trg_expense_journal_post,fn__trg_expense_journal_post,functions,1,5,2549,Supabase Snippet Untitled query - 2026-08-29T162320.915.csv,Full CREATE definition (2447 chars)
+FN.trg_invoice_journal_post,fn__trg_invoice_journal_post,functions,1,5,3963,Supabase Snippet Untitled query - 2026-08-29T162307.379.csv,Full CREATE definition (3861 chars)
+FN.trg_receipt_journal_post,fn__trg_receipt_journal_post,functions,1,5,8343,Supabase Snippet Untitled query - 2026-08-29T162313.707.csv,Full CREATE definition (8231 chars)
+FN.trg_settlement_journal_post,fn__trg_settlement_journal_post,functions,1,5,3986,Supabase Snippet Untitled query - 2026-08-29T162328.258.csv,Full CREATE definition (3875 chars)
+FN.validate_deposit_settlement,fn__validate_deposit_settlement,functions,1,5,1705,Supabase Snippet Untitled query - 2026-08-29T163209.369.csv,Full CREATE definition (1598 chars)
+M.000,schema_scope,metadata,15,6,893,Supabase Snippet Untitled query.csv,"Schema in/out-of-scope inventory: public=131 tables/54 views, market=17 tables"
+M.001,object_presence_check,metadata,58,4,2678,Supabase Snippet Untitled query (1).csv,"58 expected objects, all PRESENT"
+M.002,snapshot_start,metadata,1,5,206,Supabase Snippet Untitled query (2).csv,Snapshot START 2026-08-29 09:02:03.620Z txn 421016
+M.003,object_inventory,metadata,148,10,9555,Supabase Snippet Untitled query (3).csv,"148 in-scope base tables: relkind, size, live/dropped cols"
+M.004,column_inventory,metadata,1897,11,151798,Supabase Snippet Untitled query (4).csv,"1897 columns: type, nullable, default, enum/array"
+M.005,dropped_columns,metadata,44,3,1187,Supabase Snippet Untitled query (5).csv,44 dropped-column slots
+M.006,row_counts_exact,metadata,148,5,9651,Supabase Snippet Untitled query (6).csv,"148 exact counts, counted_at 2026-08-29 09:02:53.218Z"
+M.007,organization_grain,metadata,122,5,4150,Supabase Snippet Untitled query (7).csv,122 tables with organization_id; null-org rows
+M.008,constraints,metadata,565,8,82541,Supabase Snippet Untitled query (8).csv,565 constraints PK/UK/FK/CHECK
+M.009,foreign_keys,metadata,322,12,41948,Supabase Snippet Untitled query (9).csv,322 declared FKs with on_delete/on_update
+M.010,implied_fks,metadata,90,7,8038,Supabase Snippet Untitled query (10).csv,90 undeclared/implied relationships
+M.011,polymorphic_refs,metadata,5,6,439,Supabase Snippet Untitled query (11).csv,5 polymorphic discriminator/reference pairs
+M.012,json_columns,metadata,11,5,632,Supabase Snippet Untitled query (12).csv,11 JSON/JSONB columns
+M.013,enum_values,metadata,38,5,1282,Supabase Snippet Untitled query (13).csv,38 enum values
+M.014,enum_columns,metadata,13,6,828,Supabase Snippet Untitled query (14).csv,13 enum-typed columns
+M.015,indexes,metadata,428,6,71961,Supabase Snippet Untitled query (15).csv,428 indexes
+M.016,view_definitions,metadata,54,6,62846,Supabase Snippet Untitled query (16).csv,54 public view SQL definitions
+M.017,view_columns,metadata,749,5,39054,Supabase Snippet Untitled query (17).csv,749 view columns
+M.018,view_dependencies,metadata,148,5,8595,Supabase Snippet Untitled query (18).csv,148 view -> object dependency edges
+M.019,routine_inventory_full,metadata,483,8,40912,Supabase Snippet Untitled query (19).csv,"483 in-scope routines, signature only"
+M.020,routine_definitions_a,metadata,36,4,119010,Supabase Snippet Untitled query (20).csv,36 routine definitions
+M.021,trigger_wiring_dup,metadata,55,9,14494,Supabase Snippet Untitled query (21).csv,55 triggers - EXACT DUPLICATE of FN.TRG
+M.022,routine_definitions_b,metadata,40,3,62282,Supabase Snippet Untitled query (22).csv,40 function definitions
+M.023,column_profile,metadata,1891,8,106186,Supabase Snippet Untitled query (23).csv,1891 cols: total/non-null/distinct
+M.024,numeric_profile,metadata,267,10,20259,Supabase Snippet Untitled query (24).csv,267 numeric cols: min/max/avg/neg/zero/monetary flag
+M.025,temporal_profile,metadata,296,12,32350,Supabase Snippet Untitled query (25).csv,296 date cols: min/max/months/before2019/after_today
+M.026,generated_sql_helper,metadata,1,1,81997,Supabase Snippet Untitled query (26).csv,Generated profiling SQL - NOT data
+M.027,sensitive_columns,metadata,160,7,19264,Supabase Snippet Untitled query (27).csv,160 PII/sensitive columns + export action
+M.099,snapshot_end,metadata,1,4,178,Supabase Snippet Untitled query - 2026-08-29T164828.845.csv,Snapshot END 2026-08-29 11:18:26.768Z txn 421072
+F.001,public.v_pnl,view,57,6,6485,Supabase Snippet Untitled query - 2026-08-29T160932.742.csv,business view export
+F.002,public.v_pnl_by_category,view,57,22,10580,Supabase Snippet Untitled query - 2026-08-29T160940.022.csv,business view export
+F.003,public.v_revenue_by_period,view,224,6,25987,Supabase Snippet Untitled query - 2026-08-29T160954.415.csv,business view export
+F.004,public.v_expenses_by_period,view,138,6,16733,Supabase Snippet Untitled query - 2026-08-29T161003.367.csv,business view export
+F.005,public.v_occupancy,view,1,8,181,Supabase Snippet Untitled query - 2026-08-29T161032.517.csv,business view export
+F.006,public.v_outstanding_receivables,view,626,6,87349,Supabase Snippet Untitled query - 2026-08-29T161039.681.csv,business view export
+F.007,public.v_tenant_current_dues,view,645,11,101513,Supabase Snippet Untitled query - 2026-08-29T161047.115.csv,business view export
+F.008,public.v_tenant_aging,view,644,8,86224,Supabase Snippet Untitled query - 2026-08-29T161117.994.csv,business view export
+F.009,public.v_invoice_settlement_status,view,5379,10,1057017,Supabase Snippet Untitled query - 2026-08-29T161238.083.csv,business view export
+F.010,public.v_advance_balances,view,509,5,61406,Supabase Snippet Untitled query - 2026-08-29T161252.248.csv,business view export
+F.011,public.v_org_cash_balance,view,1,2,78,Supabase Snippet Untitled query - 2026-08-29T161647.203.csv,business view export
+F.012,public.v_trial_balance,view,24,8,2619,Supabase Snippet Untitled query - 2026-08-29T161654.413.csv,business view export
+F.013,public.v_trial_balance_detailed,view,57,15,11340,Supabase Snippet Untitled query - 2026-08-29T161702.525.csv,business view export
+F.014,public.v_account_rollup,view,57,10,9574,Supabase Snippet Untitled query - 2026-08-29T161710.077.csv,business view export
+F.015,public.v_maintenance_metrics,view,20,7,2004,Supabase Snippet Untitled query - 2026-08-29T161718.540.csv,business view export
+F.016,public.v_maintenance_by_issue_type,view,9,9,1536,Supabase Snippet Untitled query - 2026-08-29T161727.389.csv,business view export
+F.017,public.v_tenant_lifecycle_events,view,2204,9,550154,Supabase Snippet Untitled query - 2026-08-29T161735.393.csv,business view export
+F.018,public.v_tenant_ledger,view,14200,17,5776884,Supabase Snippet Untitled query - 2026-08-29T161747.771.csv,business view export
+F.019,public.v_expense_composition,view,138,10,21848,Supabase Snippet Untitled query - 2026-08-29T161758.517.csv,business view export
+F.020,public.v_bed_expense_breakdown,view,385,8,74239,Supabase Snippet Untitled query - 2026-08-29T161805.767.csv,business view export
+F.021,public.v_account_balances,view,32040,23,12565640,Supabase Snippet Untitled query - 2026-08-29T161847.056.csv,business view export
+F.022,public.v_active_tenants,view,1,5,161,Supabase Snippet Untitled query - 2026-08-29T161856.747.csv,business view export
+F.023,public.v_property_expense_share,view,46,5,4801,Supabase Snippet Untitled query - 2026-08-29T161907.668.csv,business view export
+F.024,public.v_asset_payment_status,view,308,14,62924,Supabase Snippet Untitled query - 2026-08-29T161916.607.csv,business view export
+F.025,public.maintenance_item_stock_summary,view,93,5,7903,Supabase Snippet Untitled query - 2026-08-29T161924.363.csv,business view export [ambiguous: public.maintenance_item_stock_summary/public.maintenance_item_low_stock]
+F.026,public.maintenance_item_stock_summary,view,93,5,7903,Supabase Snippet Untitled query - 2026-08-29T161931.323.csv,EXACT DUPLICATE of F.025 [ambiguous: public.maintenance_item_stock_summary/public.maintenance_item_low_stock]
+F.027,public.v_exit_reconciliation_worklist,view,45,16,13130,Supabase Snippet Untitled query - 2026-08-29T161939.621.csv,business view export
+F.028,public.v_diag_owner_rent_missing_from_profit,view,46,4,5388,Supabase Snippet Untitled query - 2026-08-29T161952.237.csv,business view export

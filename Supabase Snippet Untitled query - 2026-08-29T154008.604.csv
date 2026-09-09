@@ -1,0 +1,18 @@
+entity_key,view_name,label,module,sort_order
+apartments,v_export_apartments,Apartments,properties,20
+assets,v_export_assets,Assets,assets,140
+audit_logs,v_export_audit_logs,Audit Logs,audit_logs,150
+beds,v_export_beds,Beds,properties,30
+deposit_settlements,v_export_deposit_settlements,Deposit Settlements,accounting,80
+electricity_readings,v_export_electricity_readings,Electricity Readings,electricity,130
+expenses,v_export_expenses,Expenses,accounting,90
+invoices,v_export_invoices,Invoices,accounting,60
+journal_entries,v_export_journal_entries,Journal Entries,accounting,100
+journal_lines,v_export_journal_lines,Journal Lines,accounting,110
+maintenance_tickets,v_export_maintenance_tickets,Maintenance Tickets,tickets,120
+properties,v_export_properties,Properties,properties,10
+receipt_allocations,v_export_receipt_allocations,Receipt Allocations,accounting,75
+receipts,v_export_receipts,Receipts,accounting,70
+tenant_adjustments,v_export_tenant_adjustments,Tenant Adjustments,accounting,85
+tenant_allotments,v_export_tenant_allotments,Tenant Allotments,tenants,50
+tenants,v_export_tenants,Tenants,tenants,40

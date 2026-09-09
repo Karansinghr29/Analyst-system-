@@ -1,0 +1,31 @@
+id,phase,severity,message,sql_state,created_at
+ed2ad4ca-764f-49fd-8230-b0f5d349963b,phase3_setup,INFO,accounting_migration_log table created,null,2026-04-25 10:17:01.70487+00
+0c42c8ef-0a12-441c-9390-c050afa503ca,phase3_settlement_diag,ERROR,Settlement eaacf620-34fc-4275-a36a-0ac683f8643b unbalanced: deposit=21750 deductions+refund=22360 diff=-610,P0001,2026-04-25 10:17:36.911847+00
+79fb9fe7-28c0-4c70-a92b-95582a8a3ad7,phase3_settlement_diag,ERROR,Settlement d1617e3a-c50c-4ee2-bd49-01f1fecc9d88 unbalanced: deposit=20250 deductions+refund=21097 diff=-847,P0001,2026-04-25 10:17:36.911847+00
+a8c4bf08-5ba2-4608-8cbc-cde55e957af7,phase3_settlement_diag,ERROR,Settlement ed56c73a-cae3-42ae-8463-f29e85f01efa unbalanced: deposit=21750 deductions+refund=22901 diff=-1151,P0001,2026-04-25 10:17:36.911847+00
+b07fca8f-bebd-4d89-ba7d-86eb07856c57,phase3_settlement_diag,ERROR,Settlement 7d3f1c92-4099-4480-a95e-bf4c9ccb591d unbalanced: deposit=21750 deductions+refund=22040 diff=-290,P0001,2026-04-25 10:17:36.911847+00
+ba218b7d-a015-48af-bfbf-f932fea16aac,phase3_settlement_diag,ERROR,Settlement 646f5596-734a-4abb-b0c2-23639529000b unbalanced: deposit=21750 deductions+refund=21920 diff=-170,P0001,2026-04-25 10:17:36.911847+00
+4e9bba6a-534a-47d2-a550-99dd93fb826b,phase3_settlement_backfill,ERROR,Settlement d1617e3a-c50c-4ee2-bd49-01f1fecc9d88 unbalanced: deposit=20250 deductions+refund=21097 diff=-847,P0001,2026-04-25 10:21:23.130842+00
+4ee8af67-b141-4e4b-bb6b-dbf646ef0ece,phase3_settlement_backfill,ERROR,Settlement eaacf620-34fc-4275-a36a-0ac683f8643b unbalanced: deposit=21750 deductions+refund=22360 diff=-610,P0001,2026-04-25 10:21:23.130842+00
+57866f91-4d76-4954-ae7d-599c029b3439,phase3_settlement_backfill,ERROR,Settlement ed56c73a-cae3-42ae-8463-f29e85f01efa unbalanced: deposit=21750 deductions+refund=22901 diff=-1151,P0001,2026-04-25 10:21:23.130842+00
+5abc5d6f-3f23-4717-a0e3-54179e3cee41,phase3_settlement_backfill,ERROR,Settlement 646f5596-734a-4abb-b0c2-23639529000b unbalanced: deposit=21750 deductions+refund=21920 diff=-170,P0001,2026-04-25 10:21:23.130842+00
+ca248afc-61fc-44e4-b0e7-7e90032f9349,phase3_settlement_backfill,ERROR,Settlement 7d3f1c92-4099-4480-a95e-bf4c9ccb591d unbalanced: deposit=21750 deductions+refund=22040 diff=-290,P0001,2026-04-25 10:21:23.130842+00
+1cd830fe-656c-47c4-b6ab-2fcbeaf12852,phase3_settlement_backfill,ERROR,Settlement 7d3f1c92-4099-4480-a95e-bf4c9ccb591d unbalanced: deposit=21750 deductions+refund=22040 diff=-290,P0001,2026-04-25 10:26:59.125539+00
+33e249ac-04e3-47b1-958f-f7aaea412679,phase3_settlement_backfill,ERROR,Settlement eaacf620-34fc-4275-a36a-0ac683f8643b unbalanced: deposit=21750 deductions+refund=22360 diff=-610,P0001,2026-04-25 10:26:59.125539+00
+3c18c88d-a030-4954-816d-9b79e754b291,phase3_settlement_backfill,ERROR,Settlement 646f5596-734a-4abb-b0c2-23639529000b unbalanced: deposit=21750 deductions+refund=21920 diff=-170,P0001,2026-04-25 10:26:59.125539+00
+99947bd5-d4c8-47e2-8eb8-46093fb68a34,phase3_settlement_backfill,ERROR,Settlement ed56c73a-cae3-42ae-8463-f29e85f01efa unbalanced: deposit=21750 deductions+refund=22901 diff=-1151,P0001,2026-04-25 10:26:59.125539+00
+a84d2bab-b3d2-456f-b97f-379d98532531,phase3_settlement_backfill,ERROR,Settlement d1617e3a-c50c-4ee2-bd49-01f1fecc9d88 unbalanced: deposit=20250 deductions+refund=21097 diff=-847,P0001,2026-04-25 10:26:59.125539+00
+501fdcb6-f55e-4b2c-950a-28efee4bd634,phase3_setup,INFO,accounting_migration_log table created,null,2026-04-25 10:28:34.853276+00
+0974bacf-cdb4-4c57-bc74-130ccd3933f9,phase4_cleanup_post_check,INFO,Post-cleanup integrity checks PASSED.,null,2026-04-30 07:23:07.916556+00
+6e4e2dfe-5ea1-4d48-a877-ca9e05aa6df7,phase4_cleanup_start,INFO,Pre-cleanup snapshot of journal_entries pollution,null,2026-04-30 07:23:07.916556+00
+721943e8-e411-4b31-8f87-6c04f4911cfa,phase4_cleanup_manual_stubs,INFO,Deleted 0 empty manual stubs.,null,2026-04-30 07:23:07.916556+00
+8440b00a-03ac-4ab0-92c8-be27cd497c0c,phase4_cleanup_settlements_stubs,INFO,Deleted 0 empty deposit_settlements stubs.,null,2026-04-30 07:23:07.916556+00
+9e188236-899d-45da-8ecd-507a25c1029a,phase4_cleanup_tenant_transactions_stubs,INFO,Deleted 0 empty tenant_transactions stubs (verified=1015).,null,2026-04-30 07:23:07.916556+00
+aa4397b2-7386-4228-a96b-bb1d3225a736,phase4_cleanup_invoices_backfill,INFO,"Deleted 0 empty invoice BACKFILL stubs (before=6080, after=6080).",null,2026-04-30 07:23:07.916556+00
+e615ca45-3df9-48c6-9f48-3ad37ecd1a5f,phase4_cleanup_expenses_backfill_dedup,INFO,Removed 0 expense BACKFILL forwards (with 1124 lines and 0 reversals) on 450 pairs.,null,2026-04-30 07:23:07.916556+00
+ec6ef538-0db0-444e-b19a-d78e64be6255,phase6_reversal_pair_purge,INFO,Purged 145 mirror reversal pairs (0 reversal JE + 0 original JE).,null,2026-05-01 01:39:25.840009+00
+193f20dd-1739-409e-8ab3-e738c6ced166,phase6_reversal_pair_purge,INFO,Purged 145 mirror reversal pairs (145 reversal JE + 145 original JE).,null,2026-05-01 01:43:11.940614+00
+06cccae1-8cd1-48d0-aecb-a8aa43b3f13c,phase7_receipt_number_backfill,INFO,Backfilled 40 receipt_numbers; re-posted 38 JEs.,null,2026-05-02 11:50:52.206822+00
+c02cb65a-31de-4914-9c68-3434130d135e,phase8_reversal_pair_purge_round2,INFO,Purged 41 mirror reversal pairs (41 reversal JE + 41 original JE).,null,2026-05-02 12:16:17.108565+00
+16f1eace-dcc1-4e1b-8977-37f248198ac7,asset_je_backfill_2026_05,INFO,Backfilled assets into journal_entries,null,2026-05-09 03:32:17.410825+00
+4e736fef-0552-4fe8-9403-dd17867b2fbc,eb_payments_je_backfill_2026_05,INFO,Backfilled eb_payments into journal_entries,null,2026-05-09 03:32:17.410825+00

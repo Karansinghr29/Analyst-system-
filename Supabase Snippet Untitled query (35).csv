@@ -1,0 +1,4 @@
+bed_status,apartment_status,beds,apartments
+Live,Live,195,37
+Not-Active,Not-Active,5,1
+Not-Active,Live,3,2

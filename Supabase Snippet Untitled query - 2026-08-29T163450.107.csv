@@ -1,0 +1,459 @@
+schema_name,routine_name,arguments,return_type,kind,language,security_definer,source_length
+public,get_tenant_punctuality,"p_organization_id uuid, p_from text, p_to text",jsonb,function,sql,false,9916
+public,build_invoice_lines,p_invoice_id uuid,jsonb,function,plpgsql,false,8037
+public,merge_tenants,"p_primary_id uuid, p_secondary_id uuid, p_field_values jsonb",jsonb,function,plpgsql,true,7376
+public,seed_coa_for_new_org,,trigger,function,plpgsql,false,5785
+public,financial_integrity_check,p_organization_id uuid,jsonb,function,plpgsql,true,5364
+public,build_adjustment_lines,p_adj_id uuid,jsonb,function,plpgsql,false,5146
+public,build_receipt_lines,p_receipt_id uuid,jsonb,function,plpgsql,false,4969
+public,replace_invoices_atomic,"p_org_id uuid, p_billing_month text, p_allotment_ids uuid[], p_invoices jsonb, p_line_items jsonb, p_eb_shares jsonb, p_replacement_targets jsonb",jsonb,function,plpgsql,true,4929
+public,trg_owner_payment_journal_post,,trigger,function,plpgsql,true,4790
+public,build_settlement_lines,p_settlement_id uuid,jsonb,function,plpgsql,false,4577
+public,reconcile_exit_settlement,"p_allotment_id uuid, p_exit_date date, p_refund_amount numeric, p_refund_date date, p_refund_bank_id uuid, p_refund_reference text",jsonb,function,plpgsql,true,4414
+public,replace_invoices_atomic,"p_org_id uuid, p_billing_month text, p_allotment_ids uuid[], p_invoices jsonb, p_line_items jsonb, p_eb_shares jsonb",jsonb,function,plpgsql,true,4222
+public,run_je_integrity_checks,,"TABLE(check_name text, observed_value text, expected_value text, status text)",function,plpgsql,false,3521
+public,resolve_ticket_asset_id,"p_apartment_id uuid, p_bed_id uuid, p_issue_type_id uuid",uuid,function,plpgsql,true,3463
+public,purge_allotment_transactions,p_allotment_id uuid,jsonb,function,plpgsql,true,3059
+public,build_expense_lines,p_expense_id uuid,jsonb,function,plpgsql,false,3040
+public,get_account_drilldown,"p_org uuid, p_account_id uuid, p_from date, p_to date, p_include_descendants boolean","TABLE(line_id uuid, journal_entry_id uuid, entry_date date, period text, description text, source_table text, source_id uuid, debit numeric, credit numeric, memo text, account_id uuid, account_code text, account_name text, bank_account_id uuid, bank_name text, bank_account_number text, party_kind text, party_id uuid, tenant_name text, bed_code text, apartment_code text)",function,sql,true,3012
+public,log_ticket_changes,,trigger,function,plpgsql,true,2944
+public,get_market_competitors,"p_organization_id uuid, p_limit integer",jsonb,function,plpgsql,true,2918
+public,build_owner_payment_lines,"p_owner_payment_id uuid, p_phase text",jsonb,function,plpgsql,false,2874
+public,recompute_team_salary_bill_from_attendance,"p_team_member_id uuid, p_month text",void,function,plpgsql,true,2742
+public,get_account_rollup,"p_org uuid, p_from date, p_to date","TABLE(organization_id uuid, account_id uuid, code text, name text, account_type account_type, normal_balance normal_balance, parent_id uuid, total_debit_rollup numeric, total_credit_rollup numeric, balance_rollup numeric, cum_total_debit_rollup numeric, cum_total_credit_rollup numeric, cum_balance_rollup numeric)",function,sql,true,2571
+public,get_trial_balance_detailed,"p_org uuid, p_from date, p_to date","TABLE(organization_id uuid, account_id uuid, code text, name text, account_type account_type, normal_balance normal_balance, parent_id uuid, depth integer, root_code text, root_name text, total_debit numeric, total_credit numeric, balance numeric, cum_total_debit numeric, cum_total_credit numeric, cum_balance numeric, is_active boolean)",function,sql,true,2555
+public,build_eb_payment_lines,p_eb_payment_id uuid,jsonb,function,plpgsql,false,2283
+public,edit_tenant_ledger_entry_amount,"p_je_id uuid, p_new_amount numeric",jsonb,function,plpgsql,true,2219
+public,reverse_journal_entry,"p_je_id uuid, p_reason text, p_date date",uuid,function,plpgsql,true,2204
+public,consume_inventory_fifo,"p_maintenance_item_id uuid, p_required_quantity numeric, p_ticket_id uuid, p_usage_source text, p_remarks text",jsonb,function,plpgsql,true,2190
+public,post_journal_entry,"p_org uuid, p_date date, p_description text, p_source_table text, p_source_id uuid, p_lines jsonb, p_metadata jsonb, p_is_reversal_of uuid",uuid,function,plpgsql,true,2126
+public,kyc_submit_tenant,"_organization_id uuid, _property_id uuid, _payload jsonb",uuid,function,plpgsql,true,2120
+public,build_asset_lines,p_asset_id uuid,jsonb,function,plpgsql,false,2000
+public,trg_eb_payment_journal_post,,trigger,function,plpgsql,true,1975
+public,build_asset_payment_lines,p_asset_payment_id uuid,jsonb,function,plpgsql,false,1952
+public,trg_asset_payment_journal_post,,trigger,function,plpgsql,true,1752
+public,trg_asset_journal_post,,trigger,function,plpgsql,true,1688
+public,get_expansion_opportunities,"p_organization_id uuid, p_city text, p_limit integer",jsonb,function,plpgsql,true,1629
+public,sync_attendance_log_to_team_attendance,,trigger,function,plpgsql,true,1615
+public,generate_maintenance_ticket_number,,trigger,function,plpgsql,true,1585
+public,delete_tenant_ledger_entry,"p_je_id uuid, p_reason text",jsonb,function,plpgsql,true,1569
+public,check_org_quota,"p_org_id uuid, p_resource text",jsonb,function,plpgsql,true,1529
+public,_export_assert_caller,p_organization_id uuid,void,function,plpgsql,true,1486
+public,close_accounting_period,"p_organization_id uuid, p_period text, p_notes text",jsonb,function,plpgsql,true,1476
+public,get_eligible_assignees,_exclude_user_id uuid,"TABLE(team_member_id uuid, resolved_user_id uuid, display_name text, role text)",function,sql,true,1437
+public,get_market_benchmark_v1,"p_organization_id uuid, p_locality_id uuid, p_room_type_label text",jsonb,function,plpgsql,true,1354
+public,next_receipt_number,"p_org uuid, p_property uuid, p_date date",jsonb,function,plpgsql,true,1339
+public,resolve_expense_gl_account,p_expense_id uuid,uuid,function,plpgsql,false,1307
+public,cleanup_offline_kyc_expired,,jsonb,function,plpgsql,true,1141
+public,ensure_issue_type_expense_mapping,"_org_id uuid, _issue_type_id uuid",uuid,function,plpgsql,true,1075
+public,upsert_tracked_locality,"p_organization_id uuid, p_locality_name text, p_city text, p_state text",jsonb,function,plpgsql,true,960
+public,reopen_accounting_period,"p_organization_id uuid, p_period text, p_reason text",jsonb,function,plpgsql,true,921
+public,get_market_summary_v1,p_organization_id uuid,jsonb,function,plpgsql,true,919
+public,expense_clear_resolution_on_delete,,trigger,function,plpgsql,true,908
+public,trg_expense_alloc_journal_repost,,trigger,function,plpgsql,true,890
+public,export_dataset_batch,"p_organization_id uuid, p_entity text, p_offset integer, p_limit integer",jsonb,function,plpgsql,true,840
+public,get_market_benchmark_v1,"p_locality_id uuid, p_room_type_label text, p_city text",jsonb,function,plpgsql,true,805
+public,_seed_coa,"p_org uuid, p_code text, p_name text, p_type account_type, p_normal normal_balance, p_parent_code text, p_requires_party boolean, p_requires_allot boolean, p_party_kind party_kind",uuid,function,plpgsql,false,781
+public,normalize_attendance_status,p_status text,text,function,plpgsql,false,750
+public,match_tenant_phone_digits,"p_digits text, p_organization_id uuid","TABLE(id uuid, organization_id uuid, full_name text, phone text, staying_status text)",function,sql,true,737
+public,toggle_city_wide_scan,"p_organization_id uuid, p_city text",boolean,function,plpgsql,true,701
+public,get_tracked_localities,p_organization_id uuid,jsonb,function,plpgsql,true,628
+public,find_journal_entry_for_source,"p_source_table text, p_source_id uuid",uuid,function,sql,false,561
+public,get_expansion_opportunities,"p_city text, p_limit integer",jsonb,function,plpgsql,true,543
+public,ensure_maintenance_expense_category,_org_id uuid,uuid,function,plpgsql,true,502
+market,search_reviews_semantic,"p_organization_id uuid, p_embedding vector, p_limit integer, p_locality_id uuid","TABLE(review_id uuid, competitor_id uuid, review_text text, rating numeric, similarity numeric)",function,sql,false,498
+public,sync_attendance_log_delete_team_attendance,,trigger,function,plpgsql,true,485
+market,find_similar_properties,"p_organization_id uuid, p_embedding vector, p_limit integer, p_locality_id uuid","TABLE(competitor_id uuid, name text, locality_id uuid, locality_name text, similarity numeric)",function,sql,false,485
+public,enforce_receipt_allocation_cap,,trigger,function,plpgsql,false,469
+public,search_market_localities,"p_query text, p_limit integer",jsonb,function,plpgsql,true,431
+public,calculate_next_run_date,"p_frequency text, p_from_date timestamp with time zone",timestamp with time zone,function,plpgsql,false,427
+public,validate_bed_status_no_overlap,,trigger,function,plpgsql,false,424
+public,team_attendance_recompute_salary_bill,,trigger,function,plpgsql,true,419
+public,handle_new_user,,trigger,function,plpgsql,true,408
+public,resolve_adjustment_income_account,"p_org uuid, p_category text, p_type text",uuid,function,plpgsql,false,373
+public,export_dataset_entities,p_organization_id uuid,jsonb,function,plpgsql,true,358
+public,validate_notice_exit_date,,trigger,function,plpgsql,false,355
+public,payroll_period_bounds,p_month text,"TABLE(period_start date, period_end date)",function,plpgsql,false,344
+public,export_dataset_count,"p_organization_id uuid, p_entity text",bigint,function,plpgsql,true,342
+public,log_accounting_migration,"p_phase text, p_severity text, p_message text, p_payload jsonb, p_sqlstate text",void,function,plpgsql,false,333
+public,bank_coa_id,"p_org uuid, p_bank_account_id uuid",uuid,function,plpgsql,false,321
+public,generate_ticket_number,,trigger,function,plpgsql,false,318
+public,log_ticket_created,,trigger,function,plpgsql,true,301
+public,enforce_locked_immutability,,trigger,function,plpgsql,false,289
+public,maintenance_items_sync_legacy_name,,trigger,function,plpgsql,false,287
+public,_export_resolve_view,p_entity text,text,function,plpgsql,true,277
+public,payroll_month_for_date,p_date date,text,function,plpgsql,false,257
+public,_export_is_admin_context,,boolean,function,sql,true,255
+public,get_my_profile,p_user_id uuid,jsonb,function,sql,true,251
+public,toggle_tracked_locality,"p_tracking_id uuid, p_organization_id uuid",boolean,function,plpgsql,true,248
+market,normalize_amenity_semantic,"p_embedding vector, p_threshold numeric",text,function,sql,false,234
+public,attendance_status_pay_units,p_status text,numeric,function,plpgsql,false,211
+public,is_admin_user,_user_id uuid,boolean,function,sql,true,159
+public,try_billing_lock,p_key text,boolean,function,plpgsql,false,148
+public,remove_tracked_locality,"p_tracking_id uuid, p_organization_id uuid",void,function,plpgsql,true,128
+public,update_tenant_full_name,,trigger,function,plpgsql,false,119
+public,has_role,"_user_id uuid, _role app_role",boolean,function,sql,true,115
+public,coa_id,"p_org uuid, p_code text",uuid,function,sql,false,114
+public,has_any_role,"_user_id uuid, _roles app_role[]",boolean,function,sql,true,111
+public,cleanup_expired_otps,,void,function,sql,true,80
+public,get_user_org_id,_user_id uuid,uuid,function,sql,true,75
+public,release_billing_lock,p_key text,void,function,plpgsql,false,74
+public,update_updated_at_column,,trigger,function,plpgsql,false,57
+public,touch_offline_kyc_pending_updated_at,,trigger,function,plpgsql,false,57
+public,wps_set_updated_at,,trigger,function,plpgsql,false,57
+public,set_updated_at,,trigger,function,plpgsql,false,52
+market,set_updated_at,,trigger,function,plpgsql,false,52
+public,update_updated_at,,trigger,function,plpgsql,false,50
+public,strict_word_similarity_dist_commutator_op,"text, text",real,function,c,false,41
+public,strict_word_similarity_commutator_op,"text, text",boolean,function,c,false,36
+public,date_to_period,p_date date,text,function,sql,false,35
+public,word_similarity_dist_commutator_op,"text, text",real,function,c,false,34
+public,levenshtein_less_equal,"text, text, integer, integer, integer, integer",integer,function,c,false,33
+public,sparsevec_negative_inner_product,"sparsevec, sparsevec",double precision,function,c,false,32
+public,strict_word_similarity_dist_op,"text, text",real,function,c,false,30
+public,halfvec_negative_inner_product,"halfvec, halfvec",double precision,function,c,false,30
+public,vector_negative_inner_product,"vector, vector",double precision,function,c,false,29
+public,word_similarity_commutator_op,"text, text",boolean,function,c,false,29
+public,sparsevec_l2_squared_distance,"sparsevec, sparsevec",double precision,function,c,false,29
+public,halfvec_l2_squared_distance,"halfvec, halfvec",double precision,function,c,false,27
+public,halfvec_spherical_distance,"halfvec, halfvec",double precision,function,c,false,26
+public,vector_l2_squared_distance,"vector, vector",double precision,function,c,false,26
+public,cosine_distance,"sparsevec, sparsevec",double precision,function,c,false,25
+public,strict_word_similarity_op,"text, text",boolean,function,c,false,25
+public,vector_spherical_distance,"vector, vector",double precision,function,c,false,25
+public,word_similarity_dist_op,"text, text",real,function,c,false,23
+public,inner_product,"sparsevec, sparsevec",double precision,function,c,false,23
+public,cosine_distance,"halfvec, halfvec",double precision,function,c,false,23
+public,ivfflat_halfvec_support,internal,internal,function,c,false,23
+public,binary_quantize,halfvec,bit,function,c,false,23
+public,hnsw_sparsevec_support,internal,internal,function,c,false,22
+public,gin_trgm_triconsistent,"internal, smallint, text, integer, internal, internal, internal","""char""",function,c,false,22
+public,gin_extract_query_trgm,"text, internal, smallint, internal, internal, internal, internal",internal,function,c,false,22
+public,gin_extract_value_trgm,"text, internal",internal,function,c,false,22
+public,levenshtein,"text, text, integer, integer, integer",integer,function,c,false,22
+public,levenshtein_less_equal,"text, text, integer",integer,function,c,false,22
+public,l2_normalize,sparsevec,sparsevec,function,c,false,22
+public,gbt_numeric_consistent,"internal, numeric, smallint, oid, internal",boolean,function,c,false,22
+public,strict_word_similarity,"text, text",real,function,c,false,22
+public,l2_distance,"sparsevec, sparsevec",double precision,function,c,false,21
+public,gbt_numeric_picksplit,"internal, internal",internal,function,c,false,21
+public,gbt_float8_consistent,"internal, double precision, smallint, oid, internal",boolean,function,c,false,21
+public,gbt_timetz_consistent,"internal, time with time zone, smallint, oid, internal",boolean,function,c,false,21
+public,inner_product,"halfvec, halfvec",double precision,function,c,false,21
+public,l1_distance,"sparsevec, sparsevec",double precision,function,c,false,21
+public,gbt_float4_consistent,"internal, real, smallint, oid, internal",boolean,function,c,false,21
+public,gbt_bpchar_consistent,"internal, character, smallint, oid, internal",boolean,function,c,false,21
+public,gbt_macad8_consistent,"internal, macaddr8, smallint, oid, internal",boolean,function,c,false,21
+public,gbt_bytea_consistent,"internal, bytea, smallint, oid, internal",boolean,function,c,false,20
+public,gbt_float4_picksplit,"internal, internal",internal,function,c,false,20
+public,halfvec_to_sparsevec,"halfvec, integer, boolean",sparsevec,function,c,false,20
+public,l2_normalize,halfvec,halfvec,function,c,false,20
+public,hnsw_halfvec_support,internal,internal,function,c,false,20
+public,sparsevec_to_halfvec,"sparsevec, integer, boolean",halfvec,function,c,false,20
+public,gbt_macad8_picksplit,"internal, internal",internal,function,c,false,20
+public,gbt_numeric_compress,internal,internal,function,c,false,20
+public,gbt_macad_consistent,"internal, macaddr, smallint, oid, internal",boolean,function,c,false,20
+public,gbt_float8_picksplit,"internal, internal",internal,function,c,false,20
+public,gbt_macad_picksplit,"internal, internal",internal,function,c,false,19
+public,vector_dims,halfvec,integer,function,c,false,19
+public,ivfflat_bit_support,internal,internal,function,c,false,19
+public,gbt_numeric_penalty,"internal, internal, internal",internal,function,c,false,19
+public,l2_distance,"halfvec, halfvec",double precision,function,c,false,19
+public,gbt_time_consistent,"internal, time without time zone, smallint, oid, internal",boolean,function,c,false,19
+public,sparsevec_typmod_in,cstring[],integer,function,c,false,19
+public,gbt_bytea_picksplit,"internal, internal",internal,function,c,false,19
+public,gbt_timetz_compress,internal,internal,function,c,false,19
+public,sparsevec_to_vector,"sparsevec, integer, boolean",vector,function,c,false,19
+public,gbt_bpchar_compress,internal,internal,function,c,false,19
+public,gbt_date_consistent,"internal, date, smallint, oid, internal",boolean,function,c,false,19
+public,gbt_text_consistent,"internal, text, smallint, oid, internal",boolean,function,c,false,19
+public,gbt_float4_distance,"internal, real, smallint, oid, internal",double precision,function,c,false,19
+public,gbt_int4_consistent,"internal, integer, smallint, oid, internal",boolean,function,c,false,19
+public,gbt_cash_consistent,"internal, money, smallint, oid, internal",boolean,function,c,false,19
+public,gbt_intv_consistent,"internal, interval, smallint, oid, internal",boolean,function,c,false,19
+public,gbt_intv_decompress,internal,internal,function,c,false,19
+public,gbt_int8_consistent,"internal, bigint, smallint, oid, internal",boolean,function,c,false,19
+public,gbt_enum_consistent,"internal, anyenum, smallint, oid, internal",boolean,function,c,false,19
+public,gin_trgm_consistent,"internal, smallint, text, integer, internal, internal, internal, internal",boolean,function,c,false,19
+public,gbt_macad8_compress,internal,internal,function,c,false,19
+public,gbt_bool_consistent,"internal, boolean, smallint, oid, internal",boolean,function,c,false,19
+public,gbt_int2_consistent,"internal, smallint, smallint, oid, internal",boolean,function,c,false,19
+public,gbt_float8_distance,"internal, double precision, smallint, oid, internal",double precision,function,c,false,19
+public,gbt_float8_compress,internal,internal,function,c,false,19
+public,gbt_uuid_consistent,"internal, uuid, smallint, oid, internal",boolean,function,c,false,19
+public,vector_to_sparsevec,"vector, integer, boolean",sparsevec,function,c,false,19
+public,gbt_float4_compress,internal,internal,function,c,false,19
+public,l1_distance,"halfvec, halfvec",double precision,function,c,false,19
+public,gbt_inet_consistent,"internal, inet, smallint, oid, internal",boolean,function,c,false,19
+public,gbt_tstz_consistent,"internal, timestamp with time zone, smallint, oid, internal",boolean,function,c,false,19
+public,gbt_date_picksplit,"internal, internal",internal,function,c,false,18
+public,gbt_int4_picksplit,"internal, internal",internal,function,c,false,18
+public,gbt_int8_picksplit,"internal, internal",internal,function,c,false,18
+public,gbt_float4_penalty,"internal, internal, internal",internal,function,c,false,18
+public,gbt_float8_penalty,"internal, internal, internal",internal,function,c,false,18
+public,gbt_var_decompress,internal,internal,function,c,false,18
+public,gbt_time_picksplit,"internal, internal",internal,function,c,false,18
+public,gbt_oid_consistent,"internal, oid, smallint, oid, internal",boolean,function,c,false,18
+public,gbt_intv_picksplit,"internal, internal",internal,function,c,false,18
+public,gbt_cash_picksplit,"internal, internal",internal,function,c,false,18
+public,gbt_macad_compress,internal,internal,function,c,false,18
+public,gbt_text_picksplit,"internal, internal",internal,function,c,false,18
+public,gbt_bytea_compress,internal,internal,function,c,false,18
+public,gbt_bool_picksplit,"internal, internal",internal,function,c,false,18
+public,word_similarity_op,"text, text",boolean,function,c,false,18
+public,gbt_bit_consistent,"internal, bit, smallint, oid, internal",boolean,function,c,false,18
+public,gbt_inet_picksplit,"internal, internal",internal,function,c,false,18
+public,array_to_sparsevec,"numeric[], integer, boolean",sparsevec,function,c,false,18
+public,array_to_sparsevec,"double precision[], integer, boolean",sparsevec,function,c,false,18
+public,gbt_uuid_picksplit,"internal, internal",internal,function,c,false,18
+public,array_to_sparsevec,"real[], integer, boolean",sparsevec,function,c,false,18
+public,array_to_sparsevec,"integer[], integer, boolean",sparsevec,function,c,false,18
+public,gbt_macad8_penalty,"internal, internal, internal",internal,function,c,false,18
+public,gbt_enum_picksplit,"internal, internal",internal,function,c,false,18
+public,gbt_int2_picksplit,"internal, internal",internal,function,c,false,18
+public,gbt_time_compress,internal,internal,function,c,false,17
+public,gbt_int4_distance,"internal, integer, smallint, oid, internal",double precision,function,c,false,17
+public,gbt_time_distance,"internal, time without time zone, smallint, oid, internal",double precision,function,c,false,17
+public,gbt_date_compress,internal,internal,function,c,false,17
+public,l2_norm,sparsevec,double precision,function,c,false,17
+public,gbt_uuid_compress,internal,internal,function,c,false,17
+public,gbt_int8_distance,"internal, bigint, smallint, oid, internal",double precision,function,c,false,17
+public,gbt_bool_compress,internal,internal,function,c,false,17
+public,gbt_int4_compress,internal,internal,function,c,false,17
+public,gbt_tstz_compress,internal,internal,function,c,false,17
+public,gbt_numeric_union,"internal, internal",gbtreekey_var,function,c,false,17
+public,gbt_int2_distance,"internal, smallint, smallint, oid, internal",double precision,function,c,false,17
+public,halfvec_to_float4,"halfvec, integer, boolean",real[],function,c,false,17
+public,halfvec_typmod_in,cstring[],integer,function,c,false,17
+public,gbt_date_distance,"internal, date, smallint, oid, internal",double precision,function,c,false,17
+public,gbt_macad_penalty,"internal, internal, internal",internal,function,c,false,17
+public,gbt_intv_compress,internal,internal,function,c,false,17
+public,gbt_intv_distance,"internal, interval, smallint, oid, internal",double precision,function,c,false,17
+public,halfvec_to_vector,"halfvec, integer, boolean",vector,function,c,false,17
+public,gbt_text_compress,internal,internal,function,c,false,17
+public,gbt_int2_compress,internal,internal,function,c,false,17
+public,vector_to_halfvec,"vector, integer, boolean",halfvec,function,c,false,17
+public,gbt_bit_picksplit,"internal, internal",internal,function,c,false,17
+public,subvector,"halfvec, integer, integer",halfvec,function,c,false,17
+public,gbt_cash_distance,"internal, money, smallint, oid, internal",double precision,function,c,false,17
+public,gbt_cash_compress,internal,internal,function,c,false,17
+public,gbt_tstz_distance,"internal, timestamp with time zone, smallint, oid, internal",double precision,function,c,false,17
+public,gbt_oid_picksplit,"internal, internal",internal,function,c,false,17
+public,gbt_int8_compress,internal,internal,function,c,false,17
+public,gbt_ts_consistent,"internal, timestamp without time zone, smallint, oid, internal",boolean,function,c,false,17
+public,gbt_inet_compress,internal,internal,function,c,false,17
+public,gbt_bytea_penalty,"internal, internal, internal",internal,function,c,false,17
+public,gbt_enum_compress,internal,internal,function,c,false,17
+public,vector_typmod_in,cstring[],integer,function,c,false,16
+public,gbt_inet_penalty,"internal, internal, internal",internal,function,c,false,16
+public,gbt_oid_distance,"internal, oid, smallint, oid, internal",double precision,function,c,false,16
+public,gbt_oid_compress,internal,internal,function,c,false,16
+public,gbt_text_penalty,"internal, internal, internal",internal,function,c,false,16
+public,hamming_distance,"bit, bit",double precision,function,c,false,16
+public,jaccard_distance,"bit, bit",double precision,function,c,false,16
+public,gbt_time_penalty,"internal, internal, internal",internal,function,c,false,16
+public,gbt_enum_penalty,"internal, internal, internal",internal,function,c,false,16
+public,hnsw_bit_support,internal,internal,function,c,false,16
+public,vector_to_float4,"vector, integer, boolean",real[],function,c,false,16
+public,gbt_ts_picksplit,"internal, internal",internal,function,c,false,16
+public,gbt_numeric_same,"gbtreekey_var, gbtreekey_var, internal",internal,function,c,false,16
+public,gbt_int4_penalty,"internal, internal, internal",internal,function,c,false,16
+public,gbt_bit_compress,internal,internal,function,c,false,16
+public,gbt_float4_fetch,internal,internal,function,c,false,16
+public,gbt_date_penalty,"internal, internal, internal",internal,function,c,false,16
+public,gtrgm_decompress,internal,internal,function,c,false,16
+public,gbt_float8_union,"internal, internal",gbtreekey16,function,c,false,16
+public,gtrgm_consistent,"internal, text, smallint, oid, internal",boolean,function,c,false,16
+public,gbt_float8_fetch,internal,internal,function,c,false,16
+public,gbt_int2_penalty,"internal, internal, internal",internal,function,c,false,16
+public,gbt_uuid_penalty,"internal, internal, internal",internal,function,c,false,16
+public,gbt_bool_penalty,"internal, internal, internal",internal,function,c,false,16
+public,gbt_float4_union,"internal, internal",gbtreekey8,function,c,false,16
+public,gbt_macad8_fetch,internal,internal,function,c,false,16
+public,gbt_int8_penalty,"internal, internal, internal",internal,function,c,false,16
+public,gbt_macad8_union,"internal, internal",gbtreekey16,function,c,false,16
+public,gbt_intv_penalty,"internal, internal, internal",internal,function,c,false,16
+public,array_to_halfvec,"integer[], integer, boolean",halfvec,function,c,false,16
+public,array_to_halfvec,"real[], integer, boolean",halfvec,function,c,false,16
+public,gbt_cash_penalty,"internal, internal, internal",internal,function,c,false,16
+public,array_to_halfvec,"double precision[], integer, boolean",halfvec,function,c,false,16
+public,array_to_halfvec,"numeric[], integer, boolean",halfvec,function,c,false,16
+public,binary_quantize,vector,bit,function,c,false,15
+public,daitch_mokotoff,text,text[],function,c,false,15
+public,unaccent_lexize,"internal, internal, internal, internal",internal,function,c,false,15
+public,gbt_oid_penalty,"internal, internal, internal",internal,function,c,false,15
+public,gbt_float4_same,"gbtreekey8, gbtreekey8, internal",internal,function,c,false,15
+public,gbt_float8_same,"gbtreekey16, gbtreekey16, internal",internal,function,c,false,15
+public,gbt_ts_distance,"internal, timestamp without time zone, smallint, oid, internal",double precision,function,c,false,15
+public,gbt_ts_compress,internal,internal,function,c,false,15
+public,gbt_macad_fetch,internal,internal,function,c,false,15
+public,gbt_macad_union,"internal, internal",gbtreekey16,function,c,false,15
+public,gbt_bytea_union,"internal, internal",gbtreekey_var,function,c,false,15
+public,gbt_bit_penalty,"internal, internal, internal",internal,function,c,false,15
+public,gbt_macad8_same,"gbtreekey16, gbtreekey16, internal",internal,function,c,false,15
+public,word_similarity,"text, text",real,function,c,false,15
+public,similarity_dist,"text, text",real,function,c,false,15
+public,gtrgm_picksplit,"internal, internal",internal,function,c,false,15
+public,cosine_distance,"vector, vector",double precision,function,c,false,15
+public,avg,vector,vector,aggregate,internal,false,15
+public,sum,vector,vector,aggregate,internal,false,15
+public,array_to_vector,"integer[], integer, boolean",vector,function,c,false,15
+public,array_to_vector,"real[], integer, boolean",vector,function,c,false,15
+public,array_to_vector,"double precision[], integer, boolean",vector,function,c,false,15
+public,array_to_vector,"numeric[], integer, boolean",vector,function,c,false,15
+public,l2_norm,halfvec,double precision,function,c,false,15
+public,avg,halfvec,halfvec,aggregate,internal,false,15
+public,sum,halfvec,halfvec,aggregate,internal,false,15
+public,gbt_int2_fetch,internal,internal,function,c,false,14
+public,gbt_int2_union,"internal, internal",gbtreekey4,function,c,false,14
+public,gbt_int4_fetch,internal,internal,function,c,false,14
+public,gtrgm_distance,"internal, text, smallint, oid, internal",double precision,function,c,false,14
+public,gbt_int4_union,"internal, internal",gbtreekey8,function,c,false,14
+public,gbt_int8_fetch,internal,internal,function,c,false,14
+public,gbt_int8_union,"internal, internal",gbtreekey16,function,c,false,14
+public,gbt_enum_fetch,internal,internal,function,c,false,14
+public,gbt_ts_penalty,"internal, internal, internal",internal,function,c,false,14
+public,ivfflathandler,internal,index_am_handler,function,c,false,14
+public,vector_combine,"double precision[], double precision[]",double precision[],function,c,false,14
+public,gbt_time_fetch,internal,internal,function,c,false,14
+public,gbt_time_union,"internal, internal",gbtreekey16,function,c,false,14
+public,gbt_date_fetch,internal,internal,function,c,false,14
+public,gbt_bytea_same,"gbtreekey_var, gbtreekey_var, internal",internal,function,c,false,14
+public,gbt_bool_union,"internal, internal",gbtreekey2,function,c,false,14
+public,gbt_text_union,"internal, internal",gbtreekey_var,function,c,false,14
+public,gbt_macad_same,"gbtreekey16, gbtreekey16, internal",internal,function,c,false,14
+public,gbt_uuid_union,"internal, internal",gbtreekey32,function,c,false,14
+public,gbt_cash_union,"internal, internal",gbtreekey16,function,c,false,14
+public,gbt_cash_fetch,internal,internal,function,c,false,14
+public,gbt_uuid_fetch,internal,internal,function,c,false,14
+public,gbt_intv_union,"internal, internal",gbtreekey32,function,c,false,14
+public,gbt_intv_fetch,internal,internal,function,c,false,14
+public,gbt_enum_union,"internal, internal",gbtreekey8,function,c,false,14
+public,gtrgm_compress,internal,internal,function,c,false,14
+public,dmetaphone_alt,text,text,function,c,false,14
+public,gbt_bool_fetch,internal,internal,function,c,false,14
+public,gbt_date_union,"internal, internal",gbtreekey8,function,c,false,14
+public,sparsevec_send,sparsevec,bytea,function,c,false,14
+public,sparsevec_recv,"internal, oid, integer",sparsevec,function,c,false,14
+public,halfvec_combine,"double precision[], double precision[]",double precision[],function,c,false,14
+public,gbt_inet_union,"internal, internal",gbtreekey16,function,c,false,14
+public,halfvec_concat,"halfvec, halfvec",halfvec,function,c,false,14
+public,gbt_decompress,internal,internal,function,c,false,14
+public,unaccent,"regdictionary, text",text,function,c,false,13
+public,gbtreekey2_out,gbtreekey2,cstring,function,c,false,13
+public,gtrgm_options,internal,void,function,c,false,13
+public,gbt_enum_same,"gbtreekey8, gbtreekey8, internal",internal,function,c,false,13
+public,gbt_uuid_same,"gbtreekey32, gbtreekey32, internal",internal,function,c,false,13
+public,gbt_inet_same,"gbtreekey16, gbtreekey16, internal",internal,function,c,false,13
+public,gbt_bit_union,"internal, internal",gbtreekey_var,function,c,false,13
+public,gbt_text_same,"gbtreekey_var, gbtreekey_var, internal",internal,function,c,false,13
+public,gbt_cash_same,"gbtreekey16, gbtreekey16, internal",internal,function,c,false,13
+public,gbt_intv_same,"gbtreekey32, gbtreekey32, internal",internal,function,c,false,13
+public,gbt_date_same,"gbtreekey8, gbtreekey8, internal",internal,function,c,false,13
+public,inner_product,"vector, vector",double precision,function,c,false,13
+public,gbt_int8_same,"gbtreekey16, gbtreekey16, internal",internal,function,c,false,13
+public,vector_concat,"vector, vector",vector,function,c,false,13
+public,gbt_time_same,"gbtreekey16, gbtreekey16, internal",internal,function,c,false,13
+public,gbt_int4_same,"gbtreekey8, gbtreekey8, internal",internal,function,c,false,13
+public,gbt_int2_same,"gbtreekey4, gbtreekey4, internal",internal,function,c,false,13
+public,gbt_oid_union,"internal, internal",gbtreekey8,function,c,false,13
+public,gbt_var_fetch,internal,internal,function,c,false,13
+public,gbt_oid_fetch,internal,internal,function,c,false,13
+public,halfvec_accum,"double precision[], halfvec",double precision[],function,c,false,13
+public,interval_dist,"interval, interval",interval,function,c,false,13
+public,gbtreekey_var_out,gbtreekey_var,cstring,function,c,false,13
+public,sparsevec_out,sparsevec,cstring,function,c,false,13
+public,gbtreekey32_out,gbtreekey32,cstring,function,c,false,13
+public,gbtreekey16_out,gbtreekey16,cstring,function,c,false,13
+public,gbtreekey8_out,gbtreekey8,cstring,function,c,false,13
+public,gbtreekey4_out,gbtreekey4,cstring,function,c,false,13
+public,unaccent_init,internal,internal,function,c,false,13
+public,unaccent,text,text,function,c,false,13
+public,gtrgm_penalty,"internal, internal, internal",internal,function,c,false,13
+public,sparsevec_cmp,"sparsevec, sparsevec",integer,function,c,false,13
+public,similarity_op,"text, text",boolean,function,c,false,13
+public,gbt_bool_same,"gbtreekey2, gbtreekey2, internal",internal,function,c,false,13
+public,gbtreekey16_in,cstring,gbtreekey16,function,c,false,12
+public,gbtreekey4_in,cstring,gbtreekey4,function,c,false,12
+public,sparsevec_gt,"sparsevec, sparsevec",boolean,function,c,false,12
+public,l2_normalize,vector,vector,function,c,false,12
+public,sparsevec_lt,"sparsevec, sparsevec",boolean,function,c,false,12
+public,gbt_bit_same,"gbtreekey_var, gbtreekey_var, internal",internal,function,c,false,12
+public,gbt_oid_same,"gbtreekey8, gbtreekey8, internal",internal,function,c,false,12
+public,gbtreekey32_in,cstring,gbtreekey32,function,c,false,12
+public,sparsevec_eq,"sparsevec, sparsevec",boolean,function,c,false,12
+public,sparsevec_in,"cstring, oid, integer",sparsevec,function,c,false,12
+public,gbt_ts_fetch,internal,internal,function,c,false,12
+public,sparsevec_le,"sparsevec, sparsevec",boolean,function,c,false,12
+public,vector_accum,"double precision[], vector",double precision[],function,c,false,12
+public,gbtreekey_var_in,cstring,gbtreekey_var,function,c,false,12
+public,gbtreekey8_in,cstring,gbtreekey8,function,c,false,12
+public,sparsevec_ge,"sparsevec, sparsevec",boolean,function,c,false,12
+public,halfvec_send,halfvec,bytea,function,c,false,12
+public,sparsevec_ne,"sparsevec, sparsevec",boolean,function,c,false,12
+public,gbt_ts_union,"internal, internal",gbtreekey16,function,c,false,12
+public,halfvec_recv,"internal, oid, integer",halfvec,function,c,false,12
+public,gbtreekey2_in,cstring,gbtreekey2,function,c,false,12
+public,halfvec_sub,"halfvec, halfvec",halfvec,function,c,false,11
+public,gtrgm_union,"internal, internal",gtrgm,function,c,false,11
+public,l1_distance,"vector, vector",double precision,function,c,false,11
+public,halfvec_add,"halfvec, halfvec",halfvec,function,c,false,11
+public,halfvec_mul,"halfvec, halfvec",halfvec,function,c,false,11
+public,halfvec_cmp,"halfvec, halfvec",integer,function,c,false,11
+public,hnswhandler,internal,index_am_handler,function,c,false,11
+public,gbt_ts_same,"gbtreekey16, gbtreekey16, internal",internal,function,c,false,11
+public,halfvec_avg,double precision[],halfvec,function,c,false,11
+public,levenshtein,"text, text",integer,function,c,false,11
+public,l2_distance,"vector, vector",double precision,function,c,false,11
+public,halfvec_out,halfvec,cstring,function,c,false,11
+public,float8_dist,"double precision, double precision",double precision,function,c,false,11
+public,float4_dist,"real, real",real,function,c,false,11
+public,vector_norm,vector,double precision,function,c,false,11
+public,vector_dims,vector,integer,function,c,false,11
+public,vector_send,vector,bytea,function,c,false,11
+public,vector_recv,"internal, oid, integer",vector,function,c,false,11
+public,halfvec_lt,"halfvec, halfvec",boolean,function,c,false,10
+public,show_limit,,real,function,c,false,10
+public,halfvec_in,"cstring, oid, integer",halfvec,function,c,false,10
+public,vector_mul,"vector, vector",vector,function,c,false,10
+public,dmetaphone,text,text,function,c,false,10
+public,halfvec_eq,"halfvec, halfvec",boolean,function,c,false,10
+public,halfvec_ne,"halfvec, halfvec",boolean,function,c,false,10
+public,halfvec_ge,"halfvec, halfvec",boolean,function,c,false,10
+public,halfvec_gt,"halfvec, halfvec",boolean,function,c,false,10
+public,gtrgm_same,"gtrgm, gtrgm, internal",internal,function,c,false,10
+public,vector_cmp,"vector, vector",integer,function,c,false,10
+public,vector_out,vector,cstring,function,c,false,10
+public,vector_add,"vector, vector",vector,function,c,false,10
+public,vector_sub,"vector, vector",vector,function,c,false,10
+public,similarity,"text, text",real,function,c,false,10
+public,difference,"text, text",integer,function,c,false,10
+public,vector_avg,double precision[],vector,function,c,false,10
+public,halfvec_le,"halfvec, halfvec",boolean,function,c,false,10
+public,vector_lt,"vector, vector",boolean,function,c,false,9
+public,subvector,"vector, integer, integer",vector,function,c,false,9
+public,tstz_dist,"timestamp with time zone, timestamp with time zone",interval,function,c,false,9
+public,time_dist,"time without time zone, time without time zone",interval,function,c,false,9
+public,metaphone,"text, integer",text,function,c,false,9
+public,set_limit,real,real,function,c,false,9
+public,int8_dist,"bigint, bigint",bigint,function,c,false,9
+public,int4_dist,"integer, integer",integer,function,c,false,9
+public,int2_dist,"smallint, smallint",smallint,function,c,false,9
+public,date_dist,"date, date",integer,function,c,false,9
+public,cash_dist,"money, money",money,function,c,false,9
+public,sparsevec,"sparsevec, integer, boolean",sparsevec,function,c,false,9
+public,vector_in,"cstring, oid, integer",vector,function,c,false,9
+public,gtrgm_out,gtrgm,cstring,function,c,false,9
+public,vector_gt,"vector, vector",boolean,function,c,false,9
+public,vector_ge,"vector, vector",boolean,function,c,false,9
+public,vector_ne,"vector, vector",boolean,function,c,false,9
+public,vector_eq,"vector, vector",boolean,function,c,false,9
+public,show_trgm,text,text[],function,c,false,9
+public,vector_le,"vector, vector",boolean,function,c,false,9
+public,oid_dist,"oid, oid",oid,function,c,false,8
+public,gtrgm_in,cstring,gtrgm,function,c,false,8
+public,ts_dist,"timestamp without time zone, timestamp without time zone",interval,function,c,false,7
+public,soundex,text,text,function,c,false,7
+public,text_soundex,text,text,function,c,false,7
+public,halfvec,"halfvec, integer, boolean",halfvec,function,c,false,7
+public,vector,"vector, integer, boolean",vector,function,c,false,6

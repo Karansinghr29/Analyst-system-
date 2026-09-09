@@ -1,0 +1,4 @@
+reference,rows,orphans
+journal_entries.source_id -> invoices,5558,0
+journal_entries.source_id -> receipts,6085,0
+journal_entries.source_id -> expenses,516,0

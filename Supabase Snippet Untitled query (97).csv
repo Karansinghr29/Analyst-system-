@@ -1,0 +1,24 @@
+id,record_id,employee_code,department,position,company_name,shift_name,salary_type,salary_rate,bank_name,status,synced_at,created_at
+6d9338ce-3655-4180-a9a4-4efe8108fb65,k57er59t3nt9htaxfkf6h1d8f182pwxn,ANV-SW-26-003,Software,Sr Software Developer,Anvas Tech,Normal Shift,monthly,18000,State Bank of India,active,2026-07-09 00:16:15.528+00,2026-05-09 07:22:53.226874+00
+0c14b27e-fdf2-431c-8f1d-e0d6e40dd9ee,k574vtfjgtqw63kawh50zgk2xd86h0z7,,Software,Software,Anvas Tech,Normal Shift,monthly,25000,,deactivated,2026-07-08 00:16:15.432+00,2026-05-11 05:43:24.48821+00
+a360684e-4cf2-467e-bc60-602f328bbfd2,k572ccncvccfze1nyftj37vmhx82qw2v,ANV-SW-26-002,Software,Software,Anvas Tech,Normal Shift,monthly,18000,iob,active,2026-08-29 06:16:15.445+00,2026-05-11 06:16:34.711953+00
+0ec3a3bf-74a5-4154-b82b-82b6e4462ee8,k577etpbmvhv09asvj01qgmwed84eab1,SRRB-AC-26-001,Accounting,Accountant,Sree Raja Rajeshwari Developers,Normal Shift,monthly,14000,,active,2026-08-05 06:16:15.559+00,2026-05-11 12:16:17.656822+00
+203821bd-1297-409f-a4d7-46c2044e9cbb,k57ew13t4a787za1hn3bvhpv1x82eyz4,,Management,Personal Assitant,Vishful,,monthly,35000,,active,2026-08-29 06:16:15.445+00,2026-05-11 12:16:17.656822+00
+34dc4f2d-51fc-4e4e-b78f-8f84f21f7c68,k570ekz3wy23krqstrtjb214c584wyn8,SRRB-AC-26-003,Accounting,Accountant,Sree Raja Rajeshwari Developers,Normal Shift,monthly,17000,,active,2026-08-29 06:16:15.445+00,2026-05-11 12:16:17.656822+00
+3ac9742c-7faf-42b4-9351-b8537a23b20b,k570mn6c4d325ft53stqy1m8fs840kp1,,HouseKeeping,Cleaning Maid,Vishful,Normal Shift,monthly,16000,,active,2026-08-29 06:16:15.445+00,2026-05-11 12:16:17.656822+00
+40793222-057a-445f-8339-616a839109ec,k5797pqmr8we9rqmnp591m3ma584fvsm,SRRB-M-26-001,General,Clerk,Sree Raja Rajeshwari Developers,Normal Shift,monthly,17000,,active,2026-08-29 06:16:15.445+00,2026-05-11 12:16:17.656822+00
+5a22f1ce-14a4-4893-af4a-66b1cdea752e,k57eacp5e34csqajqmb0nxe9g58418jt,,HouseKeeping,Cleaning Maid,Vishful,Normal Shift,monthly,16000,,active,2026-08-29 06:16:15.445+00,2026-05-11 12:16:17.656822+00
+636d8eec-6a95-487e-9cec-48ceb8248c75,k5715gf5zd26k5yvgb40zrp8hn82xhyh,,Management,Personal Assitant,Vishful,Normal Shift,monthly,50000,,active,2026-08-29 06:16:15.445+00,2026-05-11 12:16:17.656822+00
+73966928-16be-46cd-99b7-6c02c4e01412,k578dn1r817s4f6z6bs7tk66yx841vxa,,Property management,Property manager,Vishful,Normal Shift,monthly,20000,,active,2026-08-05 06:16:15.559+00,2026-05-11 12:16:17.656822+00
+8d528df5-b5f4-46a1-ab67-09ed971d21fd,k578mxjqmdc0qn6ewn7dja2pp984fe8z,ANV-SW-24-001,Software,Jr Software Developer,Anvas Tech,Normal Shift,monthly,25000,,active,2026-08-29 06:16:15.445+00,2026-05-11 12:16:17.656822+00
+92fd0eef-880f-4d7b-9809-920362d7e60b,k57bbvwyvntstg0g4zasr5tjth84fn1t,SRRB-AC-26-002,Accounting,Accountant,Sree Raja Rajeshwari Developers,Normal Shift,monthly,20000,,active,2026-08-29 06:16:15.445+00,2026-05-11 12:16:17.656822+00
+9fbccbca-a936-4af2-ab79-bd2112dae38a,k57df3mjdsde9naqx2ce4ga705840cd1,,Property management,Property manager,Vishful,Normal Shift,monthly,10000,,active,2026-08-05 06:16:15.559+00,2026-05-11 12:16:17.656822+00
+a1cd3068-4f31-4d57-8789-4849108a1386,k572qdbf98r1f4qnqh9y0j9j1s840nj1,,Property management,Technician,Vishful,Normal Shift,monthly,35000,,active,2026-08-29 06:16:15.445+00,2026-05-11 12:16:17.656822+00
+a4bf0317-6d02-4edc-add1-fb703b74f5a2,k57dxy28hv6yy3rvq0hka0r12n82e6fm,,Accounting,Accountant,Vishful,Normal Shift,monthly,25000,,active,2026-08-29 06:16:15.444+00,2026-05-11 12:16:17.656822+00
+b94e876a-c8b3-4e12-984b-8def2c203903,k570mrm28s97qv2qtctb1bctr982wtb1,,Management,Personal Assitant,Vishful,Normal Shift,monthly,25000,,active,2026-08-29 06:16:15.445+00,2026-05-11 12:16:17.656822+00
+e7235663-b295-470f-80a3-b4eba6d95b24,k57816fbna66qzzajz77eez8jd8415t0,,HouseKeeping,Cleaning Maid,Vishful,Normal Shift,monthly,16000,,active,2026-08-29 06:16:15.445+00,2026-05-11 12:16:17.656822+00
+f9544ac4-3529-4865-b3c2-89b39b6532f4,k57eyxrnj8snc9g1b95h2zxtsn841w7h,,HouseKeeping,Cleaning Maid,Vishful,Normal Shift,monthly,16000,,active,2026-08-29 06:16:15.445+00,2026-05-11 12:16:17.656822+00
+ff673c97-01de-4d99-a1f7-ba2d4619874e,k5791pxpxjwtpxcsdrydnj38cs82fxty,,Software,Jr Software Developer,Sree Raja Rajeshwari Developers,Normal Shift,monthly,30000,,deactivated,2026-08-29 06:16:15.445+00,2026-05-11 12:16:17.656822+00
+ecda58bc-d138-401b-b04f-3383924957ff,k5715z7064n2rkv5bpgce4nggs89p1z9,EMP0010,Software,UI/UX Designer,Anvas Tech,Normal Shift,monthly,15000,State Bank of India,active,2026-08-29 06:16:15.483+00,2026-07-01 06:21:48.112323+00
+5f6b565a-e17d-4126-9075-eec15ffa28c4,k5709cxw359jakc1tfqrvv8sp18a1bg4,EMP0011,Software,Data Scientist,Anvas Tech,Normal Shift,monthly,15000,IOB,active,2026-08-29 06:16:15.483+00,2026-07-06 07:23:04.362385+00
+60fb35ff-16f6-4b6f-8f32-fb018e9cfab6,k577ecxbcs9hmxt4vt0n3jvgdd8c0c56,HK0010,HouseKeeping,Housekeeping,Vishful,,monthly,7500,,active,2026-08-29 06:16:15.483+00,2026-08-07 05:24:40.830595+00

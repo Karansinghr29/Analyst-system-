@@ -1,0 +1,2 @@
+allocation_rows,linked_to_invoice,linked_to_adjustment,distinct_receipts_allocated,live_receipts,min_allocated_at,max_allocated_at
+0,0,0,0,5758,null,null

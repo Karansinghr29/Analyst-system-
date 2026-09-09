@@ -1,0 +1,429 @@
+table_schema,table_name,index_name,is_unique,is_partial,definition
+market,amenities_master,amenities_master_canonical_name_key,true,false,CREATE UNIQUE INDEX amenities_master_canonical_name_key ON market.amenities_master USING btree (canonical_name)
+market,amenities_master,amenities_master_pkey,true,false,CREATE UNIQUE INDEX amenities_master_pkey ON market.amenities_master USING btree (id)
+market,amenity_embeddings,amenity_embeddings_pkey,true,false,CREATE UNIQUE INDEX amenity_embeddings_pkey ON market.amenity_embeddings USING btree (amenity_id)
+market,amenity_embeddings,idx_amenity_embeddings_hnsw,false,false,"CREATE INDEX idx_amenity_embeddings_hnsw ON market.amenity_embeddings USING hnsw (embedding vector_cosine_ops) WITH (m='16', ef_construction='64')"
+market,competitor_intelligence,competitor_intelligence_competitor_id_key,true,false,CREATE UNIQUE INDEX competitor_intelligence_competitor_id_key ON market.competitor_intelligence USING btree (competitor_id)
+market,competitor_intelligence,competitor_intelligence_pkey,true,false,CREATE UNIQUE INDEX competitor_intelligence_pkey ON market.competitor_intelligence USING btree (id)
+market,competitor_intelligence,idx_comp_intel_org,false,false,CREATE INDEX idx_comp_intel_org ON market.competitor_intelligence USING btree (organization_id)
+market,competitor_pricing_snapshots,idx_snapshots_org_competitor,false,false,"CREATE INDEX idx_snapshots_org_competitor ON ONLY market.competitor_pricing_snapshots USING btree (organization_id, competitor_id, scraped_at DESC)"
+market,competitor_pricing_snapshots_2026_05,competitor_pricing_snapshots__organization_id_competitor_id_idx,false,false,"CREATE INDEX competitor_pricing_snapshots__organization_id_competitor_id_idx ON market.competitor_pricing_snapshots_2026_05 USING btree (organization_id, competitor_id, scraped_at DESC)"
+market,competitor_pricing_snapshots_2026_06,competitor_pricing_snapshots__organization_id_competitor_i_idx1,false,false,"CREATE INDEX competitor_pricing_snapshots__organization_id_competitor_i_idx1 ON market.competitor_pricing_snapshots_2026_06 USING btree (organization_id, competitor_id, scraped_at DESC)"
+market,competitor_pricing_snapshots_2026_07,competitor_pricing_snapshots__organization_id_competitor_i_idx2,false,false,"CREATE INDEX competitor_pricing_snapshots__organization_id_competitor_i_idx2 ON market.competitor_pricing_snapshots_2026_07 USING btree (organization_id, competitor_id, scraped_at DESC)"
+market,competitor_pricing_snapshots_2026_08,competitor_pricing_snapshots__organization_id_competitor_i_idx3,false,false,"CREATE INDEX competitor_pricing_snapshots__organization_id_competitor_i_idx3 ON market.competitor_pricing_snapshots_2026_08 USING btree (organization_id, competitor_id, scraped_at DESC)"
+market,competitor_properties,competitor_properties_organization_id_source_url_key,true,false,"CREATE UNIQUE INDEX competitor_properties_organization_id_source_url_key ON market.competitor_properties USING btree (organization_id, source_url)"
+market,competitor_properties,competitor_properties_pkey,true,false,CREATE UNIQUE INDEX competitor_properties_pkey ON market.competitor_properties USING btree (id)
+market,competitor_properties,idx_competitor_active,false,true,"CREATE INDEX idx_competitor_active ON market.competitor_properties USING btree (organization_id, is_active) WHERE (is_active = true)"
+market,competitor_properties,idx_competitor_org,false,false,CREATE INDEX idx_competitor_org ON market.competitor_properties USING btree (organization_id)
+market,competitor_properties,idx_competitor_org_locality,false,false,"CREATE INDEX idx_competitor_org_locality ON market.competitor_properties USING btree (organization_id, locality_id)"
+market,competitor_reviews,competitor_reviews_organization_id_competitor_id_source_rev_key,true,false,"CREATE UNIQUE INDEX competitor_reviews_organization_id_competitor_id_source_rev_key ON market.competitor_reviews USING btree (organization_id, competitor_id, source_review_id)"
+market,competitor_reviews,competitor_reviews_pkey,true,false,CREATE UNIQUE INDEX competitor_reviews_pkey ON market.competitor_reviews USING btree (id)
+market,competitor_reviews,idx_reviews_org_competitor,false,false,"CREATE INDEX idx_reviews_org_competitor ON market.competitor_reviews USING btree (organization_id, competitor_id)"
+market,competitor_room_types,competitor_room_types_competitor_id_label_key,true,false,"CREATE UNIQUE INDEX competitor_room_types_competitor_id_label_key ON market.competitor_room_types USING btree (competitor_id, label)"
+market,competitor_room_types,competitor_room_types_pkey,true,false,CREATE UNIQUE INDEX competitor_room_types_pkey ON market.competitor_room_types USING btree (id)
+market,competitor_room_types,idx_room_types_competitor,false,false,CREATE INDEX idx_room_types_competitor ON market.competitor_room_types USING btree (competitor_id)
+market,competitor_room_types,idx_room_types_org,false,false,CREATE INDEX idx_room_types_org ON market.competitor_room_types USING btree (organization_id)
+market,localities,localities_name_city_key,true,false,"CREATE UNIQUE INDEX localities_name_city_key ON market.localities USING btree (name, city)"
+market,localities,localities_pkey,true,false,CREATE UNIQUE INDEX localities_pkey ON market.localities USING btree (id)
+market,locality_market_metrics,idx_locality_metrics_org,false,false,"CREATE INDEX idx_locality_metrics_org ON market.locality_market_metrics USING btree (organization_id, locality_id, period_month)"
+market,locality_market_metrics,locality_market_metrics_organization_id_locality_id_room_ty_key,true,false,"CREATE UNIQUE INDEX locality_market_metrics_organization_id_locality_id_room_ty_key ON market.locality_market_metrics USING btree (organization_id, locality_id, room_type_label, period_month)"
+market,org_tracked_localities,idx_org_tracked_localities_org,false,true,CREATE INDEX idx_org_tracked_localities_org ON market.org_tracked_localities USING btree (organization_id) WHERE (is_active = true)
+market,org_tracked_localities,org_tracked_localities_organization_id_locality_id_key,true,false,"CREATE UNIQUE INDEX org_tracked_localities_organization_id_locality_id_key ON market.org_tracked_localities USING btree (organization_id, locality_id)"
+market,org_tracked_localities,org_tracked_localities_pkey,true,false,CREATE UNIQUE INDEX org_tracked_localities_pkey ON market.org_tracked_localities USING btree (id)
+market,property_embeddings,idx_property_embeddings_hnsw,false,false,"CREATE INDEX idx_property_embeddings_hnsw ON market.property_embeddings USING hnsw (embedding vector_cosine_ops) WITH (m='16', ef_construction='64')"
+market,property_embeddings,idx_property_embeddings_org,false,false,CREATE INDEX idx_property_embeddings_org ON market.property_embeddings USING btree (organization_id)
+market,property_embeddings,property_embeddings_pkey,true,false,CREATE UNIQUE INDEX property_embeddings_pkey ON market.property_embeddings USING btree (competitor_id)
+market,review_embeddings,idx_review_embeddings_hnsw,false,false,"CREATE INDEX idx_review_embeddings_hnsw ON market.review_embeddings USING hnsw (embedding vector_cosine_ops) WITH (m='16', ef_construction='64')"
+market,review_embeddings,idx_review_embeddings_org,false,false,CREATE INDEX idx_review_embeddings_org ON market.review_embeddings USING btree (organization_id)
+market,review_embeddings,review_embeddings_pkey,true,false,CREATE UNIQUE INDEX review_embeddings_pkey ON market.review_embeddings USING btree (review_id)
+market,scrape_sources,scrape_sources_key_key,true,false,CREATE UNIQUE INDEX scrape_sources_key_key ON market.scrape_sources USING btree (key)
+market,scrape_sources,scrape_sources_pkey,true,false,CREATE UNIQUE INDEX scrape_sources_pkey ON market.scrape_sources USING btree (id)
+public,accounting_migration_log,accounting_migration_log_pkey,true,false,CREATE UNIQUE INDEX accounting_migration_log_pkey ON public.accounting_migration_log USING btree (id)
+public,accounting_migration_log,idx_aml_severity_time,false,false,"CREATE INDEX idx_aml_severity_time ON public.accounting_migration_log USING btree (severity, created_at DESC)"
+public,accounting_periods,accounting_periods_pkey,true,false,"CREATE UNIQUE INDEX accounting_periods_pkey ON public.accounting_periods USING btree (organization_id, period)"
+public,ai_actions,ai_actions_org_created,false,false,"CREATE INDEX ai_actions_org_created ON public.ai_actions USING btree (organization_id, created_at DESC)"
+public,ai_actions,ai_actions_pkey,true,false,CREATE UNIQUE INDEX ai_actions_pkey ON public.ai_actions USING btree (id)
+public,ai_logs,ai_logs_created_at_idx,false,false,CREATE INDEX ai_logs_created_at_idx ON public.ai_logs USING btree (created_at DESC)
+public,ai_logs,ai_logs_pkey,true,false,CREATE UNIQUE INDEX ai_logs_pkey ON public.ai_logs USING btree (id)
+public,ai_logs,ai_logs_request_type_idx,false,false,CREATE INDEX ai_logs_request_type_idx ON public.ai_logs USING btree (request_type)
+public,ai_sessions,ai_sessions_org_user_updated,false,false,"CREATE INDEX ai_sessions_org_user_updated ON public.ai_sessions USING btree (organization_id, user_id, updated_at DESC)"
+public,ai_sessions,ai_sessions_pkey,true,false,CREATE UNIQUE INDEX ai_sessions_pkey ON public.ai_sessions USING btree (id)
+public,announcements,announcements_pkey,true,false,CREATE UNIQUE INDEX announcements_pkey ON public.announcements USING btree (id)
+public,apartments,apartments_pkey,true,false,CREATE UNIQUE INDEX apartments_pkey ON public.apartments USING btree (id)
+public,apartments,idx_apartments_org_status,false,false,"CREATE INDEX idx_apartments_org_status ON public.apartments USING btree (organization_id, status)"
+public,apartments,idx_apartments_property,false,false,CREATE INDEX idx_apartments_property ON public.apartments USING btree (property_id)
+public,asset_allocations,asset_allocations_pkey,true,false,CREATE UNIQUE INDEX asset_allocations_pkey ON public.asset_allocations USING btree (id)
+public,asset_brands,asset_brands_name_organization_id_key,true,false,"CREATE UNIQUE INDEX asset_brands_name_organization_id_key ON public.asset_brands USING btree (name, organization_id)"
+public,asset_brands,asset_brands_pkey,true,false,CREATE UNIQUE INDEX asset_brands_pkey ON public.asset_brands USING btree (id)
+public,asset_categories,asset_categories_pkey,true,false,CREATE UNIQUE INDEX asset_categories_pkey ON public.asset_categories USING btree (id)
+public,asset_depreciation,asset_depreciation_pkey,true,false,CREATE UNIQUE INDEX asset_depreciation_pkey ON public.asset_depreciation USING btree (id)
+public,asset_depreciation,idx_asset_depreciation_org,false,false,CREATE INDEX idx_asset_depreciation_org ON public.asset_depreciation USING btree (organization_id)
+public,asset_maintenance_logs,asset_maintenance_logs_pkey,true,false,CREATE UNIQUE INDEX asset_maintenance_logs_pkey ON public.asset_maintenance_logs USING btree (id)
+public,asset_movements,asset_movements_pkey,true,false,CREATE UNIQUE INDEX asset_movements_pkey ON public.asset_movements USING btree (id)
+public,asset_payments,asset_payments_pkey,true,false,CREATE UNIQUE INDEX asset_payments_pkey ON public.asset_payments USING btree (id)
+public,asset_payments,idx_asset_payments_asset,false,false,CREATE INDEX idx_asset_payments_asset ON public.asset_payments USING btree (asset_id)
+public,asset_payments,idx_asset_payments_bank,false,true,CREATE INDEX idx_asset_payments_bank ON public.asset_payments USING btree (bank_account_id) WHERE (bank_account_id IS NOT NULL)
+public,asset_payments,idx_asset_payments_org,false,false,CREATE INDEX idx_asset_payments_org ON public.asset_payments USING btree (organization_id)
+public,asset_payments,idx_asset_payments_payment_date,false,false,CREATE INDEX idx_asset_payments_payment_date ON public.asset_payments USING btree (payment_date)
+public,asset_payments,idx_asset_payments_vendor,false,false,CREATE INDEX idx_asset_payments_vendor ON public.asset_payments USING btree (vendor_id)
+public,asset_types,asset_types_pkey,true,false,CREATE UNIQUE INDEX asset_types_pkey ON public.asset_types USING btree (id)
+public,assets,assets_asset_code_org_key,true,false,"CREATE UNIQUE INDEX assets_asset_code_org_key ON public.assets USING btree (organization_id, asset_code)"
+public,assets,assets_pkey,true,false,CREATE UNIQUE INDEX assets_pkey ON public.assets USING btree (id)
+public,assets,idx_assets_org,false,false,CREATE INDEX idx_assets_org ON public.assets USING btree (organization_id)
+public,assets,idx_assets_type,false,false,CREATE INDEX idx_assets_type ON public.assets USING btree (asset_type_id)
+public,attendance_logs,attendance_logs_pkey,true,false,CREATE UNIQUE INDEX attendance_logs_pkey ON public.attendance_logs USING btree (id)
+public,attendance_logs,idx_attendance_company_date,false,false,"CREATE INDEX idx_attendance_company_date ON public.attendance_logs USING btree (company_id, date)"
+public,attendance_logs,idx_attendance_date,false,false,CREATE INDEX idx_attendance_date ON public.attendance_logs USING btree (date)
+public,attendance_logs,idx_attendance_employee_date,false,false,"CREATE INDEX idx_attendance_employee_date ON public.attendance_logs USING btree (employee_id, date)"
+public,attendance_sync,attendance_sync_pkey,true,false,CREATE UNIQUE INDEX attendance_sync_pkey ON public.attendance_sync USING btree (id)
+public,attendance_sync,attendance_sync_record_id_key,true,false,CREATE UNIQUE INDEX attendance_sync_record_id_key ON public.attendance_sync USING btree (record_id)
+public,audit_logs,audit_logs_pkey,true,false,CREATE UNIQUE INDEX audit_logs_pkey ON public.audit_logs USING btree (id)
+public,audit_logs,idx_audit_logs_org,false,false,"CREATE INDEX idx_audit_logs_org ON public.audit_logs USING btree (organization_id, performed_at DESC)"
+public,audit_logs,idx_audit_logs_performed_at,false,false,CREATE INDEX idx_audit_logs_performed_at ON public.audit_logs USING btree (performed_at)
+public,audit_logs,idx_audit_logs_table,false,false,"CREATE INDEX idx_audit_logs_table ON public.audit_logs USING btree (table_name, record_id)"
+public,audit_logs,idx_audit_logs_table_name,false,false,CREATE INDEX idx_audit_logs_table_name ON public.audit_logs USING btree (table_name)
+public,bed_rates,bed_rates_pkey,true,false,CREATE UNIQUE INDEX bed_rates_pkey ON public.bed_rates USING btree (id)
+public,bed_rates,no_overlapping_bed_rates,false,false,"CREATE INDEX no_overlapping_bed_rates ON public.bed_rates USING gist (organization_id, bed_type, toilet_type, COALESCE(property_id, '00000000-0000-0000-0000-000000000000'::uuid), daterange(from_date, COALESCE(to_date, '9999-12-31'::date), '[]'::text))"
+public,bed_status_history,bed_status_history_pkey,true,false,CREATE UNIQUE INDEX bed_status_history_pkey ON public.bed_status_history USING btree (id)
+public,bed_type_config,bed_type_config_name_organization_id_key,true,false,"CREATE UNIQUE INDEX bed_type_config_name_organization_id_key ON public.bed_type_config USING btree (name, organization_id)"
+public,bed_type_config,bed_type_config_pkey,true,false,CREATE UNIQUE INDEX bed_type_config_pkey ON public.bed_type_config USING btree (id)
+public,beds,beds_apartment_idx,false,false,CREATE INDEX beds_apartment_idx ON public.beds USING btree (apartment_id)
+public,beds,beds_pkey,true,false,CREATE UNIQUE INDEX beds_pkey ON public.beds USING btree (id)
+public,beds,idx_beds_apartment,false,false,CREATE INDEX idx_beds_apartment ON public.beds USING btree (apartment_id)
+public,beds,idx_beds_org_status,false,false,"CREATE INDEX idx_beds_org_status ON public.beds USING btree (organization_id, status)"
+public,bot_conversations,bot_conversations_pkey,true,false,CREATE UNIQUE INDEX bot_conversations_pkey ON public.bot_conversations USING btree (phone)
+public,bot_conversations,idx_bot_conversations_updated,false,false,CREATE INDEX idx_bot_conversations_updated ON public.bot_conversations USING btree (updated_at DESC)
+public,coa_accounts,coa_accounts_organization_id_code_key,true,false,"CREATE UNIQUE INDEX coa_accounts_organization_id_code_key ON public.coa_accounts USING btree (organization_id, code)"
+public,coa_accounts,coa_accounts_pkey,true,false,CREATE UNIQUE INDEX coa_accounts_pkey ON public.coa_accounts USING btree (id)
+public,coa_accounts,idx_coa_org_type,false,false,"CREATE INDEX idx_coa_org_type ON public.coa_accounts USING btree (organization_id, account_type)"
+public,coa_accounts,idx_coa_parent,false,false,CREATE INDEX idx_coa_parent ON public.coa_accounts USING btree (parent_id)
+public,companies,companies_pkey,true,false,CREATE UNIQUE INDEX companies_pkey ON public.companies USING btree (id)
+public,companies,idx_companies_status,false,false,CREATE INDEX idx_companies_status ON public.companies USING btree (status)
+public,cost_estimate_approvers,cost_estimate_approvers_pkey,true,false,CREATE UNIQUE INDEX cost_estimate_approvers_pkey ON public.cost_estimate_approvers USING btree (id)
+public,departments,departments_pkey,true,false,CREATE UNIQUE INDEX departments_pkey ON public.departments USING btree (id)
+public,departments,idx_departments_company,false,false,CREATE INDEX idx_departments_company ON public.departments USING btree (company_id)
+public,deposit_settlements,deposit_settlements_pkey,true,false,CREATE UNIQUE INDEX deposit_settlements_pkey ON public.deposit_settlements USING btree (id)
+public,deposit_settlements,idx_deposit_settlements_status,false,false,CREATE INDEX idx_deposit_settlements_status ON public.deposit_settlements USING btree (status)
+public,deposit_settlements,idx_deposit_settlements_tenant_id,false,false,CREATE INDEX idx_deposit_settlements_tenant_id ON public.deposit_settlements USING btree (tenant_id)
+public,deposit_settlements,idx_settlements_org_settlement_date,false,false,"CREATE INDEX idx_settlements_org_settlement_date ON public.deposit_settlements USING btree (organization_id, settlement_date)"
+public,deposit_settlements,uq_deposit_settlements_open_per_allotment,true,true,"CREATE UNIQUE INDEX uq_deposit_settlements_open_per_allotment ON public.deposit_settlements USING btree (allotment_id) WHERE ((COALESCE(is_deleted, false) = false) AND (COALESCE(status, ''::text) <> 'completed'::text) AND (allotment_id IS NOT NULL))"
+public,diagnostic_sessions,diagnostic_sessions_pkey,true,false,CREATE UNIQUE INDEX diagnostic_sessions_pkey ON public.diagnostic_sessions USING btree (id)
+public,eb_monitoring_readings,eb_monitoring_readings_apt_date_idx,false,false,"CREATE INDEX eb_monitoring_readings_apt_date_idx ON public.eb_monitoring_readings USING btree (apartment_id, reading_date DESC)"
+public,eb_monitoring_readings,eb_monitoring_readings_org_idx,false,false,CREATE INDEX eb_monitoring_readings_org_idx ON public.eb_monitoring_readings USING btree (organization_id)
+public,eb_monitoring_readings,eb_monitoring_readings_pkey,true,false,CREATE UNIQUE INDEX eb_monitoring_readings_pkey ON public.eb_monitoring_readings USING btree (id)
+public,eb_monitoring_readings,eb_monitoring_readings_prop_apt_uidx,true,false,"CREATE UNIQUE INDEX eb_monitoring_readings_prop_apt_uidx ON public.eb_monitoring_readings USING btree (property_id, apartment_id)"
+public,eb_monitoring_readings,eb_monitoring_readings_prop_date_idx,false,false,"CREATE INDEX eb_monitoring_readings_prop_date_idx ON public.eb_monitoring_readings USING btree (property_id, reading_date DESC)"
+public,eb_payments,eb_payments_pkey,true,false,CREATE UNIQUE INDEX eb_payments_pkey ON public.eb_payments USING btree (id)
+public,eb_payments,idx_eb_payments_bank_account_id,false,true,CREATE INDEX idx_eb_payments_bank_account_id ON public.eb_payments USING btree (bank_account_id) WHERE (bank_account_id IS NOT NULL)
+public,eb_rates,eb_rates_pkey,true,false,CREATE UNIQUE INDEX eb_rates_pkey ON public.eb_rates USING btree (id)
+public,eb_rates,no_overlapping_eb_rates,false,false,"CREATE INDEX no_overlapping_eb_rates ON public.eb_rates USING gist (organization_id, COALESCE(property_id, '00000000-0000-0000-0000-000000000000'::uuid), daterange(from_date, COALESCE(to_date, '9999-12-31'::date), '[]'::text))"
+public,eb_tenant_shares,eb_tenant_shares_pkey,true,false,CREATE UNIQUE INDEX eb_tenant_shares_pkey ON public.eb_tenant_shares USING btree (id)
+public,eb_tenant_shares,idx_eb_shares_org_month,false,false,"CREATE INDEX idx_eb_shares_org_month ON public.eb_tenant_shares USING btree (organization_id, billing_month)"
+public,eb_tenant_shares,idx_eb_shares_tenant,false,false,"CREATE INDEX idx_eb_shares_tenant ON public.eb_tenant_shares USING btree (tenant_id, billing_month)"
+public,electricity_readings,electricity_readings_pkey,true,false,CREATE UNIQUE INDEX electricity_readings_pkey ON public.electricity_readings USING btree (id)
+public,electricity_readings,idx_elec_readings_org_month,false,false,"CREATE INDEX idx_elec_readings_org_month ON public.electricity_readings USING btree (organization_id, billing_month)"
+public,electricity_readings,idx_electricity_readings_apartment_id,false,false,CREATE INDEX idx_electricity_readings_apartment_id ON public.electricity_readings USING btree (apartment_id)
+public,electricity_readings,idx_electricity_readings_billing_month_property,false,false,"CREATE INDEX idx_electricity_readings_billing_month_property ON public.electricity_readings USING btree (billing_month, property_id)"
+public,electricity_shares,electricity_shares_pkey,true,false,CREATE UNIQUE INDEX electricity_shares_pkey ON public.electricity_shares USING btree (id)
+public,email_templates,email_templates_org_type_unique,true,false,"CREATE UNIQUE INDEX email_templates_org_type_unique ON public.email_templates USING btree (organization_id, email_type)"
+public,email_templates,email_templates_pkey,true,false,CREATE UNIQUE INDEX email_templates_pkey ON public.email_templates USING btree (id)
+public,employee_specialties,employee_specialties_pkey,true,false,CREATE UNIQUE INDEX employee_specialties_pkey ON public.employee_specialties USING btree (id)
+public,employees,employees_employee_id_key,true,false,CREATE UNIQUE INDEX employees_employee_id_key ON public.employees USING btree (employee_id)
+public,employees,employees_pkey,true,false,CREATE UNIQUE INDEX employees_pkey ON public.employees USING btree (id)
+public,employees,idx_employees_company,false,false,CREATE INDEX idx_employees_company ON public.employees USING btree (company_id)
+public,employees,idx_employees_department,false,false,CREATE INDEX idx_employees_department ON public.employees USING btree (department_id)
+public,employees,idx_employees_email,false,false,CREATE INDEX idx_employees_email ON public.employees USING btree (email)
+public,employees,idx_employees_status,false,false,CREATE INDEX idx_employees_status ON public.employees USING btree (status)
+public,employees_sync,employees_sync_pkey,true,false,CREATE UNIQUE INDEX employees_sync_pkey ON public.employees_sync USING btree (id)
+public,employees_sync,employees_sync_record_id_key,true,false,CREATE UNIQUE INDEX employees_sync_record_id_key ON public.employees_sync USING btree (record_id)
+public,enquiries,enquiries_phone_uniq,true,false,CREATE UNIQUE INDEX enquiries_phone_uniq ON public.enquiries USING btree (phone)
+public,enquiries,enquiries_pkey,true,false,CREATE UNIQUE INDEX enquiries_pkey ON public.enquiries USING btree (id)
+public,enquiries,idx_enquiries_created,false,false,CREATE INDEX idx_enquiries_created ON public.enquiries USING btree (created_at DESC)
+public,enquiries,idx_enquiries_org_status,false,false,"CREATE INDEX idx_enquiries_org_status ON public.enquiries USING btree (organization_id, status)"
+public,enquiries,idx_enquiries_phone,false,false,CREATE INDEX idx_enquiries_phone ON public.enquiries USING btree (phone)
+public,exit_tasks,exit_tasks_pkey,true,false,CREATE UNIQUE INDEX exit_tasks_pkey ON public.exit_tasks USING btree (id)
+public,exit_tasks,idx_exit_tasks_allotment,false,false,"CREATE INDEX idx_exit_tasks_allotment ON public.exit_tasks USING btree (organization_id, allotment_id)"
+public,exit_tasks,idx_exit_tasks_date,false,false,"CREATE INDEX idx_exit_tasks_date ON public.exit_tasks USING btree (organization_id, exit_date)"
+public,expense_bed_allocations,expense_bed_allocations_pkey,true,false,CREATE UNIQUE INDEX expense_bed_allocations_pkey ON public.expense_bed_allocations USING btree (id)
+public,expense_bed_allocations,idx_expense_bed_alloc_bed,false,false,CREATE INDEX idx_expense_bed_alloc_bed ON public.expense_bed_allocations USING btree (bed_id)
+public,expense_bed_allocations,idx_expense_bed_alloc_expense,false,false,CREATE INDEX idx_expense_bed_alloc_expense ON public.expense_bed_allocations USING btree (expense_id)
+public,expense_bed_allocations,idx_expense_bed_alloc_org,false,false,CREATE INDEX idx_expense_bed_alloc_org ON public.expense_bed_allocations USING btree (organization_id)
+public,expense_categories,expense_categories_new_organization_id_key_key,true,false,"CREATE UNIQUE INDEX expense_categories_new_organization_id_key_key ON public.expense_categories USING btree (organization_id, key)"
+public,expense_categories,expense_categories_new_pkey,true,false,CREATE UNIQUE INDEX expense_categories_new_pkey ON public.expense_categories USING btree (id)
+public,expense_categories,idx_expense_categories_gl,false,false,CREATE INDEX idx_expense_categories_gl ON public.expense_categories USING btree (gl_account_id)
+public,expense_categories,idx_expense_categories_org,false,false,CREATE INDEX idx_expense_categories_org ON public.expense_categories USING btree (organization_id)
+public,expense_subcategories,expense_subcategories_pkey,true,false,CREATE UNIQUE INDEX expense_subcategories_pkey ON public.expense_subcategories USING btree (id)
+public,expense_subcategories,idx_expense_subcategories_cat,false,false,CREATE INDEX idx_expense_subcategories_cat ON public.expense_subcategories USING btree (category_id)
+public,expense_subcategories,idx_expense_subcategories_gl,false,false,CREATE INDEX idx_expense_subcategories_gl ON public.expense_subcategories USING btree (gl_account_id)
+public,expense_subcategories,idx_expense_subcategories_org_cat,false,false,"CREATE INDEX idx_expense_subcategories_org_cat ON public.expense_subcategories USING btree (organization_id, category_id)"
+public,expenses,expenses_pkey,true,false,CREATE UNIQUE INDEX expenses_pkey ON public.expenses USING btree (id)
+public,expenses,expenses_team_payment_id_key,true,true,CREATE UNIQUE INDEX expenses_team_payment_id_key ON public.expenses USING btree (team_payment_id) WHERE (team_payment_id IS NOT NULL)
+public,expenses,expenses_ticket_resolution_id_unique,true,true,CREATE UNIQUE INDEX expenses_ticket_resolution_id_unique ON public.expenses USING btree (ticket_resolution_id) WHERE (ticket_resolution_id IS NOT NULL)
+public,expenses,idx_expenses_asset_type_id,false,false,CREATE INDEX idx_expenses_asset_type_id ON public.expenses USING btree (asset_type_id)
+public,expenses,idx_expenses_bank_account_id,false,true,CREATE INDEX idx_expenses_bank_account_id ON public.expenses USING btree (bank_account_id) WHERE (bank_account_id IS NOT NULL)
+public,expenses,idx_expenses_billing_month,false,false,CREATE INDEX idx_expenses_billing_month ON public.expenses USING btree (billing_month)
+public,expenses,idx_expenses_category_id,false,false,CREATE INDEX idx_expenses_category_id ON public.expenses USING btree (category_id)
+public,expenses,idx_expenses_issue_type_id,false,false,CREATE INDEX idx_expenses_issue_type_id ON public.expenses USING btree (issue_type_id)
+public,expenses,idx_expenses_org_expense_date,false,false,"CREATE INDEX idx_expenses_org_expense_date ON public.expenses USING btree (organization_id, expense_date)"
+public,expenses,idx_expenses_property_id,false,false,CREATE INDEX idx_expenses_property_id ON public.expenses USING btree (property_id)
+public,expenses,idx_expenses_subcategory_id,false,false,CREATE INDEX idx_expenses_subcategory_id ON public.expenses USING btree (subcategory_id)
+public,expenses,idx_expenses_vendor_id,false,false,CREATE INDEX idx_expenses_vendor_id ON public.expenses USING btree (vendor_id)
+public,export_entity_registry,export_entity_registry_pkey,true,false,CREATE UNIQUE INDEX export_entity_registry_pkey ON public.export_entity_registry USING btree (entity_key)
+public,financial_audit_log,financial_audit_log_pkey,true,false,CREATE UNIQUE INDEX financial_audit_log_pkey ON public.financial_audit_log USING btree (id)
+public,financial_audit_log,idx_fal_je,false,false,CREATE INDEX idx_fal_je ON public.financial_audit_log USING btree (journal_entry_id)
+public,financial_audit_log,idx_fal_org_period,false,false,"CREATE INDEX idx_fal_org_period ON public.financial_audit_log USING btree (organization_id, period)"
+public,financial_audit_log,idx_fal_source,false,false,"CREATE INDEX idx_fal_source ON public.financial_audit_log USING btree (source_table, source_id)"
+public,gst_monthly_workings,gst_monthly_workings_org_generated_idx,false,false,"CREATE INDEX gst_monthly_workings_org_generated_idx ON public.gst_monthly_workings USING btree (organization_id, generated_at DESC)"
+public,gst_monthly_workings,gst_monthly_workings_org_month_year_unique,true,false,"CREATE UNIQUE INDEX gst_monthly_workings_org_month_year_unique ON public.gst_monthly_workings USING btree (organization_id, month, year)"
+public,gst_monthly_workings,gst_monthly_workings_pkey,true,false,CREATE UNIQUE INDEX gst_monthly_workings_pkey ON public.gst_monthly_workings USING btree (id)
+public,invoice_line_items,idx_invoice_line_items_org,false,false,CREATE INDEX idx_invoice_line_items_org ON public.invoice_line_items USING btree (organization_id)
+public,invoice_line_items,invoice_line_items_pkey,true,false,CREATE UNIQUE INDEX invoice_line_items_pkey ON public.invoice_line_items USING btree (id)
+public,invoice_pdf_configs,invoice_pdf_configs_organization_id_config_type_key,true,false,"CREATE UNIQUE INDEX invoice_pdf_configs_organization_id_config_type_key ON public.invoice_pdf_configs USING btree (organization_id, config_type)"
+public,invoice_pdf_configs,invoice_pdf_configs_pkey,true,false,CREATE UNIQUE INDEX invoice_pdf_configs_pkey ON public.invoice_pdf_configs USING btree (id)
+public,invoices,idx_invoices_org_billing_month,false,false,"CREATE INDEX idx_invoices_org_billing_month ON public.invoices USING btree (organization_id, billing_month)"
+public,invoices,idx_invoices_org_invoice_date,false,false,"CREATE INDEX idx_invoices_org_invoice_date ON public.invoices USING btree (organization_id, invoice_date)"
+public,invoices,idx_invoices_org_month_status,false,true,"CREATE INDEX idx_invoices_org_month_status ON public.invoices USING btree (organization_id, billing_month, status) WHERE (is_deleted = false)"
+public,invoices,idx_invoices_org_tenant_live,false,true,"CREATE INDEX idx_invoices_org_tenant_live ON public.invoices USING btree (organization_id, tenant_id) WHERE (NOT COALESCE(is_deleted, false))"
+public,invoices,idx_invoices_property_id,false,false,CREATE INDEX idx_invoices_property_id ON public.invoices USING btree (property_id)
+public,invoices,idx_invoices_reference,false,true,"CREATE INDEX idx_invoices_reference ON public.invoices USING btree (reference_type, reference_id) WHERE (reference_type IS NOT NULL)"
+public,invoices,idx_invoices_status,false,false,CREATE INDEX idx_invoices_status ON public.invoices USING btree (status)
+public,invoices,idx_invoices_tenant,false,false,CREATE INDEX idx_invoices_tenant ON public.invoices USING btree (tenant_id)
+public,invoices,idx_invoices_tenant_month,false,true,"CREATE INDEX idx_invoices_tenant_month ON public.invoices USING btree (tenant_id, billing_month) WHERE (is_deleted = false)"
+public,invoices,invoices_created_at_idx,false,false,CREATE INDEX invoices_created_at_idx ON public.invoices USING btree (created_at)
+public,invoices,invoices_pkey,true,false,CREATE UNIQUE INDEX invoices_pkey ON public.invoices USING btree (id)
+public,issue_sub_types,issue_sub_types_pkey,true,false,CREATE UNIQUE INDEX issue_sub_types_pkey ON public.issue_sub_types USING btree (id)
+public,issue_type_asset_types,idx_itat_asset_type,false,false,CREATE INDEX idx_itat_asset_type ON public.issue_type_asset_types USING btree (asset_type_id)
+public,issue_type_asset_types,idx_itat_issue_type,false,false,CREATE INDEX idx_itat_issue_type ON public.issue_type_asset_types USING btree (issue_type_id)
+public,issue_type_asset_types,issue_type_asset_types_organization_id_issue_type_id_asset__key,true,false,"CREATE UNIQUE INDEX issue_type_asset_types_organization_id_issue_type_id_asset__key ON public.issue_type_asset_types USING btree (organization_id, issue_type_id, asset_type_id)"
+public,issue_type_asset_types,issue_type_asset_types_pkey,true,false,CREATE UNIQUE INDEX issue_type_asset_types_pkey ON public.issue_type_asset_types USING btree (id)
+public,issue_type_expense_mapping,idx_item_org,false,false,CREATE INDEX idx_item_org ON public.issue_type_expense_mapping USING btree (organization_id)
+public,issue_type_expense_mapping,issue_type_expense_mapping_organization_id_issue_type_id_key,true,false,"CREATE UNIQUE INDEX issue_type_expense_mapping_organization_id_issue_type_id_key ON public.issue_type_expense_mapping USING btree (organization_id, issue_type_id)"
+public,issue_type_expense_mapping,issue_type_expense_mapping_pkey,true,false,CREATE UNIQUE INDEX issue_type_expense_mapping_pkey ON public.issue_type_expense_mapping USING btree (id)
+public,issue_types,issue_types_pkey,true,false,CREATE UNIQUE INDEX issue_types_pkey ON public.issue_types USING btree (id)
+public,journal_entries,idx_je_org_date,false,false,"CREATE INDEX idx_je_org_date ON public.journal_entries USING btree (organization_id, entry_date)"
+public,journal_entries,idx_je_org_period,false,false,"CREATE INDEX idx_je_org_period ON public.journal_entries USING btree (organization_id, period)"
+public,journal_entries,idx_je_reversal,false,false,CREATE INDEX idx_je_reversal ON public.journal_entries USING btree (is_reversal_of)
+public,journal_entries,idx_je_source,false,false,"CREATE INDEX idx_je_source ON public.journal_entries USING btree (source_table, source_id)"
+public,journal_entries,journal_entries_pkey,true,false,CREATE UNIQUE INDEX journal_entries_pkey ON public.journal_entries USING btree (id)
+public,journal_lines,idx_jl_account,false,false,"CREATE INDEX idx_jl_account ON public.journal_lines USING btree (organization_id, account_id)"
+public,journal_lines,idx_jl_bed,false,true,CREATE INDEX idx_jl_bed ON public.journal_lines USING btree (bed_id) WHERE (bed_id IS NOT NULL)
+public,journal_lines,idx_jl_entry,false,false,CREATE INDEX idx_jl_entry ON public.journal_lines USING btree (journal_entry_id)
+public,journal_lines,idx_jl_party,false,false,"CREATE INDEX idx_jl_party ON public.journal_lines USING btree (party_kind, party_id)"
+public,journal_lines,idx_jl_property_period,false,false,"CREATE INDEX idx_jl_property_period ON public.journal_lines USING btree (organization_id, property_id)"
+public,journal_lines,idx_jl_tenant_ar,false,true,"CREATE INDEX idx_jl_tenant_ar ON public.journal_lines USING btree (organization_id, party_id, allotment_id, account_id) WHERE (party_kind = 'tenant'::party_kind)"
+public,journal_lines,journal_lines_pkey,true,false,CREATE UNIQUE INDEX journal_lines_pkey ON public.journal_lines USING btree (id)
+public,leave_requests_sync,leave_requests_sync_pkey,true,false,CREATE UNIQUE INDEX leave_requests_sync_pkey ON public.leave_requests_sync USING btree (id)
+public,leave_requests_sync,leave_requests_sync_record_id_key,true,false,CREATE UNIQUE INDEX leave_requests_sync_record_id_key ON public.leave_requests_sync USING btree (record_id)
+public,ledger_entries,idx_ledger_asset,false,false,CREATE INDEX idx_ledger_asset ON public.ledger_entries USING btree (asset_id)
+public,ledger_entries,idx_ledger_org,false,false,CREATE INDEX idx_ledger_org ON public.ledger_entries USING btree (organization_id)
+public,ledger_entries,idx_ledger_type,false,false,CREATE INDEX idx_ledger_type ON public.ledger_entries USING btree (entry_type)
+public,ledger_entries,ledger_entries_pkey,true,false,CREATE UNIQUE INDEX ledger_entries_pkey ON public.ledger_entries USING btree (id)
+public,lifecycle_config,lifecycle_config_organization_id_from_date_key,true,false,"CREATE UNIQUE INDEX lifecycle_config_organization_id_from_date_key ON public.lifecycle_config USING btree (organization_id, from_date)"
+public,lifecycle_config,lifecycle_config_pkey,true,false,CREATE UNIQUE INDEX lifecycle_config_pkey ON public.lifecycle_config USING btree (id)
+public,maintenance_item_stock_entries,maintenance_item_stock_entries_fifo_idx,false,false,"CREATE INDEX maintenance_item_stock_entries_fifo_idx ON public.maintenance_item_stock_entries USING btree (organization_id, maintenance_item_id, purchased_on, id)"
+public,maintenance_item_stock_entries,maintenance_item_stock_entries_pkey,true,false,CREATE UNIQUE INDEX maintenance_item_stock_entries_pkey ON public.maintenance_item_stock_entries USING btree (id)
+public,maintenance_item_usage,maintenance_item_usage_pkey,true,false,CREATE UNIQUE INDEX maintenance_item_usage_pkey ON public.maintenance_item_usage USING btree (id)
+public,maintenance_item_usage,maintenance_item_usage_ticket_idx,false,false,"CREATE INDEX maintenance_item_usage_ticket_idx ON public.maintenance_item_usage USING btree (organization_id, maintenance_ticket_id, created_at)"
+public,maintenance_items,idx_maintenance_items_issue_type_id,false,false,CREATE INDEX idx_maintenance_items_issue_type_id ON public.maintenance_items USING btree (issue_type_id)
+public,maintenance_items,maintenance_items_asset_type_idx,false,false,"CREATE INDEX maintenance_items_asset_type_idx ON public.maintenance_items USING btree (organization_id, asset_type_id)"
+public,maintenance_items,maintenance_items_org_item_name_unique,true,false,"CREATE UNIQUE INDEX maintenance_items_org_item_name_unique ON public.maintenance_items USING btree (organization_id, lower(item_name))"
+public,maintenance_items,maintenance_items_org_name_unique,true,false,"CREATE UNIQUE INDEX maintenance_items_org_name_unique ON public.maintenance_items USING btree (organization_id, lower(name))"
+public,maintenance_items,maintenance_items_pkey,true,false,CREATE UNIQUE INDEX maintenance_items_pkey ON public.maintenance_items USING btree (id)
+public,maintenance_tickets,idx_maintenance_tickets_issue_sub_type_id,false,false,CREATE INDEX idx_maintenance_tickets_issue_sub_type_id ON public.maintenance_tickets USING btree (issue_sub_type_id)
+public,maintenance_tickets,idx_tickets_apt_issue,false,false,"CREATE INDEX idx_tickets_apt_issue ON public.maintenance_tickets USING btree (organization_id, apartment_id, issue_type_id, created_at)"
+public,maintenance_tickets,idx_tickets_asset_id,false,true,CREATE INDEX idx_tickets_asset_id ON public.maintenance_tickets USING btree (asset_id) WHERE (asset_id IS NOT NULL)
+public,maintenance_tickets,idx_tickets_assigned,false,false,CREATE INDEX idx_tickets_assigned ON public.maintenance_tickets USING btree (assigned_to)
+public,maintenance_tickets,idx_tickets_org,false,false,CREATE INDEX idx_tickets_org ON public.maintenance_tickets USING btree (organization_id)
+public,maintenance_tickets,idx_tickets_org_assigned_status,false,false,"CREATE INDEX idx_tickets_org_assigned_status ON public.maintenance_tickets USING btree (organization_id, assigned_to, status)"
+public,maintenance_tickets,idx_tickets_org_created_at,false,false,"CREATE INDEX idx_tickets_org_created_at ON public.maintenance_tickets USING btree (organization_id, created_at DESC)"
+public,maintenance_tickets,idx_tickets_org_status_date,false,false,"CREATE INDEX idx_tickets_org_status_date ON public.maintenance_tickets USING btree (organization_id, status, created_at DESC)"
+public,maintenance_tickets,idx_tickets_tenant,false,false,CREATE INDEX idx_tickets_tenant ON public.maintenance_tickets USING btree (tenant_id)
+public,maintenance_tickets,maintenance_tickets_pkey,true,false,CREATE UNIQUE INDEX maintenance_tickets_pkey ON public.maintenance_tickets USING btree (id)
+public,maintenance_tickets,maintenance_tickets_ticket_number_key,true,false,CREATE UNIQUE INDEX maintenance_tickets_ticket_number_key ON public.maintenance_tickets USING btree (ticket_number)
+public,migration_log,migration_log_pkey,true,false,CREATE UNIQUE INDEX migration_log_pkey ON public.migration_log USING btree (id)
+public,offline_kyc_pending,offline_kyc_pending_access_token_idx,true,false,CREATE UNIQUE INDEX offline_kyc_pending_access_token_idx ON public.offline_kyc_pending USING btree (access_token)
+public,offline_kyc_pending,offline_kyc_pending_active_allotment_idx,true,true,"CREATE UNIQUE INDEX offline_kyc_pending_active_allotment_idx ON public.offline_kyc_pending USING btree (allotment_id) WHERE (status = ANY (ARRAY['draft'::text, 'submitted'::text]))"
+public,offline_kyc_pending,offline_kyc_pending_allotment_idx,false,false,CREATE INDEX offline_kyc_pending_allotment_idx ON public.offline_kyc_pending USING btree (allotment_id)
+public,offline_kyc_pending,offline_kyc_pending_expires_at_idx,false,true,"CREATE INDEX offline_kyc_pending_expires_at_idx ON public.offline_kyc_pending USING btree (expires_at) WHERE (status = ANY (ARRAY['draft'::text, 'cancelled'::text]))"
+public,offline_kyc_pending,offline_kyc_pending_org_status_idx,false,false,"CREATE INDEX offline_kyc_pending_org_status_idx ON public.offline_kyc_pending USING btree (organization_id, status)"
+public,offline_kyc_pending,offline_kyc_pending_pkey,true,false,CREATE UNIQUE INDEX offline_kyc_pending_pkey ON public.offline_kyc_pending USING btree (id)
+public,org_ai_settings,org_ai_settings_pkey,true,false,CREATE UNIQUE INDEX org_ai_settings_pkey ON public.org_ai_settings USING btree (organization_id)
+public,org_branding_settings,org_branding_settings_pkey,true,false,CREATE UNIQUE INDEX org_branding_settings_pkey ON public.org_branding_settings USING btree (organization_id)
+public,org_email_settings,org_email_settings_pkey,true,false,CREATE UNIQUE INDEX org_email_settings_pkey ON public.org_email_settings USING btree (organization_id)
+public,org_whatsapp_settings,org_whatsapp_settings_pkey,true,false,CREATE UNIQUE INDEX org_whatsapp_settings_pkey ON public.org_whatsapp_settings USING btree (organization_id)
+public,organization_bank_accounts,idx_org_bank_accounts_upi_ids,false,false,CREATE INDEX idx_org_bank_accounts_upi_ids ON public.organization_bank_accounts USING gin (upi_ids)
+public,organization_bank_accounts,organization_bank_accounts_pkey,true,false,CREATE UNIQUE INDEX organization_bank_accounts_pkey ON public.organization_bank_accounts USING btree (id)
+public,organization_subscriptions,organization_subscriptions_pkey,true,false,CREATE UNIQUE INDEX organization_subscriptions_pkey ON public.organization_subscriptions USING btree (id)
+public,organization_subscriptions,uq_org_subscription,true,false,CREATE UNIQUE INDEX uq_org_subscription ON public.organization_subscriptions USING btree (organization_id)
+public,organizations,organizations_pkey,true,false,CREATE UNIQUE INDEX organizations_pkey ON public.organizations USING btree (id)
+public,otp_codes,idx_otp_codes_phone_expires,false,false,"CREATE INDEX idx_otp_codes_phone_expires ON public.otp_codes USING btree (phone, expires_at DESC)"
+public,otp_codes,otp_codes_pkey,true,false,CREATE UNIQUE INDEX otp_codes_pkey ON public.otp_codes USING btree (id)
+public,owner_contracts,owner_contracts_pkey,true,false,CREATE UNIQUE INDEX owner_contracts_pkey ON public.owner_contracts USING btree (id)
+public,owner_payments,idx_owner_payments_bank_account_id,false,true,CREATE INDEX idx_owner_payments_bank_account_id ON public.owner_payments USING btree (bank_account_id) WHERE (bank_account_id IS NOT NULL)
+public,owner_payments,idx_owner_payments_org_status_due,false,false,"CREATE INDEX idx_owner_payments_org_status_due ON public.owner_payments USING btree (organization_id, status, due_date)"
+public,owner_payments,idx_owner_payments_owner_id,false,false,CREATE INDEX idx_owner_payments_owner_id ON public.owner_payments USING btree (owner_id)
+public,owner_payments,idx_owner_payments_payment_month,false,false,CREATE INDEX idx_owner_payments_payment_month ON public.owner_payments USING btree (payment_month)
+public,owner_payments,idx_owner_payments_status,false,false,CREATE INDEX idx_owner_payments_status ON public.owner_payments USING btree (status)
+public,owner_payments,owner_payments_pkey,true,false,CREATE UNIQUE INDEX owner_payments_pkey ON public.owner_payments USING btree (id)
+public,owners,owners_pkey,true,false,CREATE UNIQUE INDEX owners_pkey ON public.owners USING btree (id)
+public,payment_proofs,payment_proofs_pkey,true,false,CREATE UNIQUE INDEX payment_proofs_pkey ON public.payment_proofs USING btree (id)
+public,payroll,idx_payroll_company_month,false,false,"CREATE INDEX idx_payroll_company_month ON public.payroll USING btree (company_id, month, year)"
+public,payroll,idx_payroll_employee_month,false,false,"CREATE INDEX idx_payroll_employee_month ON public.payroll USING btree (employee_id, month, year)"
+public,payroll,idx_payroll_month,false,false,"CREATE INDEX idx_payroll_month ON public.payroll USING btree (month, year)"
+public,payroll,payroll_pkey,true,false,CREATE UNIQUE INDEX payroll_pkey ON public.payroll USING btree (id)
+public,payroll_sync,payroll_sync_email_period_key,true,false,"CREATE UNIQUE INDEX payroll_sync_email_period_key ON public.payroll_sync USING btree (email, period_start, period_end)"
+public,payroll_sync,payroll_sync_member_idx,false,false,CREATE INDEX payroll_sync_member_idx ON public.payroll_sync USING btree (team_member_id)
+public,payroll_sync,payroll_sync_pkey,true,false,CREATE UNIQUE INDEX payroll_sync_pkey ON public.payroll_sync USING btree (id)
+public,profiles,idx_profiles_org_id,false,false,CREATE INDEX idx_profiles_org_id ON public.profiles USING btree (organization_id)
+public,profiles,profiles_pkey,true,false,CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)
+public,properties,idx_properties_id_org_unique,true,false,"CREATE UNIQUE INDEX idx_properties_id_org_unique ON public.properties USING btree (id, organization_id)"
+public,properties,idx_properties_org,false,false,CREATE INDEX idx_properties_org ON public.properties USING btree (organization_id)
+public,properties,properties_kyc_qr_code_uniq,true,true,CREATE UNIQUE INDEX properties_kyc_qr_code_uniq ON public.properties USING btree (kyc_qr_code) WHERE (kyc_qr_code IS NOT NULL)
+public,properties,properties_pkey,true,false,CREATE UNIQUE INDEX properties_pkey ON public.properties USING btree (id)
+public,property_images,property_images_org_id_idx,false,false,CREATE INDEX property_images_org_id_idx ON public.property_images USING btree (organization_id)
+public,property_images,property_images_pkey,true,false,CREATE UNIQUE INDEX property_images_pkey ON public.property_images USING btree (id)
+public,property_images,property_images_property_id_order_idx,false,false,"CREATE INDEX property_images_property_id_order_idx ON public.property_images USING btree (property_id, display_order)"
+public,purchase_items,idx_purchase_items_org,false,false,CREATE INDEX idx_purchase_items_org ON public.purchase_items USING btree (organization_id)
+public,purchase_items,purchase_items_pkey,true,false,CREATE UNIQUE INDEX purchase_items_pkey ON public.purchase_items USING btree (id)
+public,purchase_orders,purchase_orders_pkey,true,false,CREATE UNIQUE INDEX purchase_orders_pkey ON public.purchase_orders USING btree (id)
+public,receipt_allocations,idx_ra_invoice,false,false,CREATE INDEX idx_ra_invoice ON public.receipt_allocations USING btree (invoice_id)
+public,receipt_allocations,idx_ra_receipt,false,false,CREATE INDEX idx_ra_receipt ON public.receipt_allocations USING btree (receipt_id)
+public,receipt_allocations,idx_receipt_allocations_invoice_id,false,false,CREATE INDEX idx_receipt_allocations_invoice_id ON public.receipt_allocations USING btree (invoice_id)
+public,receipt_allocations,receipt_allocations_pkey,true,false,CREATE UNIQUE INDEX receipt_allocations_pkey ON public.receipt_allocations USING btree (id)
+public,receipt_number_counters,receipt_number_counters_pkey,true,false,"CREATE UNIQUE INDEX receipt_number_counters_pkey ON public.receipt_number_counters USING btree (organization_id, property_id, fy, month)"
+public,receipts,idx_receipts_org_allotment_paid,false,true,"CREATE INDEX idx_receipts_org_allotment_paid ON public.receipts USING btree (organization_id, tenant_allotment_id, payment_date) WHERE (NOT COALESCE(is_deleted, false))"
+public,receipts,idx_receipts_org_date,false,true,"CREATE INDEX idx_receipts_org_date ON public.receipts USING btree (organization_id, payment_date) WHERE (is_deleted = false)"
+public,receipts,idx_receipts_org_payment_date,false,false,"CREATE INDEX idx_receipts_org_payment_date ON public.receipts USING btree (organization_id, payment_date)"
+public,receipts,idx_receipts_payment_date,false,false,CREATE INDEX idx_receipts_payment_date ON public.receipts USING btree (payment_date)
+public,receipts,idx_receipts_receipt_type,false,false,CREATE INDEX idx_receipts_receipt_type ON public.receipts USING btree (receipt_type)
+public,receipts,idx_receipts_tenant_id,false,false,CREATE INDEX idx_receipts_tenant_id ON public.receipts USING btree (tenant_id)
+public,receipts,receipts_created_at_idx,false,false,CREATE INDEX receipts_created_at_idx ON public.receipts USING btree (created_at)
+public,receipts,receipts_org_tenant_date_idx,false,true,"CREATE INDEX receipts_org_tenant_date_idx ON public.receipts USING btree (organization_id, tenant_id, payment_date) WHERE (COALESCE(is_deleted, false) = false)"
+public,receipts,receipts_pkey,true,false,CREATE UNIQUE INDEX receipts_pkey ON public.receipts USING btree (id)
+public,receipts_dedup_audit,receipts_dedup_audit_pkey,true,false,CREATE UNIQUE INDEX receipts_dedup_audit_pkey ON public.receipts_dedup_audit USING btree (id)
+public,regular_maintenance_rules,regular_maintenance_rules_pkey,true,false,CREATE UNIQUE INDEX regular_maintenance_rules_pkey ON public.regular_maintenance_rules USING btree (id)
+public,replacement_forecasts,idx_replacement_forecasts_org,false,false,CREATE INDEX idx_replacement_forecasts_org ON public.replacement_forecasts USING btree (organization_id)
+public,replacement_forecasts,replacement_forecasts_pkey,true,false,CREATE UNIQUE INDEX replacement_forecasts_pkey ON public.replacement_forecasts USING btree (id)
+public,role_permissions,role_permissions_organization_id_role_module_key,true,false,"CREATE UNIQUE INDEX role_permissions_organization_id_role_module_key ON public.role_permissions USING btree (organization_id, role, module)"
+public,role_permissions,role_permissions_pkey,true,false,CREATE UNIQUE INDEX role_permissions_pkey ON public.role_permissions USING btree (id)
+public,role_permissions,uq_role_permissions_org_role_module,true,false,"CREATE UNIQUE INDEX uq_role_permissions_org_role_module ON public.role_permissions USING btree (organization_id, role, module)"
+public,room_switches,idx_room_switches_new_allotment,false,false,CREATE INDEX idx_room_switches_new_allotment ON public.room_switches USING btree (new_allotment_id)
+public,room_switches,idx_room_switches_old_allotment,false,false,CREATE INDEX idx_room_switches_old_allotment ON public.room_switches USING btree (old_allotment_id)
+public,room_switches,idx_room_switches_status,false,false,CREATE INDEX idx_room_switches_status ON public.room_switches USING btree (status)
+public,room_switches,idx_room_switches_tenant_id,false,false,CREATE INDEX idx_room_switches_tenant_id ON public.room_switches USING btree (tenant_id)
+public,room_switches,room_switches_pkey,true,false,CREATE UNIQUE INDEX room_switches_pkey ON public.room_switches USING btree (id)
+public,running_bed_maintenance_details,running_bed_maintenance_details_pkey,true,false,CREATE UNIQUE INDEX running_bed_maintenance_details_pkey ON public.running_bed_maintenance_details USING btree (id)
+public,subscription_plans,subscription_plans_pkey,true,false,CREATE UNIQUE INDEX subscription_plans_pkey ON public.subscription_plans USING btree (id)
+public,subscription_plans,subscription_plans_plan_name_key,true,false,CREATE UNIQUE INDEX subscription_plans_plan_name_key ON public.subscription_plans USING btree (plan_name)
+public,tab_permissions,tab_permissions_organization_id_role_module_tab_key_key,true,false,"CREATE UNIQUE INDEX tab_permissions_organization_id_role_module_tab_key_key ON public.tab_permissions USING btree (organization_id, role, module, tab_key)"
+public,tab_permissions,tab_permissions_pkey,true,false,CREATE UNIQUE INDEX tab_permissions_pkey ON public.tab_permissions USING btree (id)
+public,team_attendance,team_attendance_convex_id_idx,true,true,CREATE UNIQUE INDEX team_attendance_convex_id_idx ON public.team_attendance USING btree (convex_record_id) WHERE (convex_record_id IS NOT NULL)
+public,team_attendance,team_attendance_convex_record_id_key,true,false,CREATE UNIQUE INDEX team_attendance_convex_record_id_key ON public.team_attendance USING btree (convex_record_id)
+public,team_attendance,team_attendance_member_date_unique,true,false,"CREATE UNIQUE INDEX team_attendance_member_date_unique ON public.team_attendance USING btree (team_member_id, date)"
+public,team_attendance,team_attendance_pkey,true,false,CREATE UNIQUE INDEX team_attendance_pkey ON public.team_attendance USING btree (attendance_id)
+public,team_departments,team_departments_org_name_key,true,true,"CREATE UNIQUE INDEX team_departments_org_name_key ON public.team_departments USING btree (organization_id, lower(name)) WHERE (NOT is_deleted)"
+public,team_departments,team_departments_pkey,true,false,CREATE UNIQUE INDEX team_departments_pkey ON public.team_departments USING btree (id)
+public,team_members,team_members_pkey,true,false,CREATE UNIQUE INDEX team_members_pkey ON public.team_members USING btree (id)
+public,team_payments,team_payments_pkey,true,false,CREATE UNIQUE INDEX team_payments_pkey ON public.team_payments USING btree (id)
+public,team_salary_bills,team_salary_bills_organization_id_team_member_id_month_key,true,false,"CREATE UNIQUE INDEX team_salary_bills_organization_id_team_member_id_month_key ON public.team_salary_bills USING btree (organization_id, team_member_id, month)"
+public,team_salary_bills,team_salary_bills_pkey,true,false,CREATE UNIQUE INDEX team_salary_bills_pkey ON public.team_salary_bills USING btree (id)
+public,tenant_absence_records,tenant_absence_records_pkey,true,false,CREATE UNIQUE INDEX tenant_absence_records_pkey ON public.tenant_absence_records USING btree (id)
+public,tenant_adjustments,idx_adjustments_org_adjustment_date,false,false,"CREATE INDEX idx_adjustments_org_adjustment_date ON public.tenant_adjustments USING btree (organization_id, adjustment_date)"
+public,tenant_adjustments,idx_adjustments_reference,false,true,"CREATE INDEX idx_adjustments_reference ON public.tenant_adjustments USING btree (reference_type, reference_id) WHERE (reference_type IS NOT NULL)"
+public,tenant_adjustments,idx_tenant_adjustments_billing_month,false,false,CREATE INDEX idx_tenant_adjustments_billing_month ON public.tenant_adjustments USING btree (billing_month)
+public,tenant_adjustments,idx_tenant_adjustments_category,false,false,"CREATE INDEX idx_tenant_adjustments_category ON public.tenant_adjustments USING btree (organization_id, category, billing_month)"
+public,tenant_adjustments,idx_tenant_adjustments_property_id,false,false,CREATE INDEX idx_tenant_adjustments_property_id ON public.tenant_adjustments USING btree (property_id)
+public,tenant_adjustments,tenant_adjustments_pkey,true,false,CREATE UNIQUE INDEX tenant_adjustments_pkey ON public.tenant_adjustments USING btree (id)
+public,tenant_allotments,idx_allotments_active_bed,false,true,"CREATE INDEX idx_allotments_active_bed ON public.tenant_allotments USING btree (bed_id, onboarding_date, actual_exit_date) WHERE (staying_status = ANY (ARRAY['Staying'::staying_status, 'On-Notice'::staying_status, 'Booked'::staying_status]))"
+public,tenant_allotments,idx_allotments_active_property,false,true,"CREATE INDEX idx_allotments_active_property ON public.tenant_allotments USING btree (organization_id, property_id, apartment_id) WHERE (staying_status = ANY (ARRAY['Staying'::staying_status, 'On-Notice'::staying_status, 'Booked'::staying_status]))"
+public,tenant_allotments,idx_allotments_bed,false,false,CREATE INDEX idx_allotments_bed ON public.tenant_allotments USING btree (bed_id)
+public,tenant_allotments,idx_allotments_org_bed,false,false,"CREATE INDEX idx_allotments_org_bed ON public.tenant_allotments USING btree (organization_id, bed_id)"
+public,tenant_allotments,idx_allotments_org_status,false,false,"CREATE INDEX idx_allotments_org_status ON public.tenant_allotments USING btree (organization_id, staying_status)"
+public,tenant_allotments,idx_allotments_org_status_created,false,false,"CREATE INDEX idx_allotments_org_status_created ON public.tenant_allotments USING btree (organization_id, staying_status, created_at DESC)"
+public,tenant_allotments,idx_allotments_property_status,false,false,"CREATE INDEX idx_allotments_property_status ON public.tenant_allotments USING btree (property_id, staying_status)"
+public,tenant_allotments,idx_allotments_tenant,false,false,CREATE INDEX idx_allotments_tenant ON public.tenant_allotments USING btree (tenant_id)
+public,tenant_allotments,idx_tenant_allotments_bed_id,false,false,CREATE INDEX idx_tenant_allotments_bed_id ON public.tenant_allotments USING btree (bed_id)
+public,tenant_allotments,idx_tenant_allotments_org_tenant,false,false,"CREATE INDEX idx_tenant_allotments_org_tenant ON public.tenant_allotments USING btree (organization_id, tenant_id)"
+public,tenant_allotments,idx_tenant_allotments_staying_status,false,false,CREATE INDEX idx_tenant_allotments_staying_status ON public.tenant_allotments USING btree (staying_status)
+public,tenant_allotments,idx_tenant_allotments_tenant_id,false,false,CREATE INDEX idx_tenant_allotments_tenant_id ON public.tenant_allotments USING btree (tenant_id)
+public,tenant_allotments,ta_bed_onboard_idx,false,false,"CREATE INDEX ta_bed_onboard_idx ON public.tenant_allotments USING btree (bed_id, onboarding_date)"
+public,tenant_allotments,ta_org_idx,false,false,CREATE INDEX ta_org_idx ON public.tenant_allotments USING btree (organization_id)
+public,tenant_allotments,tenant_allotments_created_at_idx,false,false,CREATE INDEX tenant_allotments_created_at_idx ON public.tenant_allotments USING btree (created_at)
+public,tenant_allotments,tenant_allotments_pkey,true,false,CREATE UNIQUE INDEX tenant_allotments_pkey ON public.tenant_allotments USING btree (id)
+public,tenant_document_history,idx_tenant_document_history_allotment,false,false,"CREATE INDEX idx_tenant_document_history_allotment ON public.tenant_document_history USING btree (allotment_id, doc_slot)"
+public,tenant_document_history,idx_tenant_document_history_tenant,false,false,"CREATE INDEX idx_tenant_document_history_tenant ON public.tenant_document_history USING btree (tenant_id, doc_slot)"
+public,tenant_document_history,tenant_document_history_pkey,true,false,CREATE UNIQUE INDEX tenant_document_history_pkey ON public.tenant_document_history USING btree (id)
+public,tenant_exits,idx_tenant_exits_tenant_id,false,false,CREATE INDEX idx_tenant_exits_tenant_id ON public.tenant_exits USING btree (tenant_id)
+public,tenant_exits,tenant_exits_created_at_idx,false,false,CREATE INDEX tenant_exits_created_at_idx ON public.tenant_exits USING btree (created_at)
+public,tenant_exits,tenant_exits_pkey,true,false,CREATE UNIQUE INDEX tenant_exits_pkey ON public.tenant_exits USING btree (id)
+public,tenant_notices,idx_tenant_notices_tenant_id,false,false,CREATE INDEX idx_tenant_notices_tenant_id ON public.tenant_notices USING btree (tenant_id)
+public,tenant_notices,tenant_notices_pkey,true,false,CREATE UNIQUE INDEX tenant_notices_pkey ON public.tenant_notices USING btree (id)
+public,tenant_remarks,idx_tenant_remarks_tenant,false,false,"CREATE INDEX idx_tenant_remarks_tenant ON public.tenant_remarks USING btree (organization_id, tenant_id)"
+public,tenant_remarks,tenant_remarks_pkey,true,false,CREATE UNIQUE INDEX tenant_remarks_pkey ON public.tenant_remarks USING btree (id)
+public,tenant_transactions,idx_tenant_transactions_ledger,false,false,"CREATE INDEX idx_tenant_transactions_ledger ON public.tenant_transactions USING btree (allotment_id, date, created_at, id)"
+public,tenant_transactions,idx_tenant_transactions_org,false,false,CREATE INDEX idx_tenant_transactions_org ON public.tenant_transactions USING btree (organization_id)
+public,tenant_transactions,idx_tenant_transactions_tenant,false,false,CREATE INDEX idx_tenant_transactions_tenant ON public.tenant_transactions USING btree (tenant_id)
+public,tenant_transactions,idx_tenant_tx_allotment_date,false,false,"CREATE INDEX idx_tenant_tx_allotment_date ON public.tenant_transactions USING btree (allotment_id, date)"
+public,tenant_transactions,idx_tenant_tx_org_date_ledger_direction,false,false,"CREATE INDEX idx_tenant_tx_org_date_ledger_direction ON public.tenant_transactions USING btree (organization_id, date, ledger_type, direction)"
+public,tenant_transactions,idx_tenant_txn_allotment_date,false,false,"CREATE INDEX idx_tenant_txn_allotment_date ON public.tenant_transactions USING btree (allotment_id, created_at DESC)"
+public,tenant_transactions,tenant_transactions_pkey,true,false,CREATE UNIQUE INDEX tenant_transactions_pkey ON public.tenant_transactions USING btree (id)
+public,tenants,idx_tenants_full_name_trgm,false,false,CREATE INDEX idx_tenants_full_name_trgm ON public.tenants USING gin (full_name gin_trgm_ops)
+public,tenants,idx_tenants_org,false,false,CREATE INDEX idx_tenants_org ON public.tenants USING btree (organization_id)
+public,tenants,idx_tenants_property_id,false,false,CREATE INDEX idx_tenants_property_id ON public.tenants USING btree (property_id)
+public,tenants,tenants_pkey,true,false,CREATE UNIQUE INDEX tenants_pkey ON public.tenants USING btree (id)
+public,ticket_assignment_rules,ticket_assignment_rules_pkey,true,false,CREATE UNIQUE INDEX ticket_assignment_rules_pkey ON public.ticket_assignment_rules USING btree (id)
+public,ticket_cost_estimates,ticket_cost_estimates_pkey,true,false,CREATE UNIQUE INDEX ticket_cost_estimates_pkey ON public.ticket_cost_estimates USING btree (id)
+public,ticket_logs,idx_ticket_logs_org_created_at,false,false,"CREATE INDEX idx_ticket_logs_org_created_at ON public.ticket_logs USING btree (organization_id, created_at DESC)"
+public,ticket_logs,idx_ticket_logs_ticket_created_at,false,false,"CREATE INDEX idx_ticket_logs_ticket_created_at ON public.ticket_logs USING btree (ticket_id, created_at DESC)"
+public,ticket_logs,ticket_logs_pkey,true,false,CREATE UNIQUE INDEX ticket_logs_pkey ON public.ticket_logs USING btree (id)
+public,ticket_number_counters,ticket_number_counters_pkey,true,false,"CREATE UNIQUE INDEX ticket_number_counters_pkey ON public.ticket_number_counters USING btree (organization_id, property_id, yy, mm)"
+public,ticket_purchases,ticket_purchases_pkey,true,false,CREATE UNIQUE INDEX ticket_purchases_pkey ON public.ticket_purchases USING btree (id)
+public,ticket_resolutions,idx_ticket_resolutions_ticket,false,false,"CREATE INDEX idx_ticket_resolutions_ticket ON public.ticket_resolutions USING btree (organization_id, ticket_id)"
+public,ticket_resolutions,ticket_resolutions_bank_account_idx,false,false,CREATE INDEX ticket_resolutions_bank_account_idx ON public.ticket_resolutions USING btree (bank_account_id)
+public,ticket_resolutions,ticket_resolutions_pkey,true,false,CREATE UNIQUE INDEX ticket_resolutions_pkey ON public.ticket_resolutions USING btree (id)
+public,ticket_resolutions,ticket_resolutions_updated_at_idx,false,false,CREATE INDEX ticket_resolutions_updated_at_idx ON public.ticket_resolutions USING btree (updated_at DESC)
+public,tickets,tickets_pkey,true,false,CREATE UNIQUE INDEX tickets_pkey ON public.tickets USING btree (id)
+public,tickets,tickets_ticket_number_key,true,false,CREATE UNIQUE INDEX tickets_ticket_number_key ON public.tickets USING btree (ticket_number)
+public,upi_tenant_mappings,upi_tenant_mappings_org_ref_idx,false,false,"CREATE INDEX upi_tenant_mappings_org_ref_idx ON public.upi_tenant_mappings USING btree (organization_id, normalized_transaction_ref)"
+public,upi_tenant_mappings,upi_tenant_mappings_org_tenant_upi_uidx,true,false,"CREATE UNIQUE INDEX upi_tenant_mappings_org_tenant_upi_uidx ON public.upi_tenant_mappings USING btree (organization_id, tenant_id, normalized_upi_id)"
+public,upi_tenant_mappings,upi_tenant_mappings_org_upi_idx,false,false,"CREATE INDEX upi_tenant_mappings_org_upi_idx ON public.upi_tenant_mappings USING btree (organization_id, normalized_upi_id)"
+public,upi_tenant_mappings,upi_tenant_mappings_pkey,true,false,CREATE UNIQUE INDEX upi_tenant_mappings_pkey ON public.upi_tenant_mappings USING btree (id)
+public,user_roles,user_roles_pkey,true,false,CREATE UNIQUE INDEX user_roles_pkey ON public.user_roles USING btree (id)
+public,user_roles,user_roles_user_id_role_key,true,false,"CREATE UNIQUE INDEX user_roles_user_id_role_key ON public.user_roles USING btree (user_id, role)"
+public,users,idx_users_email,false,false,CREATE INDEX idx_users_email ON public.users USING btree (email)
+public,users,idx_users_role,false,false,CREATE INDEX idx_users_role ON public.users USING btree (role)
+public,users,users_email_key,true,false,CREATE UNIQUE INDEX users_email_key ON public.users USING btree (email)
+public,users,users_pkey,true,false,CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)
+public,vendor_remarks,idx_vendor_remarks_vendor,false,false,"CREATE INDEX idx_vendor_remarks_vendor ON public.vendor_remarks USING btree (organization_id, vendor_id)"
+public,vendor_remarks,vendor_remarks_pkey,true,false,CREATE UNIQUE INDEX vendor_remarks_pkey ON public.vendor_remarks USING btree (id)
+public,vendors,vendors_pkey,true,false,CREATE UNIQUE INDEX vendors_pkey ON public.vendors USING btree (id)
+public,whatsapp_conversations,idx_whatsapp_conversations_phone,false,false,"CREATE INDEX idx_whatsapp_conversations_phone ON public.whatsapp_conversations USING btree (provider, phone_e164)"
+public,whatsapp_conversations,whatsapp_conversations_phone_provider_idx,false,false,"CREATE INDEX whatsapp_conversations_phone_provider_idx ON public.whatsapp_conversations USING btree (provider, phone_e164)"
+public,whatsapp_conversations,whatsapp_conversations_pkey,true,false,CREATE UNIQUE INDEX whatsapp_conversations_pkey ON public.whatsapp_conversations USING btree (id)
+public,whatsapp_conversations,whatsapp_conversations_provider_phone_e164_key,true,false,"CREATE UNIQUE INDEX whatsapp_conversations_provider_phone_e164_key ON public.whatsapp_conversations USING btree (provider, phone_e164)"
+public,whatsapp_dedup,whatsapp_dedup_pkey,true,false,CREATE UNIQUE INDEX whatsapp_dedup_pkey ON public.whatsapp_dedup USING btree (id)
+public,whatsapp_dedup,whatsapp_dedup_provider_dedup_key_key,true,false,"CREATE UNIQUE INDEX whatsapp_dedup_provider_dedup_key_key ON public.whatsapp_dedup USING btree (provider, dedup_key)"
+public,whatsapp_dedup,whatsapp_dedup_provider_key_uidx,true,false,"CREATE UNIQUE INDEX whatsapp_dedup_provider_key_uidx ON public.whatsapp_dedup USING btree (provider, dedup_key)"
+public,whatsapp_events,idx_whatsapp_events_created_at,false,false,CREATE INDEX idx_whatsapp_events_created_at ON public.whatsapp_events USING btree (created_at DESC)
+public,whatsapp_events,idx_whatsapp_events_external_id,false,false,"CREATE INDEX idx_whatsapp_events_external_id ON public.whatsapp_events USING btree (provider, external_message_id)"
+public,whatsapp_events,idx_whatsapp_events_status,false,false,"CREATE INDEX idx_whatsapp_events_status ON public.whatsapp_events USING btree (processing_status, created_at DESC)"
+public,whatsapp_events,idx_whatsapp_events_tenant,false,false,"CREATE INDEX idx_whatsapp_events_tenant ON public.whatsapp_events USING btree (tenant_id, created_at DESC)"
+public,whatsapp_events,whatsapp_events_org_created_idx,false,false,"CREATE INDEX whatsapp_events_org_created_idx ON public.whatsapp_events USING btree (organization_id, created_at DESC)"
+public,whatsapp_events,whatsapp_events_pkey,true,false,CREATE UNIQUE INDEX whatsapp_events_pkey ON public.whatsapp_events USING btree (id)
+public,whatsapp_events,whatsapp_events_provider_extmsg_uidx,true,true,"CREATE UNIQUE INDEX whatsapp_events_provider_extmsg_uidx ON public.whatsapp_events USING btree (provider, external_message_id) WHERE (external_message_id IS NOT NULL)"
+public,whatsapp_failures,idx_whatsapp_failures_retry,false,false,"CREATE INDEX idx_whatsapp_failures_retry ON public.whatsapp_failures USING btree (dead_letter, next_retry_at)"
+public,whatsapp_failures,whatsapp_failures_event_idx,false,false,CREATE INDEX whatsapp_failures_event_idx ON public.whatsapp_failures USING btree (event_id)
+public,whatsapp_failures,whatsapp_failures_pkey,true,false,CREATE UNIQUE INDEX whatsapp_failures_pkey ON public.whatsapp_failures USING btree (id)
+public,whatsapp_payment_submissions,idx_wps_matched_invoice,false,true,CREATE INDEX idx_wps_matched_invoice ON public.whatsapp_payment_submissions USING btree (matched_invoice_id) WHERE (matched_invoice_id IS NOT NULL)
+public,whatsapp_payment_submissions,idx_wps_org_status,false,false,"CREATE INDEX idx_wps_org_status ON public.whatsapp_payment_submissions USING btree (organization_id, status, created_at DESC)"
+public,whatsapp_payment_submissions,idx_wps_skip_reason,false,true,"CREATE INDEX idx_wps_skip_reason ON public.whatsapp_payment_submissions USING btree (organization_id, auto_accept_skip_reason) WHERE (auto_accept_skip_reason IS NOT NULL)"
+public,whatsapp_payment_submissions,idx_wps_tenant,false,true,CREATE INDEX idx_wps_tenant ON public.whatsapp_payment_submissions USING btree (tenant_id) WHERE (tenant_id IS NOT NULL)
+public,whatsapp_payment_submissions,whatsapp_payment_submissions_pkey,true,false,CREATE UNIQUE INDEX whatsapp_payment_submissions_pkey ON public.whatsapp_payment_submissions USING btree (id)
+public,whatsapp_send_deliveries,idx_wa_deliveries_org_kind_created,false,false,"CREATE INDEX idx_wa_deliveries_org_kind_created ON public.whatsapp_send_deliveries USING btree (organization_id, delivery_kind, created_at DESC)"
+public,whatsapp_send_deliveries,idx_wa_deliveries_org_kind_status_created,false,false,"CREATE INDEX idx_wa_deliveries_org_kind_status_created ON public.whatsapp_send_deliveries USING btree (organization_id, delivery_kind, status, created_at DESC)"
+public,whatsapp_send_deliveries,whatsapp_send_deliveries_job_idx,false,false,"CREATE INDEX whatsapp_send_deliveries_job_idx ON public.whatsapp_send_deliveries USING btree (job_id, status)"
+public,whatsapp_send_deliveries,whatsapp_send_deliveries_job_ref_uidx,true,true,"CREATE UNIQUE INDEX whatsapp_send_deliveries_job_ref_uidx ON public.whatsapp_send_deliveries USING btree (job_id, delivery_kind, reference_id) WHERE (reference_id IS NOT NULL)"
+public,whatsapp_send_deliveries,whatsapp_send_deliveries_org_created_idx,false,false,"CREATE INDEX whatsapp_send_deliveries_org_created_idx ON public.whatsapp_send_deliveries USING btree (organization_id, created_at DESC)"
+public,whatsapp_send_deliveries,whatsapp_send_deliveries_pkey,true,false,CREATE UNIQUE INDEX whatsapp_send_deliveries_pkey ON public.whatsapp_send_deliveries USING btree (id)
+public,whatsapp_send_jobs,whatsapp_send_jobs_org_status_idx,false,false,"CREATE INDEX whatsapp_send_jobs_org_status_idx ON public.whatsapp_send_jobs USING btree (organization_id, status, created_at DESC)"
+public,whatsapp_send_jobs,whatsapp_send_jobs_pkey,true,false,CREATE UNIQUE INDEX whatsapp_send_jobs_pkey ON public.whatsapp_send_jobs USING btree (id)

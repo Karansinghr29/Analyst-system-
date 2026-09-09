@@ -1,0 +1,1458 @@
+/*
+ * styles.css -- Phase 10.
+ *
+ * The visual language exists to make trust legible without making the interface feel like a
+ * compliance tool. Three rules govern it (design_system_spec.md):
+ *
+ *  1. Trust is NEVER conveyed by colour alone. Every treatment carries a text badge and a glyph
+ *     as well as a tone, so colour-blind and screen-reader users receive the posture through the
+ *     same element sighted users do.
+ *
+ *  2. Conflict tone reads as "this needs your judgement", not as an error. A definition conflict
+ *     is not a malfunction; it is an accurate report that the business counts something two
+ *     valid ways. Styling it as a failure would push owners to dismiss it.
+ *
+ *  3. Conflicts are never collapsed to save space -- at any breakpoint. Space pressure is
+ *     exactly when the temptation to show one number appears, and exactly when doing so would be
+ *     most misleading.
+ */
+
+:root {
+  --bg: #fbfbfa;
+  --surface: #ffffff;
+  --ink: #1a1a18;
+  --ink-soft: #5b5b56;
+  --ink-faint: #8a8a83;
+  --line: #e4e3df;
+
+  --neutral: #2f6f4e;
+  --neutral-bg: #eef5f1;
+  --caution: #8a6a1f;
+  --caution-bg: #faf4e6;
+  --conflict: #7a4a86;
+  --conflict-bg: #f6f0f8;
+  --unavailable: #6a6a64;
+  --unavailable-bg: #f2f2f0;
+
+  --radius: 10px;
+  --gap: 1rem;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16161a;
+    --surface: #1e1e23;
+    --ink: #f0efec;
+    --ink-soft: #b4b3ad;
+    --ink-faint: #86857f;
+    --line: #32323a;
+    --neutral: #7fc4a0;
+    --neutral-bg: #1c2a23;
+    --caution: #d8b45e;
+    --caution-bg: #2a2418;
+    --conflict: #c193ce;
+    --conflict-bg: #271f2b;
+    --unavailable: #9c9b95;
+    --unavailable-bg: #232328;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.skip-link {
+  position: absolute; left: -9999px; top: 0; background: var(--surface);
+  padding: .6rem 1rem; z-index: 100; border-radius: 0 0 var(--radius) 0;
+}
+.skip-link:focus { left: 0; }
+
+:focus-visible { outline: 3px solid var(--conflict); outline-offset: 2px; }
+
+/* --- shell -------------------------------------------------------------------------------- */
+
+.app-header {
+  display: flex; align-items: center; gap: var(--gap); flex-wrap: wrap;
+  padding: .9rem 1.4rem; background: var(--surface); border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 10;
+}
+.brand { display: flex; align-items: center; gap: .5rem; font-weight: 650; }
+.brand-mark { color: var(--conflict); }
+.app-nav { display: flex; gap: .25rem; flex-wrap: wrap; }
+.nav-link {
+  color: var(--ink-soft); text-decoration: none; padding: .35rem .7rem;
+  border-radius: 999px; font-size: .92rem;
+}
+.nav-link:hover { background: var(--unavailable-bg); color: var(--ink); }
+.nav-link.active { background: var(--conflict-bg); color: var(--conflict); font-weight: 600; }
+
+.global-ask { margin-left: auto; flex: 1 1 18rem; max-width: 26rem; }
+.global-ask-input {
+  width: 100%; padding: .5rem .85rem; border: 1px solid var(--line);
+  border-radius: 999px; background: var(--bg); color: var(--ink); font: inherit; font-size: .92rem;
+}
+
+.app-main { padding: 1.5rem; max-width: 1240px; margin: 0 auto; }
+.app-footer {
+  padding: 1.5rem; border-top: 1px solid var(--line); color: var(--ink-faint);
+  font-size: .85rem; max-width: 1240px; margin: 0 auto;
+}
+
+/* --- headings ------------------------------------------------------------------------------ */
+
+.dashboard-title { font-size: 1.6rem; margin: 0 0 .2rem; letter-spacing: -.01em; }
+.dashboard-asof { color: var(--ink-faint); margin: 0 0 1.2rem; font-size: .9rem; }
+.section-title {
+  font-size: .82rem; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--ink-faint); margin: 2rem 0 .75rem; display: flex; align-items: center; gap: .5rem;
+}
+.section-count {
+  background: var(--unavailable-bg); color: var(--ink-soft);
+  border-radius: 999px; padding: 0 .5rem; font-size: .78rem;
+}
+
+/* --- trust ---------------------------------------------------------------------------------- */
+
+.trust-badge {
+  display: inline-flex; align-items: center; gap: .3rem;
+  font-size: .74rem; font-weight: 600; padding: .12rem .55rem;
+  border-radius: 999px; border: 1px solid currentColor; white-space: nowrap;
+}
+.trust-glyph { font-size: .8rem; }
+/* The text channel. Trust must never be conveyed by colour alone, so the badge always carries
+   a readable label alongside its glyph and tone. */
+.trust-text { font-size: .74rem; letter-spacing: .01em; }
+
+.trust-neutral     { color: var(--neutral); }
+.trust-caution     { color: var(--caution); }
+.trust-conflict    { color: var(--conflict); }
+.trust-unavailable { color: var(--unavailable); }
+
+.tile.trust-neutral     { border-left: 3px solid var(--neutral); }
+.tile.trust-caution     { border-left: 3px solid var(--caution); background: var(--caution-bg); }
+.tile.trust-conflict    { border-left: 3px solid var(--conflict); background: var(--conflict-bg); }
+.tile.trust-unavailable { border-left: 3px solid var(--unavailable); background: var(--unavailable-bg); }
+
+/* --- tiles ----------------------------------------------------------------------------------- */
+
+.tile-grid {
+  display: grid; gap: var(--gap);
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+}
+.tile {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1rem; cursor: pointer; display: flex; flex-direction: column; gap: .5rem;
+}
+.tile:hover { border-color: var(--ink-faint); }
+.tile-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
+.tile-title { font-size: .95rem; margin: 0; font-weight: 600; }
+.tile-value { font-size: 1.7rem; font-weight: 600; margin: 0; letter-spacing: -.02em; }
+
+/* A refusal is a statement, not an error. It reads calmly and takes the space a figure would. */
+.tile-refusal { margin: 0; font-weight: 600; color: var(--conflict); font-size: .95rem; }
+.tile-unavailable, .metric-unavailable {
+  margin: 0; color: var(--ink-soft); font-size: .85rem;
+}
+
+.definition-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; }
+.definition {
+  display: flex; justify-content: space-between; gap: .75rem;
+  font-size: .84rem; padding: .3rem .5rem; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px;
+}
+.definition-label { color: var(--ink-soft); }
+.definition-value { font-weight: 600; white-space: nowrap; }
+
+/* The caveat sits WITH the number -- never a tooltip the owner may not open. */
+.tile-caveat, .metric-caveat {
+  margin: 0; font-size: .8rem; color: var(--caution);
+  background: var(--caution-bg); padding: .45rem .6rem; border-radius: 6px;
+}
+.tile-ids { margin: 0; font-size: .74rem; color: var(--ink-faint); font-family: var(--mono); }
+
+.value-parts {
+  list-style: none; margin: .35rem 0 0; padding: 0;
+  display: flex; flex-direction: column; gap: .15rem;
+}
+.value-part {
+  margin: 0; font-size: .82rem; color: var(--ink-soft);
+}
+.value-part-label { color: var(--ink-faint); }
+.value-part-figure { font-variant-numeric: tabular-nums; }
+
+.tile-foot, .insight-foot, .change-foot { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: auto; }
+.entry-point {
+  font: inherit; font-size: .78rem; padding: .25rem .6rem; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft); cursor: pointer;
+}
+.entry-point:hover { border-color: var(--conflict); color: var(--conflict); }
+.primary {
+  font: inherit; font-size: .88rem; padding: .45rem 1rem; border-radius: 999px;
+  border: 1px solid var(--conflict); background: var(--conflict); color: #fff; cursor: pointer;
+}
+
+/* --- insights ---------------------------------------------------------------------------------- */
+
+.insight-feed { display: grid; gap: 1.25rem; }
+.insight-group-title { font-size: .9rem; margin: 0 0 .5rem; display: flex; gap: .5rem; align-items: center; }
+.insight-none { color: var(--ink-faint); font-size: .85rem; margin: 0 0 .5rem; }
+.insight {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1rem; margin-bottom: .6rem; display: grid; gap: .5rem;
+}
+.insight-head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+.insight-category { font-size: .76rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.cat-critical  .insight-category { color: #b3261e; }
+.cat-attention .insight-category { color: var(--caution); }
+.cat-positive  .insight-category { color: var(--neutral); }
+.cat-conflict  .insight-category { color: var(--conflict); }
+.insight-what { margin: 0; font-weight: 600; }
+.insight-why  { margin: 0; color: var(--ink-soft); font-size: .89rem; }
+.insight-action { margin: .35rem 0 0; color: var(--ink); font-size: .9rem; font-weight: 500; }
+.insight-meta { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: .2rem .75rem; font-size: .82rem; }
+.insight-meta dt { color: var(--ink-faint); }
+.insight-meta dd { margin: 0; }
+
+/* --- changes ------------------------------------------------------------------------------------- */
+
+.change-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.change {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1rem; display: grid; gap: .35rem;
+}
+.change-title { font-size: .95rem; margin: 0; }
+.change-value { display: flex; gap: .5rem; align-items: baseline; margin: 0; }
+.change-direction { font-size: .75rem; font-weight: 700; letter-spacing: .05em; color: var(--ink-soft); }
+.change-amount { font-size: 1.2rem; font-weight: 600; }
+.change-period, .change-materiality, .change-coverage, .change-unavailable {
+  margin: 0; font-size: .78rem; color: var(--ink-faint);
+}
+
+/* --- decisions & actions ----------------------------------------------------------------------------- */
+
+.decision-queue, .action-list { display: grid; gap: .6rem; }
+.decision, .action {
+  background: var(--surface); border: 1px solid var(--line);
+  border-left: 3px solid var(--conflict); border-radius: var(--radius); padding: .9rem;
+}
+.decision-posture { margin: 0 0 .3rem; font-weight: 600; color: var(--conflict); font-size: .85rem; }
+.decision-text, .action-text { margin: 0; font-size: .89rem; }
+.action-confidence { margin: .3rem 0 0; font-size: .78rem; color: var(--ink-faint); }
+
+/* --- trust summary ------------------------------------------------------------------------------------ */
+
+.trust-summary { display: grid; gap: .5rem; }
+.trust-row {
+  display: grid; grid-template-columns: max-content max-content 1fr; gap: .75rem;
+  align-items: center; padding: .6rem .8rem; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius); font-size: .85rem;
+}
+.trust-count { font-weight: 600; white-space: nowrap; }
+.trust-explain { color: var(--ink-soft); }
+
+/* --- metric detail & conflict --------------------------------------------------------------------------- */
+
+.metric-head, .conflict-head {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1.1rem; margin-bottom: 1rem; display: grid; gap: .3rem;
+}
+.metric-title, .conflict-title { margin: 0; font-size: 1.35rem; }
+.metric-id { margin: 0; font-family: var(--mono); font-size: .8rem; color: var(--ink-faint); }
+.metric-value { font-size: 2.1rem; font-weight: 650; margin: 0 0 .5rem; letter-spacing: -.02em; }
+.metric-refusal { font-size: 1.15rem; font-weight: 650; color: var(--conflict); margin: 0 0 .3rem; }
+.metric-refusal-why, .conflict-explain { color: var(--ink-soft); margin: 0 0 .8rem; font-size: .9rem; }
+.metric-value-block, .metric-block {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1rem; margin-bottom: .75rem;
+}
+.metric-block-title { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); margin: 0 0 .4rem; }
+.metric-block-body { margin: 0; font-size: .88rem; }
+.metric-block ul { margin: 0; padding-left: 1.1rem; font-size: .85rem; }
+
+.definition-cards { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+/* Every definition card is styled identically. Visual weight would be a soft endorsement. */
+.definition-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1rem;
+}
+.definition-card-label { font-size: .92rem; margin: 0 0 .4rem; }
+.definition-card-value { font-size: 1.35rem; font-weight: 650; margin: 0 0 .6rem; }
+.definition-row { display: grid; grid-template-columns: 8rem 1fr; gap: .5rem; font-size: .8rem; padding: .2rem 0; }
+.definition-term { color: var(--ink-faint); }
+
+.conflict-decision {
+  background: var(--conflict-bg); border: 1px solid var(--conflict);
+  border-radius: var(--radius); padding: 1rem; margin: 1rem 0;
+}
+.decision-answer { margin: 0 0 .5rem; font-size: .9rem; }
+.decision-owner { margin: 0; font-weight: 600; font-size: .85rem; }
+.conflict-spread { margin: 1rem 0; }
+.spread-line { margin: .2rem 0; font-size: .85rem; font-family: var(--mono); }
+
+/* --- data quality ---------------------------------------------------------------------------------------- */
+
+.dq-group { margin-bottom: 1.5rem; }
+.dq-issue {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: .9rem; margin-bottom: .6rem;
+}
+.dq-group[data-severity="CRITICAL"] .dq-issue { border-left: 3px solid #b3261e; }
+.dq-group[data-severity="HIGH"] .dq-issue { border-left: 3px solid var(--caution); }
+.dq-id { font-family: var(--mono); font-size: .85rem; margin: 0 0 .3rem; }
+.dq-text { margin: 0 0 .5rem; font-size: .88rem; }
+.dq-meta { display: grid; grid-template-columns: max-content 1fr; gap: .15rem .75rem; margin: 0; font-size: .8rem; }
+.dq-meta dt { color: var(--ink-faint); }
+.dq-meta dd { margin: 0; }
+
+/* --- chat -------------------------------------------------------------------------------------------------- */
+
+.chat-thread { display: grid; gap: .85rem; margin: 1rem 0; }
+.bubble { border-radius: var(--radius); padding: .9rem 1.1rem; }
+.bubble-user { background: var(--conflict-bg); border: 1px solid var(--line); justify-self: end; max-width: 46ch; }
+.bubble-user p { margin: 0; }
+.bubble-answer { background: var(--surface); border: 1px solid var(--line); }
+.answer-head { display: flex; gap: .5rem; align-items: center; margin-bottom: .5rem; flex-wrap: wrap; }
+.answer-metrics { font-family: var(--mono); font-size: .76rem; color: var(--ink-faint); }
+.answer-text {
+  margin: 0; font-family: var(--font); font-size: .95rem; line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word; background: var(--bg); padding: .8rem; border-radius: 6px;
+  max-height: 30rem; overflow: auto;
+}
+.answer-lenses { font-size: .78rem; color: var(--ink-faint); margin: .5rem 0 0; }
+.answer-limitations, .answer-guard { margin-top: .75rem; font-size: .82rem; }
+.answer-guard { background: var(--caution-bg); padding: .7rem; border-radius: 6px; }
+.answer-guard h3, .answer-limitations h3 { font-size: .8rem; margin: 0 0 .3rem; }
+.evidence-chain { margin-top: .75rem; font-size: .82rem; }
+.evidence-chain summary { cursor: pointer; color: var(--conflict); font-weight: 600; }
+.chain { display: grid; grid-template-columns: max-content 1fr; gap: .2rem .75rem; margin: .6rem 0 0; }
+.chain-link { color: var(--ink-faint); text-transform: capitalize; }
+.chain-link[data-present="false"] { opacity: .55; }
+.chain-content { margin: 0; word-break: break-word; }
+.chain-source { color: var(--ink-faint); font-size: .76rem; }
+
+.chat-form { display: flex; gap: .5rem; margin-top: 1rem; }
+.chat-input {
+  flex: 1; padding: .6rem .9rem; border: 1px solid var(--line);
+  border-radius: 999px; background: var(--surface); color: var(--ink); font: inherit;
+}
+.quick-asks { display: flex; gap: .4rem; flex-wrap: wrap; margin: 1rem 0; }
+.quick-ask { font-size: .82rem; }
+
+/* --- roles, report, system --------------------------------------------------------------------------------- */
+
+.role-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.role-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1rem; cursor: pointer;
+}
+.role-card:hover { border-color: var(--conflict); }
+.role-name { font-size: 1rem; margin: 0 0 .3rem; }
+.role-focus { font-size: .84rem; color: var(--ink-soft); margin: 0 0 .5rem; }
+.role-count { font-size: .8rem; font-weight: 600; margin: 0 0 .4rem; }
+.role-never { font-size: .78rem; color: var(--caution); margin: 0; }
+
+.report-body {
+  font-family: var(--mono); font-size: .78rem; white-space: pre-wrap;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1.1rem; overflow-x: auto;
+}
+.system-block {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1rem; margin-bottom: .75rem;
+}
+.system-status { font-weight: 650; }
+.system-note { font-size: .82rem; color: var(--ink-soft); }
+.adapter-table { width: 100%; border-collapse: collapse; margin: .6rem 0; font-size: .84rem; }
+.adapter-table th, .adapter-table td { text-align: left; padding: .35rem .5rem; border-bottom: 1px solid var(--line); }
+
+.limitations { margin-top: 2rem; font-size: .84rem; color: var(--ink-soft); }
+.limitations ul { padding-left: 1.1rem; }
+
+/* --- states -------------------------------------------------------------------------------------------------- */
+/* Six visually distinct states. Collapsing any two is a correctness failure. */
+
+.state { padding: 1.1rem; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); }
+.state-loading     { color: var(--ink-faint); }
+.state-empty       { color: var(--ink-soft); }
+.state-unavailable { color: var(--unavailable); background: var(--unavailable-bg); border-style: dashed; }
+.state-error       { color: #b3261e; background: var(--caution-bg); border-color: #b3261e; }
+.state-detail      { font-size: .8rem; color: var(--ink-faint); margin: .4rem 0 0; }
+
+
+/* --- analytics workspace (Phase 14) ------------------------------------------------------------------------ */
+
+.analytics-eyebrow {
+  margin: 0 0 .2rem; font-size: .74rem; font-weight: 600; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+
+.analytics-purpose {
+  margin: .3rem 0 0; max-width: 62ch; color: var(--ink-soft); font-size: .95rem;
+  line-height: 1.5;
+}
+
+.analytics-nav {
+  display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.25rem 0 .5rem;
+  border-bottom: 1px solid var(--line); padding-bottom: .75rem;
+}
+
+.analytics-tab {
+  display: flex; flex-direction: column; gap: .1rem; padding: .55rem .9rem;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  color: var(--ink); text-decoration: none; min-width: 9.5rem;
+}
+
+.analytics-tab:hover { border-color: var(--ink-faint); }
+
+.analytics-tab.active {
+  border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.analytics-tab-title { font-weight: 600; font-size: .95rem; }
+.analytics-tab-meta { font-size: .78rem; color: var(--ink-faint); }
+
+.bi-cross-nav {
+  display: flex; flex-wrap: wrap; gap: .6rem .9rem; margin: .75rem 0 0;
+}
+.bi-link {
+  color: var(--ink); font-size: .88rem; font-weight: 600;
+}
+.bi-link-subtle {
+  font-weight: 500; color: var(--ink-soft); font-size: .84rem;
+}
+.bi-attach {
+  margin: 1rem 0 1.25rem; padding: .85rem 1rem;
+  border: 1px dashed var(--line); border-radius: var(--radius);
+  background: var(--surface);
+}
+.bi-attach-copy { margin: .35rem 0 0; max-width: 70ch; color: var(--ink-soft); font-size: .9rem; }
+
+/* Trust posture strip: how many measures sit at each posture. Wraps rather than scrolling, so
+   no posture is ever pushed out of sight. */
+.trust-strip { display: grid; gap: .5rem; margin-bottom: 1rem; }
+
+.trust-strip-item {
+  display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: .6rem;
+  padding: .55rem .75rem; background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.trust-strip-count { font-weight: 700; font-variant-numeric: tabular-nums; }
+.trust-strip-explain { color: var(--ink-soft); font-size: .88rem; }
+
+/* --- capability disclosure ------------------------------------------------------------------------------------ */
+/*
+ * The "cannot" column is styled with the same weight as the "can" column on purpose. Several
+ * analyses genuinely do not exist because no specification fixes a threshold for them, and an
+ * owner who cannot see that will eventually assume silence means zero.
+ */
+.capability-panel {
+  margin-top: 2rem; padding: 1.1rem; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius);
+}
+
+.capability-panel .section-title { margin-top: 0; }
+
+.capability-group { margin-top: 1rem; }
+.capability-group-title {
+  margin: 0 0 .5rem; font-size: .82rem; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+
+.capability-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; }
+
+.capability-list:not(.capability-list-limited) {
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+}
+
+.capability { padding: .4rem .6rem; border-radius: 8px; background: var(--neutral-bg); }
+.capability-label { font-size: .9rem; }
+
+.capability-limited { background: var(--caution-bg); display: grid; gap: .25rem; }
+.capability-limited .capability-label { font-weight: 600; }
+
+.capability-status {
+  font-size: .7rem; font-weight: 700; letter-spacing: .07em; color: var(--caution);
+}
+
+.capability-limitation {
+  margin: 0; font-size: .87rem; line-height: 1.5; color: var(--ink-soft);
+}
+
+.capability-none { margin: 0; color: var(--ink-soft); font-size: .9rem; }
+
+/* --- data quality panel ---------------------------------------------------------------------------------------- */
+
+.dq-panel { margin-top: 2rem; }
+.dq-group { margin-bottom: 1.25rem; }
+.dq-group-title {
+  margin: 0 0 .5rem; font-size: .8rem; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.dq-issue {
+  padding: .7rem .85rem; margin-bottom: .5rem; background: var(--surface);
+  border: 1px solid var(--line); border-left: 3px solid var(--caution);
+  border-radius: var(--radius);
+}
+
+.dq-issue-title { margin: 0 0 .3rem; font-size: .95rem; }
+.dq-issue-area, .dq-issue-cause {
+  margin: .2rem 0 0; font-size: .87rem; color: var(--ink-soft); line-height: 1.5;
+}
+
+/* --- AI analyst chat ------------------------------------------------------------------------------------------- */
+
+.analyst-identity {
+  margin: 1rem 0 1.25rem; padding: .9rem 1.1rem; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius);
+}
+
+.analyst-traits {
+  margin: 0; padding-left: 1.1rem; display: grid; gap: .3rem;
+  color: var(--ink-soft); font-size: .9rem; line-height: 1.5;
+}
+
+.chat-welcome { padding: 1.25rem; color: var(--ink-soft); text-align: center; }
+
+.follow-ups {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .4rem;
+  margin-top: .9rem; padding-top: .8rem; border-top: 1px solid var(--line);
+}
+
+.follow-ups-label {
+  font-size: .72rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--ink-faint); margin-right: .2rem;
+}
+
+.follow-up {
+  padding: .35rem .7rem; font-size: .85rem; border: 1px solid var(--line);
+  border-radius: 999px; background: var(--bg); color: var(--ink); cursor: pointer;
+}
+
+.follow-up:hover { border-color: var(--ink-faint); }
+
+.answer-lens-chip {
+  font-size: .76rem; color: var(--ink-faint); text-transform: capitalize;
+}
+
+/* The fallback notice is informational, not an error: the answer is still fully trustworthy,
+   only its wording is the engine's rather than the model's. */
+.answer-fallback {
+  margin: .5rem 0 0; padding: .5rem .7rem; font-size: .85rem; line-height: 1.5;
+  color: var(--ink-soft); background: var(--unavailable-bg);
+  border-left: 3px solid var(--unavailable); border-radius: 6px;
+}
+
+.answer-metrics { margin: 0 0 .5rem; font-size: .8rem; color: var(--ink-faint); }
+
+
+/* --- owner home blocks (Phase 14) ------------------------------------------------------------------------- */
+/*
+ * Three blocks in reading order: what the numbers are, what needs a decision, what the evidence
+ * suggests. The attention block is visually distinguished so the items needing a decision are
+ * not just first but obviously first -- previously they sat below the whole insight feed.
+ */
+
+.home-block { margin: 2rem 0; }
+
+.home-block-title {
+  margin: 0 0 .35rem; font-size: 1.15rem; font-weight: 650;
+  padding-bottom: .5rem; border-bottom: 2px solid var(--line);
+}
+
+.home-block-attention .home-block-title { border-bottom-color: var(--caution); }
+
+.home-block .section-title { font-size: .82rem; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint); margin-top: 1.5rem; }
+
+
+/* --- sign-in gate (Phase 14) ---------------------------------------------------------------------------- */
+
+.signin { display: flex; justify-content: center; padding: 2rem 1rem; }
+
+.signin-card {
+  width: 100%; max-width: 34rem; padding: 1.5rem; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius);
+}
+
+.signin-title { margin: .2rem 0 .6rem; font-size: 1.3rem; }
+
+.signin-lede { margin: 0 0 1.1rem; color: var(--ink-soft); line-height: 1.55; font-size: .95rem; }
+
+.signin-form { display: grid; gap: .45rem; }
+
+.signin-label { font-size: .82rem; font-weight: 600; color: var(--ink-soft); }
+
+.signin-input {
+  padding: .6rem .7rem; font: inherit; font-family: var(--mono); color: var(--ink);
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+}
+
+.signin-problem { margin: .7rem 0 0; color: var(--conflict); font-size: .9rem; }
+
+.signin-help { margin-top: 1.2rem; font-size: .88rem; color: var(--ink-soft); }
+.signin-help p { line-height: 1.55; }
+
+.signin-code {
+  margin: .5rem 0 0; padding: .6rem .7rem; overflow-x: auto; font-family: var(--mono);
+  font-size: .78rem; background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+}
+
+.sign-out {
+  margin-left: .5rem; padding: .35rem .7rem; font-size: .82rem; cursor: pointer;
+  color: var(--ink-soft); background: transparent; border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.sign-out:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+
+/* --- owner "Why?" projection ------------------------------------------------------------------- */
+
+.owner-why { display: grid; gap: .55rem; padding-top: .4rem; }
+
+.owner-why-heading {
+  margin: 0; font-size: .95rem; font-weight: 650; color: var(--ink);
+}
+
+.owner-why-text {
+  margin: 0; font-size: .92rem; line-height: 1.55; color: var(--ink-soft); max-width: 68ch;
+}
+
+/* --- responsive ------------------------------------------------------------------------------------------------ */
+
+@media (max-width: 900px) {
+  .app-main { padding: 1rem; }
+  .tile-grid, .change-grid, .role-grid, .definition-cards { grid-template-columns: 1fr; }
+  .global-ask { order: 3; flex-basis: 100%; max-width: none; margin-left: 0; }
+  .analytics-tab { min-width: 0; flex: 1 1 8rem; }
+  .capability-list:not(.capability-list-limited) { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 560px) {
+  .metric-value { font-size: 1.7rem; }
+  .analytics-nav { gap: .35rem; }
+  .analytics-tab { flex: 1 1 100%; }
+  .capability-list:not(.capability-list-limited) { grid-template-columns: 1fr; }
+  .trust-strip-item { grid-template-columns: auto auto; }
+  .trust-strip-explain { grid-column: 1 / -1; }
+  .trust-row { grid-template-columns: 1fr; gap: .3rem; }
+  .definition { flex-direction: column; gap: .15rem; }
+  .insight-meta, .dq-meta, .chain { grid-template-columns: 1fr; }
+  .definition-row { grid-template-columns: 1fr; }
+}
+
+/*
+ * Conflicts stay expanded at EVERY breakpoint. There is deliberately no rule anywhere in this
+ * file that hides .definition-list, .definition-cards, .tile-refusal or .conflict-decision at a
+ * narrow width. Space pressure is exactly when the temptation to show one number appears, and
+ * exactly when doing so would be most misleading.
+ */
+@media (max-width: 560px) {
+  .definition-list, .definition-cards, .conflict-decision { display: grid; }
+  .tile-refusal, .metric-refusal { display: block; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* =================================================================================================
+ * The Power BI Analyst workspace.
+ *
+ * An analyst reads in a fixed order -- what the figures are, how they moved, what they break down
+ * into, what changed, what needs a decision, what the definitions and caveats are -- and the job
+ * of this block is to make that order visible: one panel per question, a heading that names the
+ * question, and the figures grouped inside it rather than spread across a wall of equal cards.
+ *
+ * Two rules hold here as everywhere else in this stylesheet. A caveat is styled to be read, not
+ * to be dismissed: it sits with its figure at full contrast, never smaller than the label above
+ * it. And nothing carrying a disclosure is hidden at a narrow width -- no rule below sets
+ * display:none on a definition, a caveat, or a competing figure.
+ * ============================================================================================== */
+
+.bi-block {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.15rem 1.25rem 1.35rem;
+  margin: 0 0 1.15rem;
+}
+
+.bi-block-title {
+  margin: 0 0 .3rem;
+  font-size: 1.06rem;
+  letter-spacing: -0.01em;
+}
+
+.bi-block-note {
+  margin: 0 0 .9rem;
+  color: var(--ink-soft);
+  font-size: .87rem;
+  line-height: 1.5;
+  max-width: 68ch;
+}
+
+.bi-sub-title {
+  margin: 1.25rem 0 .55rem;
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--ink-faint);
+  font-weight: 600;
+}
+
+.bi-sub-title:first-of-type { margin-top: .25rem; }
+
+/* --- KPI cards ---------------------------------------------------------------------------- */
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+  gap: .7rem;
+}
+
+.kpi {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: .8rem .9rem .85rem;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.kpi-label {
+  margin: 0;
+  font-size: .8rem;
+  color: var(--ink-soft);
+  line-height: 1.35;
+}
+
+.kpi-value {
+  margin: 0;
+  font-size: 1.42rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A measure with no permitted headline says so in words. Deliberately not styled to look like a
+ * number, and deliberately not dimmed either: the refusal is the answer. */
+.kpi-value-refused {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.kpi-note {
+  margin: .15rem 0 0;
+  font-size: .81rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.kpi-part {
+  margin: 0;
+  font-size: .84rem;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi[data-trust="DISCLOSE"] { border-left: 3px solid var(--caution); }
+.kpi[data-trust="SHOW_BOTH"] { border-left: 3px solid var(--conflict); }
+.kpi[data-trust="BLOCK"] { border-left: 3px solid var(--conflict); }
+.kpi[data-trust="NOT_DETERMINABLE"] { border-left: 3px solid var(--unavailable); }
+
+/* --- charts ------------------------------------------------------------------------------- */
+
+.chart { margin: 0 0 .35rem; }
+
+.chart-svg {
+  width: 100%;
+  height: 180px;
+  display: block;
+  overflow: visible;
+}
+
+.chart-path {
+  stroke: var(--neutral);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart-point { fill: var(--neutral); }
+.chart-zero { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 3; }
+
+.chart-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: .74rem;
+  color: var(--ink-faint);
+  margin-top: .1rem;
+}
+
+.chart-caption, .chart-empty {
+  margin: .4rem 0 0;
+  font-size: .82rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+/* The reason a part-month is short. Full contrast: it is the difference between reading a short
+ * tail as a collapse in the business and reading it as a month that is not over. */
+.chart-partial {
+  margin: .35rem 0 0;
+  font-size: .83rem;
+  line-height: 1.5;
+  color: var(--ink);
+  border-left: 3px solid var(--caution);
+  padding-left: .6rem;
+}
+
+.bar-rows { display: grid; gap: .38rem; }
+
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(9rem, 14rem) 1fr minmax(5.5rem, auto);
+  align-items: center;
+  gap: .7rem;
+}
+
+.bar-label { font-size: .85rem; color: var(--ink); }
+
+.bar-track {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--neutral);
+  border-radius: 5px;
+}
+
+.bar-fill-negative { background: var(--caution); }
+
+.bar-value {
+  font-size: .85rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- movement ----------------------------------------------------------------------------- */
+
+.movement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+  gap: .7rem;
+}
+
+.movement {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: .8rem .9rem;
+  background: var(--bg);
+}
+
+.movement-title { margin: 0 0 .3rem; font-size: .87rem; color: var(--ink-soft); }
+
+.movement-line {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Capitalise the sentence, not every word: the direction can be a phrase ("not comparable"),
+ * and "Not Comparable" reads as a label rather than as English. */
+.movement-direction { display: inline-block; }
+.movement-direction::first-letter { text-transform: uppercase; }
+.movement[data-direction="rose"] .movement-direction { color: var(--neutral); }
+.movement[data-direction="fell"] .movement-direction { color: var(--caution); }
+
+.movement-periods {
+  margin: .25rem 0 0;
+  font-size: .8rem;
+  color: var(--ink-faint);
+}
+
+.movement-note {
+  margin: .4rem 0 0;
+  font-size: .81rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* --- definitions, decisions, issues -------------------------------------------------------- */
+
+.definition-panel {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--conflict);
+  border-radius: 8px;
+  padding: .85rem .95rem;
+  background: var(--bg);
+  margin: 0 0 .8rem;
+}
+
+.definition-head {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.definition-measure { margin: 0; font-size: .98rem; }
+
+.definition-why {
+  margin: .35rem 0 .6rem;
+  font-size: .84rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 68ch;
+}
+
+.definition-part {
+  display: block;
+  font-size: .82rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.decision {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: .8rem .9rem;
+  background: var(--bg);
+  margin: 0 0 .6rem;
+}
+
+.decision-title { margin: 0 0 .25rem; font-size: .95rem; }
+.decision-posture { margin: 0 0 .3rem; font-size: .87rem; font-weight: 600;
+  color: var(--conflict); }
+.decision-text { margin: 0; font-size: .86rem; line-height: 1.55; color: var(--ink-soft); }
+
+.issue-list { display: grid; gap: .7rem; }
+
+.issue {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: .85rem .95rem;
+  background: var(--bg);
+}
+
+.issue-head { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.issue-title { margin: 0; font-size: .82rem; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--ink-faint); }
+.issue-what { margin: .45rem 0 0; font-size: .95rem; line-height: 1.55; }
+.issue-why, .issue-action, .issue-caveat {
+  margin: .35rem 0 0;
+  font-size: .86rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+.issue-action { color: var(--ink); }
+
+.reconciliation {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: .12rem .9rem;
+  font-size: .86rem;
+}
+
+.reconciliation-row { display: contents; }
+
+.reconciliation-label { color: var(--ink-soft); padding: .18rem 0; }
+.reconciliation-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  padding: .18rem 0;
+}
+
+.caveat-list { margin: 0; padding: 0 0 0 1.1rem; display: grid; gap: .4rem; }
+.caveat { font-size: .85rem; line-height: 1.55; color: var(--ink-soft); }
+
+.forecast {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--caution);
+  border-radius: 8px;
+  padding: .85rem .95rem;
+  background: var(--bg);
+}
+
+.forecast-flag {
+  margin: 0 0 .5rem;
+  font-size: .86rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.forecast-line { margin: .3rem 0 0; font-size: .87rem; line-height: 1.55; }
+
+/* --- analyst actions ------------------------------------------------------------------------ */
+
+.bi-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-top: 1rem;
+}
+
+.bi-action {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: .35rem .85rem;
+  font-size: .84rem;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.bi-action:hover, .bi-action:focus-visible { border-color: var(--ink-faint); }
+
+@media (max-width: 720px) {
+  .bar-row { grid-template-columns: 1fr auto; }
+  .bar-track { grid-column: 1 / -1; }
+  .kpi-row, .movement-grid { grid-template-columns: 1fr; }
+}
+
+/* Inside the analyst panel a definition is a row in a comparison, so the figures line up in one
+ * column and the parts that qualify them sit in the next. Aligning them is the whole point: the
+ * reader is being asked to compare definitions, which is hard to do down a ragged edge. */
+.definition-panel .definition {
+  display: grid;
+  grid-template-columns: minmax(11rem, 1.4fr) minmax(6rem, auto) minmax(0, 1fr);
+  align-items: baseline;
+  gap: .35rem .9rem;
+}
+
+.definition-panel .definition-value { text-align: right; font-variant-numeric: tabular-nums; }
+
+.definition-panel .definition-part {
+  text-align: right;
+  grid-column: 3;
+}
+
+@media (max-width: 720px) {
+  .definition-panel .definition { grid-template-columns: 1fr auto; }
+  .definition-panel .definition-part { grid-column: 1 / -1; text-align: left; }
+}
+
+/* --- the analyst filter bar -------------------------------------------------------------------
+ *
+ * One row of controls, sized to read as a toolbar rather than as a form: the dashboard is the
+ * subject and this is how it is questioned. The selection summary sits beneath the controls and
+ * spans the row, because it is the sentence that says what is currently being looked at.
+ */
+.filter-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(7.5rem, 1fr)) auto;
+  align-items: end;
+  gap: .5rem .75rem;
+  padding: .6rem .75rem;
+  margin-bottom: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.filter-field { display: grid; gap: .2rem; min-width: 0; }
+
+.filter-label {
+  font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.filter-select {
+  width: 100%; padding: .35rem .45rem; font: inherit; font-size: .92rem;
+  color: inherit; background: var(--bg); border: 1px solid var(--line);
+  border-radius: calc(var(--radius) / 1.5);
+}
+
+.filter-actions { display: flex; gap: .4rem; }
+
+.filter-apply, .filter-reset {
+  padding: .38rem .8rem; font: inherit; font-size: .92rem; cursor: pointer;
+  border: 1px solid var(--line); border-radius: calc(var(--radius) / 1.5);
+  background: var(--bg); color: inherit;
+}
+
+.filter-apply { font-weight: 700; border-color: var(--ink-faint); }
+.filter-apply:hover, .filter-reset:hover,
+.filter-apply:focus-visible, .filter-reset:focus-visible { border-color: var(--ink); }
+
+.filter-summary {
+  grid-column: 1 / -1; margin: 0; font-size: .92rem; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.filter-note {
+  grid-column: 1 / -1; margin: 0; font-size: .88rem; color: var(--ink-faint);
+}
+
+/* A part-month figure and the whole-month pair offered beside it are two different statements,
+ * so they do not share a paragraph style with the movement itself. */
+.movement-partial { margin: .3rem 0 0; font-size: .9rem; font-weight: 600; }
+
+@media (max-width: 720px) {
+  .filter-bar { grid-template-columns: 1fr 1fr; }
+  .filter-actions { grid-column: 1 / -1; }
+}
+
+/* --- what drove a movement ---------------------------------------------------------------------
+ *
+ * Sits inside the movement card, indented under the figure it explains, so it reads as the
+ * second half of one statement rather than as a card of its own.
+ */
+.contributions {
+  margin-top: .55rem; padding-top: .5rem; border-top: 1px solid var(--line);
+}
+
+.contribution-title {
+  margin: 0 0 .35rem; font-size: .82rem; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+
+.contribution-note, .contribution-none {
+  margin: .35rem 0 0; font-size: .88rem; color: var(--ink-faint);
+}
+
+.contributions .bar-row { font-size: .9rem; }
+
+/* --- the two figures a comparison is between ---------------------------------------------------
+ *
+ * A three-row ledger under the movement line: the period asked about, the period it is compared
+ * with, and the movement itself. Figures right-aligned in one column so they can be read against
+ * each other, which is the only reason they are shown together.
+ */
+.compare-figures {
+  display: grid; grid-template-columns: 1fr auto; gap: .1rem .75rem;
+  margin: .45rem 0 0; font-size: .92rem;
+}
+
+.compare-figures .compare-label { margin: 0; color: var(--ink-faint); }
+
+.compare-figures .compare-value {
+  margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700;
+}
+
+.filter-select:disabled { opacity: .55; }
+
+/* --- chart interaction -------------------------------------------------------------------------
+ *
+ * Each recorded month gets an invisible full-height target, so the point is easy to reach with a
+ * mouse and reachable at all with a keyboard. The selected month is marked with a rule rather
+ * than a colour alone.
+ */
+.chart-hit { fill: transparent; cursor: pointer; }
+.chart-hit:hover, .chart-hit:focus-visible { fill: rgba(127, 127, 127, .14); outline: none; }
+.chart-selected-line { stroke: currentColor; stroke-width: 1; stroke-dasharray: 3 3; opacity: .5; }
+.chart-selected-point { fill: currentColor; }
+
+.chart-tip {
+  margin: .2rem 0 0; min-height: 1.2em; font-size: .88rem; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.range-control {
+  display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; margin-bottom: .35rem;
+}
+
+.range-label {
+  font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.range-choice {
+  padding: .18rem .55rem; font: inherit; font-size: .85rem; cursor: pointer; color: inherit;
+  background: var(--bg); border: 1px solid var(--line); border-radius: calc(var(--radius) / 1.5);
+}
+
+.range-choice.active { font-weight: 700; border-color: var(--ink); }
+.range-count { font-size: .82rem; color: var(--ink-faint); }
+
+/* --- movement actions --------------------------------------------------------------------------- */
+.movement-actions { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
+
+.movement-action {
+  padding: .22rem .6rem; font: inherit; font-size: .85rem; cursor: pointer; color: inherit;
+  text-decoration: none; background: var(--bg); border: 1px solid var(--line);
+  border-radius: calc(var(--radius) / 1.5);
+}
+
+.movement-action:hover, .movement-action:focus-visible { border-color: var(--ink-faint); }
+
+/* --- apartments and beds ------------------------------------------------------------------------
+ *
+ * A row per apartment, and inside one, a rent per bed. An apartment with a single recorded bed
+ * is dimmed rather than hidden: it is a real apartment and its one rent is a real figure, but it
+ * is not a basis for comparison and should not read as one.
+ */
+.apartment-table { display: grid; gap: .3rem; }
+
+.apartment-row {
+  display: grid; grid-template-columns: auto 1fr auto auto; align-items: baseline; gap: .6rem;
+  padding: .35rem .5rem; border: 1px solid var(--line); border-radius: var(--radius);
+}
+
+.apartment-row[data-sparse="true"] { opacity: .78; }
+.apartment-row .apartment-note { grid-column: 1 / -1; margin: .15rem 0 0; font-size: .85rem;
+  color: var(--ink-faint); }
+
+.apartment-code {
+  font: inherit; font-weight: 700; cursor: pointer; color: inherit; background: none;
+  border: none; padding: 0; text-align: left;
+}
+
+.apartment-code:hover, .apartment-code:focus-visible { text-decoration: underline; }
+.apartment-beds, .apartment-rents { font-size: .9rem; color: var(--ink-faint);
+  font-variant-numeric: tabular-nums; }
+
+.apartment-drill {
+  padding: .15rem .5rem; font: inherit; font-size: .82rem; cursor: pointer; color: inherit;
+  background: var(--bg); border: 1px solid var(--line); border-radius: calc(var(--radius) / 1.5);
+}
+
+.bed-list {
+  display: grid; grid-template-columns: auto 1fr; gap: .15rem .9rem; margin: .3rem 0 .6rem;
+}
+
+.bed-list .bed-code { margin: 0; font-weight: 700; }
+.bed-list .bed-rent { margin: 0; font-variant-numeric: tabular-nums; }
+
+/* --- decisions ----------------------------------------------------------------------------------- */
+.decision-head { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; }
+
+.decision-status {
+  font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.decision[data-status="resolved"] .decision-status { color: inherit; }
+.decision-controls { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .45rem; }
+
+.decision-set {
+  padding: .18rem .55rem; font: inherit; font-size: .82rem; cursor: pointer; color: inherit;
+  text-decoration: none; background: var(--bg); border: 1px solid var(--line);
+  border-radius: calc(var(--radius) / 1.5);
+}
+
+.decision-set.active { font-weight: 700; border-color: var(--ink); }
+.decision-note { margin: .3rem 0 0; font-size: .88rem; color: var(--ink-faint); }
+
+/* --- export and the collapsed trust legend --------------------------------------------------------- */
+.export-control { display: flex; align-items: center; gap: .6rem; margin-bottom: 1rem;
+  flex-wrap: wrap; }
+.export-status { font-size: .86rem; color: var(--ink-faint); }
+
+.trust-legend > summary { cursor: pointer; }
+.trust-legend[open] > summary { margin-bottom: .5rem; }
+
+/* --- data quality: the owner's view first, the record behind it ---------------------------------
+ *
+ * The tally is counted from the payload, and its chips jump to their own group. Severity keeps
+ * the engine's order; the colouring is the existing trust palette and adds no ranking of its own.
+ */
+.dq-summary {
+  display: flex; flex-wrap: wrap; align-items: stretch; gap: .5rem; margin: 0 0 1.25rem;
+}
+
+.dq-total, .dq-count {
+  display: flex; flex-direction: column; gap: .1rem; padding: .5rem .85rem;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  text-decoration: none; color: inherit; min-width: 6.5rem;
+}
+
+.dq-count:hover, .dq-count:focus-visible { border-color: var(--ink-faint); }
+
+.dq-total-count, .dq-count-value {
+  font-size: 1.5rem; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums;
+}
+
+.dq-total-label, .dq-count-label {
+  font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-faint);
+}
+
+.dq-count[data-severity="CRITICAL"] { border-left: 3px solid var(--conflict); }
+.dq-count[data-severity="HIGH"]     { border-left: 3px solid var(--caution); }
+.dq-count[data-severity="MEDIUM"]   { border-left: 3px solid var(--ink-faint); }
+.dq-count[data-severity="LOW"],
+.dq-count[data-severity="INFORMATIONAL"] { border-left: 3px solid var(--line); }
+
+.dq-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: .75rem;
+  flex-wrap: wrap;
+}
+
+.dq-title { margin: 0; font-size: 1rem; font-weight: 650; }
+
+.dq-posture {
+  font-size: .74rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+  color: var(--ink-faint); white-space: nowrap;
+}
+
+.dq-why { margin: .4rem 0 0; }
+
+.dq-action { display: flex; gap: .5rem; align-items: baseline; margin: .5rem 0 0; }
+
+.dq-action-label {
+  font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint); white-space: nowrap;
+}
+
+.dq-details { margin-top: .6rem; }
+.dq-details > summary { cursor: pointer; font-size: .86rem; color: var(--ink-faint); }
+.dq-details[open] > summary { margin-bottom: .4rem; }
+
+.decision-scope-note {
+  margin: 0 0 .5rem; font-size: .86rem; color: var(--ink-faint);
+}
+
+/* The selected month's figure, read out beside its chart. The month reads as a label and the
+ * amount as the figure, so the pair is one statement rather than two competing ones. */
+.selected-month {
+  display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap;
+  margin: .4rem 0 0; font-size: .92rem;
+}
+
+.selected-month-label { color: var(--ink-faint); }
+
+.selected-month-value {
+  font-weight: 700; font-variant-numeric: tabular-nums; font-size: 1.05rem;
+}
+
+/* --- the analyst workspace, arranged -------------------------------------------------------
+ *
+ * The workspace shows the same measures it always did; what these rules do is give the page a
+ * reading order, so the headline measures are read as headlines and the rest as the detail
+ * behind them. Movements, decisions, findings and charts reuse the classes those pieces already
+ * have elsewhere, so a movement looks like a movement wherever it appears.
+ */
+
+/* --- one business subject, with the findings behind it -------------------------------------- */
+
+.subject-findings { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; gap: .5rem; }
+
+.subject-finding {
+  padding-left: .7rem; border-left: 2px solid var(--line);
+}
+
+.subject-finding-what { margin: 0; font-size: .9rem; line-height: 1.5; }
+
+.subject-finding-action {
+  margin: .15rem 0 0; font-size: .85rem; line-height: 1.5; color: var(--ink-soft);
+}
+
+/* --- the metric's semantic contract, on the metric page ------------------------------------- */
+
+.metric-question {
+  margin: .3rem 0 .6rem; font-size: .95rem; line-height: 1.55; color: var(--ink-soft);
+}
+
+.contract-facts {
+  display: grid; grid-template-columns: minmax(9rem, 14rem) 1fr; gap: .35rem .9rem;
+  margin: .4rem 0 0;
+}
+
+.contract-label { font-size: .85rem; color: var(--ink-faint); }
+
+.contract-value { margin: 0; font-size: .92rem; line-height: 1.55; }
+
+@media (max-width: 640px) {
+  .contract-facts { grid-template-columns: 1fr; gap: .1rem; }
+  .contract-value { margin-bottom: .5rem; }
+}
+
+/* The registry's own words for the measure -- definitions naming application objects, grains
+ * written as column names. Correct for the audit trail, folded away for everyone else. */
+.metric-technical {
+  margin: 1.2rem 0 0; padding: .5rem .7rem;
+  border: 1px solid var(--line); border-radius: 8px;
+}
+
+.metric-technical > summary { cursor: pointer; font-size: .85rem; color: var(--ink-soft); }
+
+.metric-technical-body { margin-top: .6rem; }
+
+.workspace-boundary {
+  margin: .2rem 0 1.4rem; padding: .5rem .7rem;
+  border: 1px solid var(--line); border-radius: 8px;
+}
+
+.workspace-boundary-summary {
+  cursor: pointer; font-size: .85rem; color: var(--ink-soft);
+}
+
+.workspace-boundary p { margin: .5rem 0 0; font-size: .88rem; line-height: 1.55; }
+
+.workspace-occupancy {
+  margin: .4rem 0 1.2rem; padding: .7rem .85rem;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--neutral-bg);
+  display: grid; gap: .6rem;
+}
+
+.workspace-note {
+  margin: .3rem 0 1rem; font-size: .88rem; line-height: 1.55; color: var(--ink-soft);
+}
+
+.workspace-capability-list {
+  display: grid; gap: .6rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+/* A measure waiting to be asked, not a measure that came back empty. It is deliberately quieter
+ * than a tile: it carries no figure, and it should not read as though it does. */
+.workspace-capability {
+  padding: .7rem .85rem; border: 1px dashed var(--line); border-radius: 10px;
+  display: grid; gap: .35rem; align-content: start;
+}
+
+.workspace-capability-title { margin: 0; font-size: .95rem; }
+
+.workspace-capability-prompt {
+  margin: 0; font-size: .88rem; line-height: 1.55; color: var(--ink-soft);
+}
+
+.workspace-capability .entry-point { justify-self: start; }
+
+.workspace-trends { display: grid; gap: 1rem; }
+
+.trend-card {
+  padding: .8rem .9rem; border: 1px solid var(--line); border-radius: 10px;
+  display: grid; gap: .5rem;
+}
+
+.trend-head { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+
+.trend-title { margin: 0; font-size: .95rem; }
+
+.trend-caveat { margin: 0; font-size: .85rem; line-height: 1.55; color: var(--ink-soft); }
+
+/* One label per competing definition, above the series it names. */
+.trend-series-label {
+  margin: .5rem 0 .2rem; font-size: .85rem; font-weight: 600; color: var(--ink-soft);
+}
+
+.trend-body { display: grid; gap: .2rem; }
+
+.trend-card .entry-point { justify-self: start; }

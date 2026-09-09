@@ -1,0 +1,18 @@
+scenario,category,expectation,verdict,reason
+unauthenticated /api/owner/home,auth,401,PASS,status=401
+x-role is not identity,auth,401,PASS,status=401
+HMAC bearer owner home,auth,200,PASS,status=200
+fail-closed authenticator,auth,raises,PASS,
+financial role cannot read occupancy figures,authz,unavailable,PASS,
+authorization does not change trust,authz,gate posture unchanged,PASS,
+conversation isolation by subject,authz,404/not found,PASS,
+unconfigured live source cannot bind,live,quarantined,PASS,"Set AI_ANALYTICS_LIVE_ENABLE=true, supply a read-only SUPABASE_URL+SUPABASE_READONLY_KEY (or DATABASE_URL) and the live source's own as-of date (AI_ANALYTICS_LIVE_AS_OF), then a RevalidationHarness pass against live rows. Not determinable from exported evidence."
+export still serving,live,trusted export,PASS,
+live remaining requirement named,live,named,PASS,
+HTTP adapter without enable refuses,llm,LLMUnavailable,PASS,
+LLM default quarantined,llm,QUARANTINED,PASS,
+hostile verbalization still guarded,adversarial,"guard or fallback, no BLOCK headline",PASS,trust=BLOCK
+security headers present,security,nosniff + request id,PASS,
+oversized question rejected,security,422,PASS,status=422
+rate limit hook,security,429,PASS,status=429
+frontend does not send x-role,frontend,Authorization only,PASS,

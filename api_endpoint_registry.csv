@@ -1,0 +1,18 @@
+path,method,operation_id,surface,accepts_free_form_query,accepts_formula,serves_engine_payload,trust_rule
+/api/analytics,GET,analytics_sections_api_analytics_get,,False,False,True,
+/api/analytics/{section},GET,analytics_section_api_analytics__section__get,,False,False,True,
+/api/ask,POST,ask_api_ask_post,conversation,False,False,True,Natural language through the same pipeline. LLM output is guarded and discardable.
+/api/changes,GET,changes_api_changes_get,changes,False,False,True,Direction and size only; materiality is undefined.
+/api/conversations/{conversation_id},GET,conversation_api_conversations__conversation_id__get,conversation,False,False,True,History plus persisted clarification and selection state.
+/api/data-quality,GET,data_quality_api_data_quality_get,dq,False,False,True,The DQ register by recorded severity.
+/api/insights,GET,insights_api_insights_get,insights,False,False,True,Ranked feed; conflicted insights carry no headline.
+/api/llm/adapters,GET,llm_adapters_api_llm_adapters_get,system,False,False,True,Adapter shapes. A credential in the environment does NOT enable one.
+/api/metrics,GET,metrics_api_metrics_get,dashboard,False,False,True,"Authorization filters WHICH metrics are listed, never how they are gated."
+/api/metrics/{metric_id},GET,metric_detail_api_metrics__metric_id__get,detail,False,False,True,Full metric detail with evidence and validation.
+/api/metrics/{metric_id}/conflict,GET,conflict_api_metrics__metric_id__conflict_get,conflict,False,False,True,"Every competing definition. Never a winner, never a default."
+/api/owner/home,GET,owner_home_api_owner_home_get,dashboard,False,False,True,"BLOCK/SHOW_BOTH tiles carry no value field -- the refusal is an absence, not a flag a client may ignore."
+/api/report/executive,GET,executive_report_api_report_executive_get,report,False,False,True,Generated from engine output; no separate KPI maths.
+/api/roles,GET,roles_api_roles_get,roles,False,False,True,Role registry with per-role boundaries.
+/api/roles/{role_id}/workspace,GET,workspace_api_roles__role_id__workspace_get,roles,False,False,True,"Same metrics, same trust; only the lens differs."
+/api/trust,GET,trust_api_trust_get,trust,False,False,True,Trust posture for all 49 metrics.
+/health,GET,health_health_get,system,False,False,True,Reports the data source status and whether re-validation passed.

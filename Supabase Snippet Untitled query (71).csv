@@ -1,0 +1,8 @@
+id,user_id,organization_id,session_id,action,status,error_message,created_at
+2309394b-acbd-4483-a12b-8346aa2d2806,f6623646-3abe-4faf-bff7-684ea1f04e96,00000000-0000-0000-0000-000000000001,null,create_invoice,success,null,2026-04-18 23:14:47.501931+00
+e6f54050-bd36-43b7-8515-a30837882a56,f6623646-3abe-4faf-bff7-684ea1f04e96,00000000-0000-0000-0000-000000000001,69b24778-b5a8-4818-b2fe-614fdf117834,create_adjustment,error,"new row for relation ""tenant_adjustments"" violates check constraint ""chk_adjustment_category""",2026-04-18 23:23:24.589309+00
+56ffe480-f080-4f14-931f-0bab1e86b04f,f6623646-3abe-4faf-bff7-684ea1f04e96,00000000-0000-0000-0000-000000000001,null,create_adjustment,success,null,2026-04-19 05:04:46.777518+00
+5fdec4d5-598d-484c-85f3-79423fd937d3,f6623646-3abe-4faf-bff7-684ea1f04e96,00000000-0000-0000-0000-000000000001,null,create_receipt,success,null,2026-04-19 05:06:49.666538+00
+cd9df29e-e2f6-4bd7-81ff-ffde6fd44f4b,f6623646-3abe-4faf-bff7-684ea1f04e96,00000000-0000-0000-0000-000000000001,null,create_adjustment,success,null,2026-04-19 07:03:44.201616+00
+e481d091-660b-47bc-9847-5b36b53d6207,f6623646-3abe-4faf-bff7-684ea1f04e96,00000000-0000-0000-0000-000000000001,566245de-206b-4c05-a304-62940a53416a,create_invoice,error,"No active allotment found for this tenant (need Staying, On-Notice, or Booked). Open Tenant Lifecycle to assign a bed first.",2026-04-20 06:49:19.815699+00
+f153e32a-f7b0-44c7-9628-f69b6eca0992,f6623646-3abe-4faf-bff7-684ea1f04e96,00000000-0000-0000-0000-000000000001,566245de-206b-4c05-a304-62940a53416a,create_invoice,error,"No active allotment found for this tenant (need Staying, On-Notice, or Booked). Open Tenant Lifecycle to assign a bed first.",2026-04-20 06:50:14.993805+00

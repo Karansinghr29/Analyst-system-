@@ -1,0 +1,323 @@
+constraint_name,from_schema,from_table,from_column,to_schema,to_table,to_column,key_position,key_width,on_delete,on_update,relationship_kind
+accounting_periods_closed_by_fkey,public,accounting_periods,closed_by,auth,users,id,1,1,NO ACTION,NO ACTION,DECLARED
+accounting_periods_organization_id_fkey,public,accounting_periods,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+ai_actions_organization_id_fkey,public,ai_actions,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+ai_actions_session_id_fkey,public,ai_actions,session_id,public,ai_sessions,id,1,1,SET NULL,NO ACTION,DECLARED
+ai_actions_user_id_fkey,public,ai_actions,user_id,auth,users,id,1,1,CASCADE,NO ACTION,DECLARED
+ai_sessions_organization_id_fkey,public,ai_sessions,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+ai_sessions_user_id_fkey,public,ai_sessions,user_id,auth,users,id,1,1,CASCADE,NO ACTION,DECLARED
+amenity_embeddings_amenity_id_fkey,market,amenity_embeddings,amenity_id,market,amenities_master,id,1,1,CASCADE,NO ACTION,DECLARED
+announcements_created_by_fkey,public,announcements,created_by,auth,users,id,1,1,NO ACTION,NO ACTION,DECLARED
+announcements_organization_id_fkey,public,announcements,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+apartments_organization_id_fkey,public,apartments,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+apartments_owner_id_fkey,public,apartments,owner_id,public,owners,id,1,1,NO ACTION,NO ACTION,DECLARED
+apartments_property_id_fkey,public,apartments,property_id,public,properties,id,1,1,CASCADE,NO ACTION,DECLARED
+asset_allocations_allocated_by_fkey,public,asset_allocations,allocated_by,auth,users,id,1,1,NO ACTION,NO ACTION,DECLARED
+asset_allocations_apartment_id_fkey,public,asset_allocations,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+asset_allocations_asset_id_fkey,public,asset_allocations,asset_id,public,assets,id,1,1,CASCADE,NO ACTION,DECLARED
+asset_allocations_bed_id_fkey,public,asset_allocations,bed_id,public,beds,id,1,1,NO ACTION,NO ACTION,DECLARED
+asset_allocations_organization_id_fkey,public,asset_allocations,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+asset_allocations_property_id_fkey,public,asset_allocations,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+asset_brands_organization_id_fkey,public,asset_brands,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+asset_categories_organization_id_fkey,public,asset_categories,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+asset_depreciation_asset_id_fkey,public,asset_depreciation,asset_id,public,assets,id,1,1,CASCADE,NO ACTION,DECLARED
+asset_maintenance_logs_asset_id_fkey,public,asset_maintenance_logs,asset_id,public,assets,id,1,1,CASCADE,NO ACTION,DECLARED
+asset_maintenance_logs_organization_id_fkey,public,asset_maintenance_logs,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+asset_movements_asset_id_fkey,public,asset_movements,asset_id,public,assets,id,1,1,CASCADE,NO ACTION,DECLARED
+asset_movements_moved_by_fkey,public,asset_movements,moved_by,auth,users,id,1,1,NO ACTION,NO ACTION,DECLARED
+asset_movements_organization_id_fkey,public,asset_movements,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+asset_payments_asset_id_fkey,public,asset_payments,asset_id,public,assets,id,1,1,RESTRICT,NO ACTION,DECLARED
+asset_payments_bank_account_id_fkey,public,asset_payments,bank_account_id,public,organization_bank_accounts,id,1,1,SET NULL,NO ACTION,DECLARED
+asset_payments_organization_id_fkey,public,asset_payments,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+asset_payments_vendor_id_fkey,public,asset_payments,vendor_id,public,vendors,id,1,1,SET NULL,NO ACTION,DECLARED
+asset_types_category_id_fkey,public,asset_types,category_id,public,asset_categories,id,1,1,CASCADE,NO ACTION,DECLARED
+asset_types_organization_id_fkey,public,asset_types,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+fk_assets_apartment,public,assets,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+assets_asset_type_id_fkey,public,assets,asset_type_id,public,asset_types,id,1,1,NO ACTION,NO ACTION,DECLARED
+assets_organization_id_fkey,public,assets,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+assets_supplier_id_fkey,public,assets,supplier_id,public,vendors,id,1,1,NO ACTION,NO ACTION,DECLARED
+attendance_logs_company_id_fkey,public,attendance_logs,company_id,public,companies,id,1,1,SET NULL,NO ACTION,DECLARED
+attendance_logs_edited_by_fkey,public,attendance_logs,edited_by,public,users,id,1,1,NO ACTION,NO ACTION,DECLARED
+attendance_logs_employee_id_fkey,public,attendance_logs,employee_id,public,employees,id,1,1,CASCADE,NO ACTION,DECLARED
+audit_logs_organization_id_fkey,public,audit_logs,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+bed_rates_organization_id_fkey,public,bed_rates,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+bed_rates_property_id_fkey,public,bed_rates,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+bed_status_history_bed_id_fkey,public,bed_status_history,bed_id,public,beds,id,1,1,CASCADE,NO ACTION,DECLARED
+bed_status_history_organization_id_fkey,public,bed_status_history,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+bed_type_config_organization_id_fkey,public,bed_type_config,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+beds_apartment_id_fkey,public,beds,apartment_id,public,apartments,id,1,1,CASCADE,NO ACTION,DECLARED
+beds_organization_id_fkey,public,beds,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+coa_accounts_organization_id_fkey,public,coa_accounts,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+coa_accounts_parent_id_fkey,public,coa_accounts,parent_id,public,coa_accounts,id,1,1,RESTRICT,NO ACTION,DECLARED
+competitor_intelligence_competitor_id_fkey,market,competitor_intelligence,competitor_id,market,competitor_properties,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_pricing_snapshots_competitor_id_fkey,market,competitor_pricing_snapshots,competitor_id,market,competitor_properties,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_pricing_snapshots_organization_id_fkey,market,competitor_pricing_snapshots,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_pricing_snapshots_competitor_id_fkey,market,competitor_pricing_snapshots_2026_05,competitor_id,market,competitor_properties,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_pricing_snapshots_organization_id_fkey,market,competitor_pricing_snapshots_2026_05,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_pricing_snapshots_competitor_id_fkey,market,competitor_pricing_snapshots_2026_06,competitor_id,market,competitor_properties,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_pricing_snapshots_organization_id_fkey,market,competitor_pricing_snapshots_2026_06,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_pricing_snapshots_competitor_id_fkey,market,competitor_pricing_snapshots_2026_07,competitor_id,market,competitor_properties,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_pricing_snapshots_organization_id_fkey,market,competitor_pricing_snapshots_2026_07,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_pricing_snapshots_competitor_id_fkey,market,competitor_pricing_snapshots_2026_08,competitor_id,market,competitor_properties,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_pricing_snapshots_organization_id_fkey,market,competitor_pricing_snapshots_2026_08,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_properties_locality_id_fkey,market,competitor_properties,locality_id,market,localities,id,1,1,NO ACTION,NO ACTION,DECLARED
+competitor_properties_organization_id_fkey,market,competitor_properties,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_properties_source_id_fkey,market,competitor_properties,source_id,market,scrape_sources,id,1,1,NO ACTION,NO ACTION,DECLARED
+competitor_reviews_competitor_id_fkey,market,competitor_reviews,competitor_id,market,competitor_properties,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_reviews_organization_id_fkey,market,competitor_reviews,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_room_types_competitor_id_fkey,market,competitor_room_types,competitor_id,market,competitor_properties,id,1,1,CASCADE,NO ACTION,DECLARED
+competitor_room_types_organization_id_fkey,market,competitor_room_types,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+cost_estimate_approvers_issue_type_id_fkey,public,cost_estimate_approvers,issue_type_id,public,issue_types,id,1,1,NO ACTION,NO ACTION,DECLARED
+cost_estimate_approvers_organization_id_fkey,public,cost_estimate_approvers,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+cost_estimate_approvers_property_id_fkey,public,cost_estimate_approvers,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+departments_company_id_fkey,public,departments,company_id,public,companies,id,1,1,CASCADE,NO ACTION,DECLARED
+deposit_settlements_allotment_id_fkey,public,deposit_settlements,allotment_id,public,tenant_allotments,id,1,1,NO ACTION,NO ACTION,DECLARED
+deposit_settlements_organization_id_fkey,public,deposit_settlements,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+deposit_settlements_tenant_id_fkey,public,deposit_settlements,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+diagnostic_sessions_issue_type_id_fkey,public,diagnostic_sessions,issue_type_id,public,issue_types,id,1,1,NO ACTION,NO ACTION,DECLARED
+diagnostic_sessions_organization_id_fkey,public,diagnostic_sessions,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+diagnostic_sessions_ticket_id_fkey,public,diagnostic_sessions,ticket_id,public,maintenance_tickets,id,1,1,CASCADE,NO ACTION,DECLARED
+eb_payments_apartment_id_fkey,public,eb_payments,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+eb_payments_bank_account_id_fkey,public,eb_payments,bank_account_id,public,organization_bank_accounts,id,1,1,SET NULL,NO ACTION,DECLARED
+eb_payments_organization_id_fkey,public,eb_payments,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+eb_payments_property_id_fkey,public,eb_payments,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+eb_rates_organization_id_fkey,public,eb_rates,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+eb_rates_property_id_fkey,public,eb_rates,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+eb_tenant_shares_apartment_id_fkey,public,eb_tenant_shares,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+eb_tenant_shares_invoice_id_fkey,public,eb_tenant_shares,invoice_id,public,invoices,id,1,1,CASCADE,NO ACTION,DECLARED
+eb_tenant_shares_tenant_id_fkey,public,eb_tenant_shares,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+electricity_readings_apartment_id_fkey,public,electricity_readings,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+electricity_readings_organization_id_fkey,public,electricity_readings,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+electricity_readings_property_id_fkey,public,electricity_readings,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+electricity_shares_electricity_reading_id_fkey,public,electricity_shares,electricity_reading_id,public,electricity_readings,id,1,1,CASCADE,NO ACTION,DECLARED
+electricity_shares_tenant_id_fkey,public,electricity_shares,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+email_templates_organization_id_fkey,public,email_templates,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+employee_specialties_user_id_fkey,public,employee_specialties,user_id,auth,users,id,1,1,CASCADE,NO ACTION,DECLARED
+employees_company_id_fkey,public,employees,company_id,public,companies,id,1,1,SET NULL,NO ACTION,DECLARED
+employees_department_id_fkey,public,employees,department_id,public,departments,id,1,1,NO ACTION,NO ACTION,DECLARED
+employees_user_id_fkey,public,employees,user_id,public,users,id,1,1,NO ACTION,NO ACTION,DECLARED
+exit_tasks_allotment_id_fkey,public,exit_tasks,allotment_id,public,tenant_allotments,id,1,1,NO ACTION,NO ACTION,DECLARED
+exit_tasks_tenant_id_fkey,public,exit_tasks,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+expense_bed_allocations_bed_id_fkey,public,expense_bed_allocations,bed_id,public,beds,id,1,1,NO ACTION,NO ACTION,DECLARED
+expense_bed_allocations_expense_id_fkey,public,expense_bed_allocations,expense_id,public,expenses,id,1,1,CASCADE,NO ACTION,DECLARED
+expense_bed_allocations_organization_id_fkey,public,expense_bed_allocations,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+expense_categories_gl_account_id_fkey,public,expense_categories,gl_account_id,public,coa_accounts,id,1,1,NO ACTION,NO ACTION,DECLARED
+expense_categories_new_organization_id_fkey,public,expense_categories,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+expense_subcategories_category_id_fkey,public,expense_subcategories,category_id,public,expense_categories,id,1,1,CASCADE,NO ACTION,DECLARED
+expense_subcategories_gl_account_id_fkey,public,expense_subcategories,gl_account_id,public,coa_accounts,id,1,1,NO ACTION,NO ACTION,DECLARED
+expense_subcategories_organization_id_fkey,public,expense_subcategories,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+expenses_apartment_id_fkey,public,expenses,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+expenses_asset_type_id_fkey,public,expenses,asset_type_id,public,asset_types,id,1,1,NO ACTION,NO ACTION,DECLARED
+expenses_bank_account_id_fkey,public,expenses,bank_account_id,public,organization_bank_accounts,id,1,1,SET NULL,NO ACTION,DECLARED
+expenses_bed_id_fkey,public,expenses,bed_id,public,beds,id,1,1,NO ACTION,NO ACTION,DECLARED
+expenses_category_id_fkey,public,expenses,category_id,public,expense_categories,id,1,1,NO ACTION,NO ACTION,DECLARED
+expenses_issue_type_id_fkey,public,expenses,issue_type_id,public,issue_types,id,1,1,SET NULL,NO ACTION,DECLARED
+expenses_organization_id_fkey,public,expenses,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+expenses_property_id_fkey,public,expenses,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+expenses_related_asset_id_fkey,public,expenses,related_asset_id,public,assets,id,1,1,NO ACTION,NO ACTION,DECLARED
+expenses_subcategory_id_fkey,public,expenses,subcategory_id,public,expense_subcategories,id,1,1,NO ACTION,NO ACTION,DECLARED
+expenses_team_payment_id_fkey,public,expenses,team_payment_id,public,team_payments,id,1,1,CASCADE,NO ACTION,DECLARED
+expenses_ticket_resolution_id_fkey,public,expenses,ticket_resolution_id,public,ticket_resolutions,id,1,1,CASCADE,NO ACTION,DECLARED
+expenses_vendor_id_fkey,public,expenses,vendor_id,public,vendors,id,1,1,NO ACTION,NO ACTION,DECLARED
+financial_audit_log_actor_user_id_fkey,public,financial_audit_log,actor_user_id,auth,users,id,1,1,NO ACTION,NO ACTION,DECLARED
+financial_audit_log_journal_entry_id_fkey,public,financial_audit_log,journal_entry_id,public,journal_entries,id,1,1,SET NULL,NO ACTION,DECLARED
+gst_monthly_workings_generated_by_fkey,public,gst_monthly_workings,generated_by,public,profiles,id,1,1,SET NULL,NO ACTION,DECLARED
+gst_monthly_workings_organization_id_fkey,public,gst_monthly_workings,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+invoice_line_items_invoice_id_fkey,public,invoice_line_items,invoice_id,public,invoices,id,1,1,CASCADE,NO ACTION,DECLARED
+invoice_pdf_configs_organization_id_fkey,public,invoice_pdf_configs,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+invoices_allotment_id_fkey,public,invoices,allotment_id,public,tenant_allotments,id,1,1,SET NULL,NO ACTION,DECLARED
+invoices_apartment_id_fkey,public,invoices,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+invoices_bed_id_fkey,public,invoices,bed_id,public,beds,id,1,1,NO ACTION,NO ACTION,DECLARED
+invoices_organization_id_fkey,public,invoices,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+invoices_property_id_fkey,public,invoices,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+invoices_tenant_id_fkey,public,invoices,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+issue_sub_types_issue_type_id_fkey,public,issue_sub_types,issue_type_id,public,issue_types,id,1,1,CASCADE,NO ACTION,DECLARED
+issue_sub_types_organization_id_fkey,public,issue_sub_types,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+issue_type_asset_types_asset_type_id_fkey,public,issue_type_asset_types,asset_type_id,public,asset_types,id,1,1,CASCADE,NO ACTION,DECLARED
+issue_type_asset_types_issue_type_id_fkey,public,issue_type_asset_types,issue_type_id,public,issue_types,id,1,1,CASCADE,NO ACTION,DECLARED
+issue_type_asset_types_organization_id_fkey,public,issue_type_asset_types,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+issue_type_expense_mapping_expense_category_id_fkey,public,issue_type_expense_mapping,expense_category_id,public,expense_categories,id,1,1,SET NULL,NO ACTION,DECLARED
+issue_type_expense_mapping_expense_subcategory_id_fkey,public,issue_type_expense_mapping,expense_subcategory_id,public,expense_subcategories,id,1,1,SET NULL,NO ACTION,DECLARED
+issue_type_expense_mapping_gl_account_id_fkey,public,issue_type_expense_mapping,gl_account_id,public,coa_accounts,id,1,1,RESTRICT,NO ACTION,DECLARED
+issue_type_expense_mapping_issue_type_id_fkey,public,issue_type_expense_mapping,issue_type_id,public,issue_types,id,1,1,CASCADE,NO ACTION,DECLARED
+issue_type_expense_mapping_organization_id_fkey,public,issue_type_expense_mapping,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+issue_types_organization_id_fkey,public,issue_types,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+journal_entries_is_reversal_of_fkey,public,journal_entries,is_reversal_of,public,journal_entries,id,1,1,RESTRICT,NO ACTION,DECLARED
+journal_entries_organization_id_fkey,public,journal_entries,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+journal_entries_posted_by_fkey,public,journal_entries,posted_by,auth,users,id,1,1,NO ACTION,NO ACTION,DECLARED
+journal_lines_account_id_fkey,public,journal_lines,account_id,public,coa_accounts,id,1,1,RESTRICT,NO ACTION,DECLARED
+journal_lines_allotment_id_fkey,public,journal_lines,allotment_id,public,tenant_allotments,id,1,1,RESTRICT,NO ACTION,DECLARED
+journal_lines_apartment_id_fkey,public,journal_lines,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+journal_lines_bed_id_fkey,public,journal_lines,bed_id,public,beds,id,1,1,NO ACTION,NO ACTION,DECLARED
+journal_lines_journal_entry_id_fkey,public,journal_lines,journal_entry_id,public,journal_entries,id,1,1,CASCADE,NO ACTION,DECLARED
+journal_lines_property_id_fkey,public,journal_lines,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+ledger_entries_asset_id_fkey,public,ledger_entries,asset_id,public,assets,id,1,1,CASCADE,NO ACTION,DECLARED
+lifecycle_config_organization_id_fkey,public,lifecycle_config,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+locality_market_metrics_locality_id_fkey,market,locality_market_metrics,locality_id,market,localities,id,1,1,NO ACTION,NO ACTION,DECLARED
+locality_market_metrics_organization_id_fkey,market,locality_market_metrics,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+maintenance_item_stock_entries_maintenance_item_id_fkey,public,maintenance_item_stock_entries,maintenance_item_id,public,maintenance_items,id,1,1,CASCADE,NO ACTION,DECLARED
+maintenance_item_stock_entries_organization_id_fkey,public,maintenance_item_stock_entries,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+maintenance_item_usage_maintenance_item_id_fkey,public,maintenance_item_usage,maintenance_item_id,public,maintenance_items,id,1,1,CASCADE,NO ACTION,DECLARED
+maintenance_item_usage_maintenance_ticket_id_fkey,public,maintenance_item_usage,maintenance_ticket_id,public,maintenance_tickets,id,1,1,CASCADE,NO ACTION,DECLARED
+maintenance_item_usage_organization_id_fkey,public,maintenance_item_usage,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+maintenance_item_usage_stock_entry_id_fkey,public,maintenance_item_usage,stock_entry_id,public,maintenance_item_stock_entries,id,1,1,SET NULL,NO ACTION,DECLARED
+maintenance_items_asset_type_id_fkey,public,maintenance_items,asset_type_id,public,asset_types,id,1,1,RESTRICT,NO ACTION,DECLARED
+maintenance_items_issue_type_id_fkey,public,maintenance_items,issue_type_id,public,issue_types,id,1,1,SET NULL,NO ACTION,DECLARED
+maintenance_items_organization_id_fkey,public,maintenance_items,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+maintenance_tickets_apartment_id_fkey,public,maintenance_tickets,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+maintenance_tickets_asset_id_fkey,public,maintenance_tickets,asset_id,public,assets,id,1,1,SET NULL,NO ACTION,DECLARED
+maintenance_tickets_assigned_to_fkey,public,maintenance_tickets,assigned_to,auth,users,id,1,1,NO ACTION,NO ACTION,DECLARED
+maintenance_tickets_bed_id_fkey,public,maintenance_tickets,bed_id,public,beds,id,1,1,NO ACTION,NO ACTION,DECLARED
+maintenance_tickets_created_by_fkey,public,maintenance_tickets,created_by,auth,users,id,1,1,NO ACTION,NO ACTION,DECLARED
+maintenance_tickets_issue_sub_type_id_fkey,public,maintenance_tickets,issue_sub_type_id,public,issue_sub_types,id,1,1,SET NULL,NO ACTION,DECLARED
+maintenance_tickets_issue_type_id_fkey,public,maintenance_tickets,issue_type_id,public,issue_types,id,1,1,NO ACTION,NO ACTION,DECLARED
+maintenance_tickets_organization_id_fkey,public,maintenance_tickets,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+maintenance_tickets_property_id_fkey,public,maintenance_tickets,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+maintenance_tickets_resolution_id_fkey,public,maintenance_tickets,resolution_id,public,ticket_resolutions,id,1,1,SET NULL,NO ACTION,DECLARED
+maintenance_tickets_tenant_id_fkey,public,maintenance_tickets,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+offline_kyc_pending_allotment_id_fkey,public,offline_kyc_pending,allotment_id,public,tenant_allotments,id,1,1,CASCADE,NO ACTION,DECLARED
+offline_kyc_pending_created_by_fkey,public,offline_kyc_pending,created_by,auth,users,id,1,1,SET NULL,NO ACTION,DECLARED
+offline_kyc_pending_organization_id_fkey,public,offline_kyc_pending,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+offline_kyc_pending_tenant_id_fkey,public,offline_kyc_pending,tenant_id,public,tenants,id,1,1,CASCADE,NO ACTION,DECLARED
+org_branding_settings_organization_id_fkey,public,org_branding_settings,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+org_email_settings_organization_id_fkey,public,org_email_settings,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+org_tracked_localities_locality_id_fkey,market,org_tracked_localities,locality_id,market,localities,id,1,1,CASCADE,NO ACTION,DECLARED
+org_tracked_localities_organization_id_fkey,market,org_tracked_localities,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+org_whatsapp_settings_organization_id_fkey,public,org_whatsapp_settings,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+organization_bank_accounts_organization_id_fkey,public,organization_bank_accounts,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+organization_subscriptions_organization_id_fkey,public,organization_subscriptions,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+organization_subscriptions_plan_id_fkey,public,organization_subscriptions,plan_id,public,subscription_plans,id,1,1,NO ACTION,NO ACTION,DECLARED
+owner_contracts_apartment_id_fkey,public,owner_contracts,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+owner_contracts_organization_id_fkey,public,owner_contracts,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+owner_contracts_owner_id_fkey,public,owner_contracts,owner_id,public,owners,id,1,1,CASCADE,NO ACTION,DECLARED
+owner_contracts_property_id_fkey,public,owner_contracts,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+owner_payments_apartment_id_fkey,public,owner_payments,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+owner_payments_bank_account_id_fkey,public,owner_payments,bank_account_id,public,organization_bank_accounts,id,1,1,SET NULL,NO ACTION,DECLARED
+owner_payments_contract_id_fkey,public,owner_payments,contract_id,public,owner_contracts,id,1,1,CASCADE,NO ACTION,DECLARED
+owner_payments_organization_id_fkey,public,owner_payments,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+owner_payments_owner_id_fkey,public,owner_payments,owner_id,public,owners,id,1,1,CASCADE,NO ACTION,DECLARED
+owners_organization_id_fkey,public,owners,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+payment_proofs_organization_id_fkey,public,payment_proofs,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+payment_proofs_tenant_id_fkey,public,payment_proofs,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+payroll_company_id_fkey,public,payroll,company_id,public,companies,id,1,1,SET NULL,NO ACTION,DECLARED
+payroll_employee_id_fkey,public,payroll,employee_id,public,employees,id,1,1,CASCADE,NO ACTION,DECLARED
+profiles_id_fkey,public,profiles,id,auth,users,id,1,1,CASCADE,NO ACTION,DECLARED
+profiles_organization_id_fkey,public,profiles,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+properties_organization_id_fkey,public,properties,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+property_embeddings_competitor_id_fkey,market,property_embeddings,competitor_id,market,competitor_properties,id,1,1,CASCADE,NO ACTION,DECLARED
+property_embeddings_organization_id_fkey,market,property_embeddings,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+property_images_organization_id_fkey,public,property_images,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+property_images_property_id_fkey,public,property_images,property_id,public,properties,id,1,1,CASCADE,NO ACTION,DECLARED
+purchase_items_asset_type_id_fkey,public,purchase_items,asset_type_id,public,asset_types,id,1,1,NO ACTION,NO ACTION,DECLARED
+purchase_items_purchase_order_id_fkey,public,purchase_items,purchase_order_id,public,purchase_orders,id,1,1,CASCADE,NO ACTION,DECLARED
+purchase_orders_organization_id_fkey,public,purchase_orders,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+purchase_orders_vendor_id_fkey,public,purchase_orders,vendor_id,public,vendors,id,1,1,NO ACTION,NO ACTION,DECLARED
+receipt_allocations_adjustment_id_fkey,public,receipt_allocations,adjustment_id,public,tenant_adjustments,id,1,1,RESTRICT,NO ACTION,DECLARED
+receipt_allocations_allocated_by_fkey,public,receipt_allocations,allocated_by,auth,users,id,1,1,NO ACTION,NO ACTION,DECLARED
+receipt_allocations_invoice_id_fkey,public,receipt_allocations,invoice_id,public,invoices,id,1,1,RESTRICT,NO ACTION,DECLARED
+receipt_allocations_organization_id_fkey,public,receipt_allocations,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+receipt_allocations_receipt_id_fkey,public,receipt_allocations,receipt_id,public,receipts,id,1,1,CASCADE,NO ACTION,DECLARED
+receipts_bank_account_id_fkey,public,receipts,bank_account_id,public,organization_bank_accounts,id,1,1,SET NULL,NO ACTION,DECLARED
+receipts_organization_id_fkey,public,receipts,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+receipts_tenant_allotment_id_fkey,public,receipts,tenant_allotment_id,public,tenant_allotments,id,1,1,NO ACTION,NO ACTION,DECLARED
+receipts_tenant_id_fkey,public,receipts,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+regular_maintenance_rules_apartment_id_fkey,public,regular_maintenance_rules,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+regular_maintenance_rules_asset_type_id_fkey,public,regular_maintenance_rules,asset_type_id,public,asset_types,id,1,1,NO ACTION,NO ACTION,DECLARED
+regular_maintenance_rules_issue_type_id_fkey,public,regular_maintenance_rules,issue_type_id,public,issue_types,id,1,1,NO ACTION,NO ACTION,DECLARED
+regular_maintenance_rules_organization_id_fkey,public,regular_maintenance_rules,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+regular_maintenance_rules_property_id_fkey,public,regular_maintenance_rules,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+replacement_forecasts_asset_id_fkey,public,replacement_forecasts,asset_id,public,assets,id,1,1,CASCADE,NO ACTION,DECLARED
+review_embeddings_organization_id_fkey,market,review_embeddings,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+review_embeddings_review_id_fkey,market,review_embeddings,review_id,market,competitor_reviews,id,1,1,CASCADE,NO ACTION,DECLARED
+role_permissions_organization_id_fkey,public,role_permissions,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+room_switches_allotment_id_fkey,public,room_switches,allotment_id,public,tenant_allotments,id,1,1,NO ACTION,NO ACTION,DECLARED
+room_switches_new_allotment_id_fkey,public,room_switches,new_allotment_id,public,tenant_allotments,id,1,1,NO ACTION,NO ACTION,DECLARED
+room_switches_new_bed_id_fkey,public,room_switches,new_bed_id,public,beds,id,1,1,NO ACTION,NO ACTION,DECLARED
+room_switches_old_allotment_id_fkey,public,room_switches,old_allotment_id,public,tenant_allotments,id,1,1,NO ACTION,NO ACTION,DECLARED
+room_switches_old_bed_id_fkey,public,room_switches,old_bed_id,public,beds,id,1,1,NO ACTION,NO ACTION,DECLARED
+room_switches_organization_id_fkey,public,room_switches,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+room_switches_tenant_id_fkey,public,room_switches,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+running_bed_maintenance_details_apartment_id_fkey,public,running_bed_maintenance_details,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+running_bed_maintenance_details_bed_id_fkey,public,running_bed_maintenance_details,bed_id,public,beds,id,1,1,NO ACTION,NO ACTION,DECLARED
+running_bed_maintenance_details_organization_id_fkey,public,running_bed_maintenance_details,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+running_bed_maintenance_details_property_id_fkey,public,running_bed_maintenance_details,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+running_bed_maintenance_details_tenant_id_fkey,public,running_bed_maintenance_details,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+running_bed_maintenance_details_ticket_id_fkey,public,running_bed_maintenance_details,ticket_id,public,maintenance_tickets,id,1,1,CASCADE,NO ACTION,DECLARED
+tab_permissions_organization_id_fkey,public,tab_permissions,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+team_attendance_organization_id_fkey,public,team_attendance,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+team_attendance_team_member_id_fkey,public,team_attendance,team_member_id,public,team_members,id,1,1,CASCADE,NO ACTION,DECLARED
+team_departments_organization_id_fkey,public,team_departments,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+team_members_department_id_fkey,public,team_members,department_id,public,team_departments,id,1,1,NO ACTION,NO ACTION,DECLARED
+team_members_organization_id_fkey,public,team_members,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+team_members_user_id_fkey,public,team_members,user_id,auth,users,id,1,1,NO ACTION,NO ACTION,DECLARED
+team_payments_organization_id_fkey,public,team_payments,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+team_payments_team_member_id_fkey,public,team_payments,team_member_id,public,team_members,id,1,1,CASCADE,NO ACTION,DECLARED
+team_salary_bills_organization_id_fkey,public,team_salary_bills,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+team_salary_bills_team_member_id_fkey,public,team_salary_bills,team_member_id,public,team_members,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_absence_records_allotment_id_fkey,public,tenant_absence_records,allotment_id,public,tenant_allotments,id,1,1,SET NULL,NO ACTION,DECLARED
+tenant_absence_records_organization_id_fkey,public,tenant_absence_records,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_absence_records_tenant_id_fkey,public,tenant_absence_records,tenant_id,public,tenants,id,1,1,CASCADE,NO ACTION,DECLARED
+tenant_adjustments_allotment_id_fkey,public,tenant_adjustments,allotment_id,public,tenant_allotments,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_adjustments_apartment_id_fkey,public,tenant_adjustments,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_adjustments_bed_id_fkey,public,tenant_adjustments,bed_id,public,beds,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_adjustments_organization_id_fkey,public,tenant_adjustments,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_adjustments_property_id_fkey,public,tenant_adjustments,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_adjustments_tenant_id_fkey,public,tenant_adjustments,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_allotments_apartment_id_fkey,public,tenant_allotments,apartment_id,public,apartments,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_allotments_bed_id_fkey,public,tenant_allotments,bed_id,public,beds,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_allotments_organization_id_fkey,public,tenant_allotments,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_allotments_property_id_fkey,public,tenant_allotments,property_id,public,properties,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_allotments_tenant_id_fkey,public,tenant_allotments,tenant_id,public,tenants,id,1,1,CASCADE,NO ACTION,DECLARED
+tenant_document_history_allotment_id_fkey,public,tenant_document_history,allotment_id,public,tenant_allotments,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_document_history_tenant_id_fkey,public,tenant_document_history,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_exits_allotment_id_fkey,public,tenant_exits,allotment_id,public,tenant_allotments,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_exits_bed_id_fkey,public,tenant_exits,bed_id,public,beds,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_exits_organization_id_fkey,public,tenant_exits,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_exits_tenant_id_fkey,public,tenant_exits,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_notices_allotment_id_fkey,public,tenant_notices,allotment_id,public,tenant_allotments,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_notices_bed_id_fkey,public,tenant_notices,bed_id,public,beds,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_notices_organization_id_fkey,public,tenant_notices,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_notices_tenant_id_fkey,public,tenant_notices,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_remarks_tenant_id_fkey,public,tenant_remarks,tenant_id,public,tenants,id,1,1,CASCADE,NO ACTION,DECLARED
+tenant_transactions_allotment_id_fkey,public,tenant_transactions,allotment_id,public,tenant_allotments,id,1,1,CASCADE,NO ACTION,DECLARED
+tenant_transactions_organization_id_fkey,public,tenant_transactions,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenant_transactions_tenant_id_fkey,public,tenant_transactions,tenant_id,public,tenants,id,1,1,CASCADE,NO ACTION,DECLARED
+tenants_organization_id_fkey,public,tenants,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+tenants_org_property_fk,public,tenants,organization_id,public,properties,organization_id,2,2,RESTRICT,RESTRICT,DECLARED
+tenants_org_property_fk,public,tenants,property_id,public,properties,id,1,2,RESTRICT,RESTRICT,DECLARED
+tenants_user_id_fkey,public,tenants,user_id,auth,users,id,1,1,NO ACTION,NO ACTION,DECLARED
+ticket_cost_estimates_organization_id_fkey,public,ticket_cost_estimates,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+ticket_cost_estimates_ticket_id_fkey,public,ticket_cost_estimates,ticket_id,public,maintenance_tickets,id,1,1,CASCADE,NO ACTION,DECLARED
+ticket_logs_ticket_id_fkey,public,ticket_logs,ticket_id,public,maintenance_tickets,id,1,1,CASCADE,NO ACTION,DECLARED
+ticket_number_counters_organization_id_fkey,public,ticket_number_counters,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+ticket_number_counters_property_id_fkey,public,ticket_number_counters,property_id,public,properties,id,1,1,CASCADE,NO ACTION,DECLARED
+ticket_purchases_cost_estimate_id_fkey,public,ticket_purchases,cost_estimate_id,public,ticket_cost_estimates,id,1,1,NO ACTION,NO ACTION,DECLARED
+ticket_purchases_organization_id_fkey,public,ticket_purchases,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+ticket_purchases_ticket_id_fkey,public,ticket_purchases,ticket_id,public,maintenance_tickets,id,1,1,CASCADE,NO ACTION,DECLARED
+fk_ticket,public,ticket_purchases,ticket_id,public,maintenance_tickets,id,1,1,CASCADE,NO ACTION,DECLARED
+fk_vendor,public,ticket_purchases,vendor_id,public,vendors,id,1,1,SET NULL,NO ACTION,DECLARED
+ticket_purchases_vendor_id_fkey,public,ticket_purchases,vendor_id,public,vendors,id,1,1,NO ACTION,NO ACTION,DECLARED
+ticket_resolutions_bank_account_id_fkey,public,ticket_resolutions,bank_account_id,public,organization_bank_accounts,id,1,1,SET NULL,NO ACTION,DECLARED
+ticket_resolutions_ticket_id_fkey,public,ticket_resolutions,ticket_id,public,maintenance_tickets,id,1,1,CASCADE,NO ACTION,DECLARED
+ticket_resolutions_vendor_id_fkey,public,ticket_resolutions,vendor_id,public,vendors,id,1,1,NO ACTION,NO ACTION,DECLARED
+user_roles_user_id_fkey,public,user_roles,user_id,auth,users,id,1,1,CASCADE,NO ACTION,DECLARED
+users_reports_to_fkey,public,users,reports_to,public,users,id,1,1,NO ACTION,NO ACTION,DECLARED
+vendor_remarks_vendor_id_fkey,public,vendor_remarks,vendor_id,public,vendors,id,1,1,CASCADE,NO ACTION,DECLARED
+vendors_organization_id_fkey,public,vendors,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+whatsapp_conversations_last_event_id_fkey,public,whatsapp_conversations,last_event_id,public,whatsapp_events,id,1,1,NO ACTION,NO ACTION,DECLARED
+whatsapp_conversations_organization_id_fkey,public,whatsapp_conversations,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+whatsapp_conversations_tenant_id_fkey,public,whatsapp_conversations,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+whatsapp_dedup_event_id_fkey,public,whatsapp_dedup,event_id,public,whatsapp_events,id,1,1,CASCADE,NO ACTION,DECLARED
+whatsapp_events_organization_id_fkey,public,whatsapp_events,organization_id,public,organizations,id,1,1,NO ACTION,NO ACTION,DECLARED
+whatsapp_events_tenant_id_fkey,public,whatsapp_events,tenant_id,public,tenants,id,1,1,NO ACTION,NO ACTION,DECLARED
+whatsapp_failures_event_id_fkey,public,whatsapp_failures,event_id,public,whatsapp_events,id,1,1,CASCADE,NO ACTION,DECLARED
+whatsapp_payment_submissions_matched_invoice_id_fkey,public,whatsapp_payment_submissions,matched_invoice_id,public,invoices,id,1,1,SET NULL,NO ACTION,DECLARED
+whatsapp_payment_submissions_organization_id_fkey,public,whatsapp_payment_submissions,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+whatsapp_payment_submissions_receipt_id_fkey,public,whatsapp_payment_submissions,receipt_id,public,receipts,id,1,1,SET NULL,NO ACTION,DECLARED
+whatsapp_payment_submissions_tenant_id_fkey,public,whatsapp_payment_submissions,tenant_id,public,tenants,id,1,1,SET NULL,NO ACTION,DECLARED
+whatsapp_payment_submissions_verified_by_fkey,public,whatsapp_payment_submissions,verified_by,auth,users,id,1,1,SET NULL,NO ACTION,DECLARED
+whatsapp_payment_submissions_whatsapp_event_id_fkey,public,whatsapp_payment_submissions,whatsapp_event_id,public,whatsapp_events,id,1,1,SET NULL,NO ACTION,DECLARED
+whatsapp_send_deliveries_job_id_fkey,public,whatsapp_send_deliveries,job_id,public,whatsapp_send_jobs,id,1,1,CASCADE,NO ACTION,DECLARED
+whatsapp_send_deliveries_organization_id_fkey,public,whatsapp_send_deliveries,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED
+whatsapp_send_jobs_created_by_fkey,public,whatsapp_send_jobs,created_by,auth,users,id,1,1,SET NULL,NO ACTION,DECLARED
+whatsapp_send_jobs_organization_id_fkey,public,whatsapp_send_jobs,organization_id,public,organizations,id,1,1,CASCADE,NO ACTION,DECLARED

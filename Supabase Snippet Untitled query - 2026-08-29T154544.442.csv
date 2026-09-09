@@ -1,0 +1,2 @@
+id,organization_id,plan_id,status,billing_cycle,current_period_start,current_period_end,trial_ends_at,cancelled_at,cancel_reason,created_at,updated_at
+404c6742-ae36-4052-8f39-0a8f953c4b42,00000000-0000-0000-0000-000000000001,c15ae425-603f-4ec2-9fa7-02b82cc7fa8f,active,monthly,2026-04-05,2027-04-05,null,null,null,2026-04-05 12:25:57.899319+00,2026-04-05 12:25:57.899319+00

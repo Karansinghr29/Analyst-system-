@@ -1,0 +1,4 @@
+definition,denominator,numerator
+"A: v_occupancy (Live beds, Staying only)",195,168
+"B: Live beds, Staying + On-Notice",195,175
+"C: ALL beds, Staying + On-Notice",203,175

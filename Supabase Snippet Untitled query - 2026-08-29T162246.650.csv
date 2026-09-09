@@ -1,0 +1,305 @@
+schema_name,routine_name,arguments,return_type,definition
+public,get_occupancy_intelligence,"p_org uuid, p_from date, p_to date",jsonb,"CREATE OR REPLACE FUNCTION public.get_occupancy_intelligence(p_org uuid, p_from date, p_to date)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  v_now  date := current_date;
+  v_to   date := least(p_to, current_date);   -- never count the future
+  result jsonb;
+begin
+  if p_org is null or p_from is null or v_to is null then
+    return jsonb_build_object('window', jsonb_build_object('from', p_from, 'to', v_to),
+      'properties','[]'::jsonb,'apartments','[]'::jsonb,'bedTypes','[]'::jsonb,
+      'beds','[]'::jsonb,'monthlyTrend','[]'::jsonb,'heatmap','[]'::jsonb);
+  end if;
+
+  with
+  live_bed as (
+    select b.id as bed_id, b.bed_code, b.apartment_id,
+           a.apartment_code, a.property_id, p.property_name,
+           (coalesce(b.bed_type::text,'?')
+             || case when b.toilet_type is not null then ' ' || b.toilet_type::text else '' end) as bed_type_label,
+           greatest(coalesce(a.start_date, p_from), p_from)            as avail_from,
+           least(coalesce(a.end_date, v_now), v_to)                    as avail_to
+    from beds b
+    join apartments a on a.id = b.apartment_id and a.status = 'Live'
+    join properties p on p.id = a.property_id
+    where b.organization_id = p_org and b.status = 'Live'
+  ),
+  bed_avail as (
+    select lb.*, greatest((avail_to - avail_from) + 1, 0) as available_days
+    from live_bed lb
+  ),
+  -- All stints (full history) for the live beds. occ_from/occ_to are clamped to the bed's
+  -- AVAILABILITY window (not just [p_from, v_to]) so occupied can never exceed available.
+  stint as (
+    select ba.bed_id, ba.apartment_id, ba.property_id,
+           ta.tenant_id, ta.staying_status, ta.onboarding_date, ta.actual_exit_date,
+           ta.monthly_rental,
+           greatest(ta.onboarding_date, ba.avail_from)                 as occ_from,
+           least(coalesce(ta.actual_exit_date, v_now), ba.avail_to)    as occ_to
+    from tenant_allotments ta
+    join bed_avail ba on ba.bed_id = ta.bed_id
+    where ta.organization_id = p_org
+      and ta.staying_status in ('Staying','On-Notice','Exited')
+      and ta.onboarding_date is not null
+  ),
+  -- Merge overlapping/adjacent occupied intervals per bed (gaps-and-islands) so overlapping
+  -- stints are not double-counted. occ_from/occ_to are already clamped to availability.
+  occ_ord as (
+    select bed_id, occ_from as f, occ_to as t,
+           max(occ_to) over (partition by bed_id order by occ_from
+                             rows between unbounded preceding and 1 preceding) as prev_max
+    from stint
+    where occ_to >= occ_from
+  ),
+  occ_grp as (
+    select bed_id, f, t,
+           sum(case when prev_max is null or f > prev_max then 1 else 0 end)
+             over (partition by bed_id order by f) as g
+    from occ_ord
+  ),
+  occ_merged as (
+    select bed_id, min(f) as f, max(t) as t
+    from occ_grp group by bed_id, g
+  ),
+  occ_by_bed as (
+    select bed_id, sum((t - f) + 1) as occupied_days
+    from occ_merged group by bed_id
+  ),
+  -- Vacancy fill gaps: gap between a stint's exit and the next stint's onboarding.
+  fill_raw as (
+    select bed_id,
+           onboarding_date - lag(actual_exit_date) over (partition by bed_id order by onboarding_date) as gap
+    from stint
+  ),
+  fill_agg as (
+    select bed_id,
+           avg(gap)                            filter (where gap > 0) as avg_fill,
+           percentile_cont(0.5) within group (order by gap) filter (where gap > 0) as median_fill,
+           min(gap)                            filter (where gap > 0) as min_fill,
+           max(gap)                            filter (where gap > 0) as max_fill
+    from fill_raw group by bed_id
+  ),
+  stay_agg as (
+    select bed_id,
+           avg(actual_exit_date - onboarding_date) filter (where actual_exit_date is not null) as avg_stay,
+           count(*)                                filter (where actual_exit_date is not null) as exited_count
+    from stint group by bed_id
+  ),
+  bed_rent as (
+    select distinct on (bed_id) bed_id, coalesce(monthly_rental, 0) as monthly_rental
+    from stint order by bed_id, onboarding_date desc
+  ),
+  status_now as (
+    select distinct on (ta.bed_id) ta.bed_id,
+           case ta.staying_status
+             when 'Staying'  then 'occupied'
+             when 'On-Notice' then 'notice'
+             when 'Booked'   then 'booked'
+             else 'vacant' end as status_now
+    from tenant_allotments ta
+    where ta.organization_id = p_org
+      and ta.staying_status in ('Staying','On-Notice','Booked')
+      and (ta.actual_exit_date is null or ta.actual_exit_date >= v_now)
+    order by ta.bed_id, ta.onboarding_date desc
+  ),
+  bed_metric as (
+    select ba.bed_id, ba.bed_code, ba.apartment_id, ba.apartment_code, ba.property_id,
+           ba.property_name, ba.bed_type_label, ba.available_days,
+           coalesce(o.occupied_days,0)                                  as occupied_days,
+           greatest(ba.available_days - coalesce(o.occupied_days,0), 0) as vacant_days,
+           case when ba.available_days > 0
+                then least(round(100.0 * coalesce(o.occupied_days,0) / ba.available_days, 2), 100) else 0 end as occupancy_pct,
+           round(f.avg_fill::numeric, 1) as avg_fill, round(f.median_fill::numeric, 1) as median_fill,
+           f.min_fill, f.max_fill,
+           round(s.avg_stay::numeric, 1) as avg_stay,
+           case when ba.available_days > 0
+                then round(coalesce(s.exited_count,0)::numeric / ba.available_days * 365, 3) else 0 end as turnover,
+           round((coalesce(r.monthly_rental,0) * coalesce(o.occupied_days,0) / 30.0)::numeric, 0) as realized_revenue,
+           round((coalesce(r.monthly_rental,0) * ba.available_days / 30.0)::numeric, 0)           as potential_revenue,
+           coalesce(sn.status_now, 'vacant') as status_now
+    from bed_avail ba
+    left join occ_by_bed o using (bed_id)
+    left join fill_agg   f using (bed_id)
+    left join stay_agg   s using (bed_id)
+    left join bed_rent   r using (bed_id)
+    left join status_now sn using (bed_id)
+  ),
+  bed_norm as (
+    select bm.*,
+           min(occupancy_pct) over () mn_occ,  max(occupancy_pct) over () mx_occ,
+           min(avg_fill)      over () mn_fill, max(avg_fill)      over () mx_fill,
+           min(avg_stay)      over () mn_stay, max(avg_stay)      over () mx_stay,
+           min(turnover)      over () mn_to,   max(turnover)      over () mx_to
+    from bed_metric bm
+  ),
+  bed_score as (
+    select bn.*,
+      round(
+          40 * coalesce((occupancy_pct - mn_occ) / nullif(mx_occ - mn_occ, 0), 0.5)
+        + 30 * (1 - coalesce((avg_fill - mn_fill) / nullif(mx_fill - mn_fill, 0), 0.5))
+        + 20 * coalesce((avg_stay - mn_stay) / nullif(mx_stay - mn_stay, 0), 0.5)
+        + 10 * (1 - coalesce((turnover - mn_to) / nullif(mx_to - mn_to, 0), 0.5))
+      , 1) as score
+    from bed_norm bn
+  ),
+  -- Month buckets for trend + heatmap.
+  months as (
+    select generate_series(date_trunc('month', p_from)::date,
+                           date_trunc('month', v_to)::date,
+                           interval '1 month')::date as m_start
+  ),
+  am_avail as (
+    select ba.apartment_id, ba.apartment_code, ba.property_id, m.m_start,
+           sum(greatest(
+             least(ba.avail_to, (m.m_start + interval '1 month - 1 day')::date)
+             - greatest(ba.avail_from, m.m_start) + 1, 0)) as avail_days
+    from bed_avail ba cross join months m
+    group by 1,2,3,4
+  ),
+  am_occ as (
+    select ba.apartment_id, m.m_start,
+           sum(greatest(
+             least(om.t, (m.m_start + interval '1 month - 1 day')::date)
+             - greatest(om.f, m.m_start) + 1, 0)) as occ_days
+    from occ_merged om
+    join bed_avail ba on ba.bed_id = om.bed_id
+    cross join months m
+    group by 1,2
+  ),
+  heat as (
+    select a.apartment_id, a.apartment_code, a.property_id,
+           to_char(a.m_start, 'YYYY-MM') as month,
+           case when a.avail_days > 0
+                then least(round(100.0 * coalesce(o.occ_days,0) / a.avail_days, 1), 100) else 0 end as occupancy_pct
+    from am_avail a
+    left join am_occ o on o.apartment_id = a.apartment_id and o.m_start = a.m_start
+  ),
+  trend as (
+    select a.property_id, to_char(a.m_start, 'YYYY-MM') as month,
+           case when sum(a.avail_days) > 0
+                then least(round(100.0 * sum(coalesce(o.occ_days,0)) / sum(a.avail_days), 1), 100) else 0 end as occupancy_pct
+    from am_avail a
+    left join am_occ o on o.apartment_id = a.apartment_id and o.m_start = a.m_start
+    group by a.property_id, a.m_start
+  ),
+  apt as (
+    select apartment_id, max(apartment_code) apartment_code, max(property_id::text)::uuid property_id,
+           count(*) total_beds,
+           count(*) filter (where status_now in ('occupied','notice')) occupied_beds_now,
+           round(avg(occupancy_pct), 2) occupancy_pct,
+           round(avg(avg_fill), 1) avg_fill_days,
+           round(avg(vacant_days), 1) avg_vacant_days,
+           round(avg(turnover), 3) turnover,
+           round(avg(avg_stay), 1) avg_stay_days,
+           round(avg(score), 1) score
+    from bed_score group by apartment_id
+  ),
+  apt_best as (select distinct on (apartment_id) apartment_id, bed_code from bed_score order by apartment_id, score desc nulls last),
+  apt_worst as (select distinct on (apartment_id) apartment_id, bed_code from bed_score order by apartment_id, score asc nulls last),
+  apt_lvac as (select distinct on (apartment_id) apartment_id, bed_code from bed_score order by apartment_id, vacant_days desc nulls last),
+  prop as (
+    select property_id, max(property_name) property_name,
+           count(*) total_beds,
+           count(*) filter (where status_now in ('occupied','notice')) occupied_beds_now,
+           round(avg(occupancy_pct), 2) occupancy_pct,
+           round(avg(avg_fill), 1) avg_fill_days,
+           round(avg(vacant_days), 1) avg_vacant_days,
+           sum(occupied_days) total_tenant_days,
+           sum(vacant_days)   total_vacant_days,
+           round(avg(turnover), 3) turnover,
+           round(avg(avg_stay), 1) avg_stay_days,
+           round(avg(score), 1) score
+    from bed_score group by property_id
+  ),
+  prop_hi as (select distinct on (property_id) property_id, apartment_code from apt order by property_id, occupancy_pct desc nulls last),
+  prop_lo as (select distinct on (property_id) property_id, apartment_code from apt order by property_id, occupancy_pct asc nulls last),
+  prop_best as (select distinct on (property_id) property_id, bed_code from bed_score order by property_id, score desc nulls last),
+  prop_worst as (select distinct on (property_id) property_id, bed_code from bed_score order by property_id, score asc nulls last),
+  btype as (
+    select bed_type_label,
+           count(*) total_beds,
+           sum(occupied_days) occupied_days,
+           sum(vacant_days)   vacant_days,
+           case when sum(available_days) > 0
+                then least(round(100.0 * sum(occupied_days) / sum(available_days), 2), 100) else 0 end occupancy_pct,
+           round(avg(avg_fill), 1) avg_fill_days,
+           round(avg(avg_stay), 1) avg_stay_days,
+           round(avg(turnover), 3) turnover,
+           round(sum(realized_revenue), 0) realized_revenue,
+           round(sum(potential_revenue), 0) potential_revenue
+    from bed_score group by bed_type_label
+  )
+  select jsonb_build_object(
+    'window', jsonb_build_object('from', p_from, 'to', v_to),
+    'properties', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'property_id', pr.property_id, 'property_name', pr.property_name,
+        'total_beds', pr.total_beds, 'occupied_beds_now', pr.occupied_beds_now,
+        'occupancy_pct', pr.occupancy_pct, 'avg_fill_days', pr.avg_fill_days,
+        'avg_vacant_days', pr.avg_vacant_days, 'total_tenant_days', pr.total_tenant_days,
+        'total_vacant_days', pr.total_vacant_days, 'turnover', pr.turnover,
+        'avg_stay_days', pr.avg_stay_days, 'score', pr.score,
+        'highest_apartment_code', hi.apartment_code, 'lowest_apartment_code', lo.apartment_code,
+        'best_bed_code', bb.bed_code, 'worst_bed_code', wb.bed_code
+      ) order by pr.occupancy_pct desc)
+      from prop pr
+      left join prop_hi hi using (property_id) left join prop_lo lo using (property_id)
+      left join prop_best bb using (property_id) left join prop_worst wb using (property_id)
+    ), '[]'::jsonb),
+    'apartments', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'apartment_id', ap.apartment_id, 'apartment_code', ap.apartment_code, 'property_id', ap.property_id,
+        'total_beds', ap.total_beds, 'occupied_beds_now', ap.occupied_beds_now,
+        'occupancy_pct', ap.occupancy_pct, 'avg_fill_days', ap.avg_fill_days,
+        'avg_vacant_days', ap.avg_vacant_days, 'turnover', ap.turnover,
+        'avg_stay_days', ap.avg_stay_days, 'score', ap.score,
+        'best_bed_code', ab.bed_code, 'worst_bed_code', aw.bed_code, 'longest_vacant_bed_code', al.bed_code
+      ) order by ap.occupancy_pct desc)
+      from apt ap
+      left join apt_best ab using (apartment_id) left join apt_worst aw using (apartment_id)
+      left join apt_lvac al using (apartment_id)
+    ), '[]'::jsonb),
+    'bedTypes', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'bed_type_label', t.bed_type_label, 'total_beds', t.total_beds,
+        'occupied_days', t.occupied_days, 'vacant_days', t.vacant_days,
+        'occupancy_pct', t.occupancy_pct, 'avg_fill_days', t.avg_fill_days,
+        'avg_stay_days', t.avg_stay_days, 'turnover', t.turnover,
+        'realized_revenue', t.realized_revenue, 'potential_revenue', t.potential_revenue
+      ) order by t.occupancy_pct desc) from btype t
+    ), '[]'::jsonb),
+    'beds', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'bed_id', bs.bed_id, 'bed_code', bs.bed_code, 'apartment_id', bs.apartment_id,
+        'apartment_code', bs.apartment_code, 'property_id', bs.property_id, 'property_name', bs.property_name,
+        'bed_type_label', bs.bed_type_label, 'available_days', bs.available_days,
+        'occupied_days', bs.occupied_days, 'vacant_days', bs.vacant_days, 'occupancy_pct', bs.occupancy_pct,
+        'avg_fill_days', bs.avg_fill, 'median_fill_days', bs.median_fill,
+        'min_fill_days', bs.min_fill, 'max_fill_days', bs.max_fill,
+        'avg_stay_days', bs.avg_stay, 'turnover', bs.turnover,
+        'realized_revenue', bs.realized_revenue, 'potential_revenue', bs.potential_revenue,
+        'score', bs.score, 'status_now', bs.status_now
+      ) order by bs.score desc) from bed_score bs
+    ), '[]'::jsonb),
+    'monthlyTrend', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'property_id', tr.property_id, 'month', tr.month, 'occupancy_pct', tr.occupancy_pct
+      ) order by tr.month) from trend tr
+    ), '[]'::jsonb),
+    'heatmap', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'apartment_id', h.apartment_id, 'apartment_code', h.apartment_code, 'property_id', h.property_id,
+        'month', h.month, 'occupancy_pct', h.occupancy_pct
+      ) order by h.apartment_code, h.month) from heat h
+    ), '[]'::jsonb)
+  ) into result;
+
+  return result;
+end;
+$function$
+"

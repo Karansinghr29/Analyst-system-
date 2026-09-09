@@ -1,0 +1,50 @@
+metric_id,trust_level,permitted_widget,permitted_chart,forbidden_visuals,series_available,reason_no_chart
+M.REV.001,SAFE,kpi_card,line,,True,
+M.REV.002,SAFE,kpi_card,line,,True,
+M.COL.001,DISCLOSE,kpi_card_with_caveat,line,,True,
+M.COL.002,DISCLOSE,kpi_card_with_caveat,line,,True,
+M.COL.003,DISCLOSE,kpi_card_with_caveat,line,,True,
+M.INV.001,DISCLOSE,kpi_card_with_caveat,line,,True,
+M.INV.002,DISCLOSE,kpi_card_with_caveat,none,,False,no month-keyed series exists for this metric
+M.AR.001A,SHOW_BOTH,multi_definition_panel,multi_definition_bar,kpi_card;single_value;line;gauge;sparkline,False,
+M.AR.001B,SHOW_BOTH,multi_definition_panel,multi_definition_bar,kpi_card;single_value;line;gauge;sparkline,False,
+M.AR.001C,BLOCK,conflict_panel_no_headline,none,kpi_card;single_value;line;bar;gauge;sparkline;multi_definition_bar,False,competing definitions -- a single series would pick one
+M.AR.001D,BLOCK,conflict_panel_no_headline,none,kpi_card;single_value;line;bar;gauge;sparkline;multi_definition_bar,False,competing definitions -- a single series would pick one
+M.AR.002,BLOCK,conflict_panel_no_headline,none,kpi_card;single_value;line;bar;gauge;sparkline;multi_definition_bar,False,competing definitions -- a single series would pick one
+M.AR.003,SHOW_BOTH,multi_definition_panel,multi_definition_bar,kpi_card;single_value;line;gauge;sparkline,False,
+M.DEP.001,SAFE,kpi_card,none,,False,no month-keyed series exists for this metric
+M.DEP.002,DISCLOSE,kpi_card_with_caveat,line,,True,
+M.DEP.003,DISCLOSE,kpi_card_with_caveat,none,,False,no month-keyed series exists for this metric
+M.EXP.001,SAFE,kpi_card,line,,True,
+M.EXP.002,DISCLOSE,kpi_card_with_caveat,line,,True,
+M.OWN.001,SAFE,kpi_card,line,,True,
+M.OWN.002,SHOW_BOTH,multi_definition_panel,multi_definition_bar,kpi_card;single_value;line;gauge;sparkline,False,
+M.PROFIT.001,BLOCK,conflict_panel_no_headline,none,kpi_card;single_value;line;bar;gauge;sparkline;multi_definition_bar,False,competing definitions -- a single series would pick one
+M.PNL.001,SAFE,kpi_card,line,,True,
+M.CASH.001,SAFE,kpi_card,none,,False,no month-keyed series exists for this metric
+M.TB.001,SAFE,kpi_card,none,,False,no month-keyed series exists for this metric
+M.OCC.001,SHOW_BOTH,multi_definition_panel,multi_definition_bar,kpi_card;single_value;line;gauge;sparkline,False,
+M.OCC.002,SHOW_BOTH,multi_definition_panel,multi_definition_bar,kpi_card;single_value;line;gauge;sparkline,False,
+M.OCC.003,NOT_DETERMINABLE,not_determinable_notice,none,kpi_card;single_value;line;bar;gauge;sparkline;zero_placeholder,False,no exported reference exists. Not determinable from exported evidence.
+M.OCC.004,NOT_DETERMINABLE,not_determinable_notice,none,kpi_card;single_value;line;bar;gauge;sparkline;zero_placeholder,False,no exported reference exists. Not determinable from exported evidence.
+M.TEN.001,SAFE,kpi_card,none,,False,no month-keyed series exists for this metric
+M.TEN.002,SAFE,kpi_card,none,,False,no month-keyed series exists for this metric
+M.TEN.003,SAFE,kpi_card,none,,False,no month-keyed series exists for this metric
+M.OCC.005,SHOW_BOTH,multi_definition_panel,none,kpi_card;single_value;line;gauge;sparkline,False,competing definitions -- a single series would pick one
+M.LIFE.001,SAFE,kpi_card,none,,False,no month-keyed series exists for this metric
+M.LIFE.002,SAFE,kpi_card,line,,True,
+M.LIFE.003,SAFE,kpi_card,line,,True,
+M.LIFE.004,SAFE,kpi_card,none,,False,no month-keyed series exists for this metric
+M.MAINT.001,SAFE,kpi_card,line,,True,
+M.MAINT.002,SAFE,kpi_card,line,,True,
+M.EB.001,DISCLOSE,kpi_card_with_caveat,line,,True,
+M.EB.002,DISCLOSE,kpi_card_with_caveat,line,,True,
+M.RISK.001,BLOCK,conflict_panel_no_headline,none,kpi_card;single_value;line;bar;gauge;sparkline;multi_definition_bar,False,competing definitions -- a single series would pick one
+M.RISK.002,DISCLOSE,kpi_card_with_caveat,none,,False,no month-keyed series exists for this metric
+M.RISK.003,DISCLOSE,kpi_card_with_caveat,none,,False,no month-keyed series exists for this metric
+M.RISK.004,DISCLOSE,kpi_card_with_caveat,none,,False,no month-keyed series exists for this metric
+M.RISK.005,DISCLOSE,kpi_card_with_caveat,line,,True,
+M.RISK.006,DISCLOSE,kpi_card_with_caveat,none,,False,no month-keyed series exists for this metric
+M.RISK.007,DISCLOSE,kpi_card_with_caveat,none,,False,no month-keyed series exists for this metric
+M.RISK.008,DISCLOSE,kpi_card_with_caveat,none,,False,no month-keyed series exists for this metric
+M.RISK.009,SAFE,kpi_card,none,,False,no month-keyed series exists for this metric

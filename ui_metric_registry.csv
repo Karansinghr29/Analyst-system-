@@ -1,0 +1,50 @@
+metric_id,display_name,domain,trust_level,owner_label,badge,tone,headline_permitted,widget,chart_type,definition_count,has_caveat,conflict_ids,dq_ids,validation_status,drilldown_dimensions,evidence_count
+M.REV.001,"Revenue (total, ledger-derived)",Financial,SAFE,Reliable,Verified,neutral,True,kpi_card,line,0,False,,,MATCH,allotment_id;bed_id;month;tenant_id,5
+M.REV.002,Revenue by month,Financial,SAFE,Reliable,Verified,neutral,True,kpi_card,line,0,False,,,DIFFERS,allotment_id;bed_id;month;tenant_id,4
+M.COL.001,Collections (application-level),Financial,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,line,0,True,C.014,DQ.006;DQ.014,MATCH,allotment_id;bed_id;month;tenant_id,3
+M.COL.002,Collections by month,Financial,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,line,0,True,C.014,DQ.006;DQ.014,UNVERIFIED,allotment_id;bed_id;month;tenant_id,1
+M.COL.003,Collections (ledger-derived),Financial,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,line,0,True,C.014,DQ.006;DQ.030,MATCH,allotment_id;bed_id;month;tenant_id,4
+M.INV.001,Invoice billed amount,Financial,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,line,0,True,C.015;C.020,DQ.007;DQ.013,MATCH,allotment_id;bed_id;month;tenant_id,1
+M.INV.002,Invoice count,Financial,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,none,0,True,,DQ.013,UNVERIFIED,allotment_id;bed_id;tenant_id,1
+M.AR.001A,Tenant dues -- Def A: v_outstanding_receivables (reversals excluded),Financial,SHOW_BOTH,Multiple definitions — review both,Definitions differ,conflict,False,multi_definition_panel,multi_definition_bar,4,True,C.001;C.002;C.005,DQ.002,MATCH,allotment_id;bed_id;tenant_id,4
+M.AR.001B,Tenant dues -- Def B: v_tenant_current_dues (reversals included),Financial,SHOW_BOTH,Multiple definitions — review both,Definitions differ,conflict,False,multi_definition_panel,multi_definition_bar,4,True,C.001;C.002;C.005,DQ.002,MATCH,allotment_id;bed_id;tenant_id,4
+M.AR.001C,Tenant dues -- Def C: application tenant_allotments.balance_due,Financial,BLOCK,No single reliable figure — definitions conflict,Conflict,conflict,False,conflict_panel_no_headline,none,4,True,C.001;C.005,DQ.002,MATCH,allotment_id;bed_id;tenant_id,1
+M.AR.001D,Tenant dues -- Def D: tenant_transactions (frozen legacy ledger),Financial,BLOCK,No single reliable figure — definitions conflict,Conflict,conflict,False,conflict_panel_no_headline,none,4,True,C.001;C.003;C.005,DQ.002;DQ.019;DQ.023,MATCH,allotment_id;bed_id;tenant_id,1
+M.AR.002,Tenant dues by tenant,Financial,BLOCK,No single reliable figure — definitions conflict,Conflict,conflict,False,conflict_panel_no_headline,none,4,True,C.001;C.003;C.005,DQ.002;DQ.019,DIFFERS,allotment_id;bed_id;tenant_id,2
+M.AR.003,Tenant dues by property,Financial,SHOW_BOTH,Multiple definitions — review both,Definitions differ,conflict,False,multi_definition_panel,multi_definition_bar,4,True,C.001;C.002,DQ.002,UNVERIFIED,allotment_id;bed_id;tenant_id,6
+M.DEP.001,Deposit held,Financial,SAFE,Reliable,Verified,neutral,True,kpi_card,none,0,False,,DQ.011;DQ.012,MATCH,allotment_id;bed_id;tenant_id,4
+M.DEP.002,Deposit settlements,Financial,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,line,0,True,C.016,DQ.008;DQ.012,MATCH,allotment_id;bed_id;month;tenant_id,2
+M.DEP.003,Deposit refunds,Financial,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,none,0,True,C.016,DQ.008,UNVERIFIED,allotment_id;bed_id;tenant_id,5
+M.EXP.001,"Expenses (total, ledger-derived)",Financial,SAFE,Reliable,Verified,neutral,True,kpi_card,line,0,False,,,MATCH,allotment_id;bed_id;month;tenant_id,4
+M.EXP.002,Expenses by category,Financial,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,line,0,True,C.012;C.013;C.022,DQ.015,MATCH,allotment_id;bed_id;month;tenant_id,5
+M.OWN.001,Owner payments (source total),Financial,SAFE,Reliable,Verified,neutral,True,kpi_card,line,0,False,,DQ.017;DQ.020,MATCH,allotment_id;bed_id;month;tenant_id,1
+M.OWN.002,"Owner rent (ledger bucket, 3 definitions)",Financial,SHOW_BOTH,Multiple definitions — review both,Definitions differ,conflict,False,multi_definition_panel,multi_definition_bar,3,True,C.010;C.011,DQ.016;DQ.017;DQ.020,MATCH,allotment_id;bed_id;month;tenant_id,6
+M.PROFIT.001,Gross/net profit (3 definitions),Financial,BLOCK,No single reliable figure — definitions conflict,Conflict,conflict,False,conflict_panel_no_headline,none,3,True,C.010;C.011,DQ.016;DQ.017,PARTIAL,allotment_id;bed_id;month;tenant_id,6
+M.PNL.001,P&L by month,Financial,SAFE,Reliable,Verified,neutral,True,kpi_card,line,0,False,C.012;C.013,DQ.015,UNVERIFIED,allotment_id;bed_id;month;tenant_id,4
+M.CASH.001,Cash balance,Financial,SAFE,Reliable,Verified,neutral,True,kpi_card,none,0,False,,,UNVERIFIED,allotment_id;bed_id;tenant_id,4
+M.TB.001,Trial balance / accounting checks,Financial,SAFE,Reliable,Verified,neutral,True,kpi_card,none,0,False,C.002,,MATCH,allotment_id;bed_id;tenant_id,6
+M.OCC.001,Current occupancy (5+ definitions),Operations,SHOW_BOTH,Multiple definitions — review both,Definitions differ,conflict,False,multi_definition_panel,multi_definition_bar,5,True,C.006;C.007;C.008;C.009,DQ.004;DQ.005,MATCH,allotment_id;bed_id;month;tenant_id,6
+M.OCC.002,Occupancy by property,Operations,SHOW_BOTH,Multiple definitions — review both,Definitions differ,conflict,False,multi_definition_panel,multi_definition_bar,5,True,C.006;C.007;C.008;C.009,DQ.004;DQ.005,UNVERIFIED,allotment_id;bed_id;tenant_id,1
+M.OCC.003,Occupancy by apartment,Operations,NOT_DETERMINABLE,Cannot be determined from the available evidence,Unavailable,unavailable,False,not_determinable_notice,none,0,True,C.006;C.008,DQ.004,,allotment_id;bed_id;month;tenant_id,4
+M.OCC.004,Occupancy by bed,Operations,NOT_DETERMINABLE,Cannot be determined from the available evidence,Unavailable,unavailable,False,not_determinable_notice,none,0,True,C.008,,,allotment_id;bed_id;tenant_id,5
+M.TEN.001,Staying tenants,Operations,SAFE,Reliable,Verified,neutral,True,kpi_card,none,0,False,,DQ.003,MATCH,allotment_id;bed_id;tenant_id,2
+M.TEN.002,On-Notice tenants,Operations,SAFE,Reliable,Verified,neutral,True,kpi_card,none,0,False,C.009,DQ.005,MATCH,allotment_id;bed_id;tenant_id,2
+M.TEN.003,Booked beds,Operations,SAFE,Reliable,Verified,neutral,True,kpi_card,none,0,False,,,MATCH,allotment_id;bed_id;tenant_id,6
+M.OCC.005,Historical occupancy,Operations,SHOW_BOTH,Multiple definitions — review both,Definitions differ,conflict,False,multi_definition_panel,none,0,True,C.006;C.008,DQ.004,,allotment_id;bed_id;tenant_id,5
+M.LIFE.001,Tenant lifecycle (staying_status sync),Operations,SAFE,Reliable,Verified,neutral,True,kpi_card,none,0,False,,,UNVERIFIED,allotment_id;bed_id;tenant_id,4
+M.LIFE.002,Move-ins,Operations,SAFE,Reliable,Verified,neutral,True,kpi_card,line,0,False,,,UNVERIFIED,allotment_id;bed_id;month;tenant_id,2
+M.LIFE.003,Move-outs,Operations,SAFE,Reliable,Verified,neutral,True,kpi_card,line,0,False,,,UNVERIFIED,allotment_id;bed_id;month;tenant_id,2
+M.LIFE.004,Exit reconciliation,Operations,SAFE,Reliable,Verified,neutral,True,kpi_card,none,0,False,C.001,,UNVERIFIED,allotment_id;bed_id;tenant_id,6
+M.MAINT.001,Maintenance volume,Operations,SAFE,Reliable,Verified,neutral,True,kpi_card,line,0,False,,DQ.027,MATCH,allotment_id;bed_id;month;tenant_id,2
+M.MAINT.002,Maintenance cost (2 paths),Operations,SAFE,Reliable,Verified,neutral,True,kpi_card,line,0,False,C.023,DQ.027,MATCH,allotment_id;bed_id;month;tenant_id,6
+M.EB.001,EB/electricity usage and cost,Operations,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,line,0,True,,DQ.021;DQ.028,MATCH,allotment_id;bed_id;month;tenant_id,4
+M.EB.002,EB tenant allocation,Operations,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,line,0,True,,DQ.028,MATCH,allotment_id;bed_id;month;tenant_id,1
+M.RISK.001,Outstanding dues,Risk & Data Quality,BLOCK,No single reliable figure — definitions conflict,Conflict,conflict,False,conflict_panel_no_headline,none,4,True,C.001;C.003;C.005,DQ.002;DQ.019,DIFFERS,allotment_id;bed_id;tenant_id,2
+M.RISK.002,Aging,Risk & Data Quality,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,none,0,True,C.019,DQ.018,UNVERIFIED,allotment_id;bed_id;tenant_id,4
+M.RISK.003,Deposit risk,Risk & Data Quality,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,none,0,True,,DQ.011;DQ.012,UNVERIFIED,allotment_id;bed_id;tenant_id,6
+M.RISK.004,Phantom deposits,Risk & Data Quality,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,none,0,True,,DQ.011,PARTIAL,allotment_id;bed_id;tenant_id,3
+M.RISK.005,Duplicate invoices,Risk & Data Quality,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,line,0,True,C.020,DQ.013,MATCH,allotment_id;bed_id;month;tenant_id,2
+M.RISK.006,Duplicate receipts,Risk & Data Quality,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,none,0,True,C.018;C.020,DQ.014,UNVERIFIED,allotment_id;bed_id;tenant_id,2
+M.RISK.007,Overlapping allotments,Risk & Data Quality,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,none,0,True,,DQ.003,DIFFERS,allotment_id;bed_id;tenant_id,2
+M.RISK.008,Ledger/source reconciliation,Risk & Data Quality,DISCLOSE,"Usable, with a caveat",Caveat applies,caution,True,kpi_card_with_caveat,none,0,True,C.014;C.015;C.016,DQ.006;DQ.007;DQ.008,UNVERIFIED,allotment_id;bed_id;tenant_id,1
+M.RISK.009,Data-quality score / trust status,Risk & Data Quality,SAFE,Reliable,Verified,neutral,True,kpi_card,none,0,False,,,UNVERIFIED,allotment_id;bed_id;tenant_id,1

@@ -1,0 +1,14 @@
+invoice_type,status,reference_type,is_deleted,rows,sum_total,sum_paid,sum_balance,min_date,max_date
+regular,pending,null,false,2928,37141989,0,12019583,2023-02-05,2026-08-01
+regular,paid,null,false,2085,33858542,33859364,0,2023-04-01,2026-04-01
+regular,paid,onboarding,false,96,925021,949827,0,2026-04-04,2026-08-31
+regular,pending,room_switch,false,26,69460,0,69460,2026-05-16,2026-08-26
+exit_charge,pending,exit_charge,false,16,36000,0,36000,2026-05-04,2026-09-20
+additional_deposit,pending,room_switch,false,15,57000,0,57000,2026-05-01,2026-08-26
+exit_charge,paid,null,false,11,13500,13500,0,2026-04-01,2026-05-01
+regular,partial,null,false,10,161029,124147,36882,2024-08-01,2026-04-01
+regular,pending,exit_estimated_eb,false,10,14086,0,14086,2026-05-02,2026-07-29
+exit_charge,pending,null,false,9,20250,0,20250,2026-01-01,2026-05-01
+additional_deposit,paid,null,false,6,92000,92000,0,2025-10-07,2026-03-26
+regular,partial,onboarding,false,1,15836,15500,336,2026-07-01,2026-07-01
+regular,paid,exit_estimated_eb,false,1,1072,1072,0,2026-04-16,2026-04-16

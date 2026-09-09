@@ -1,0 +1,6 @@
+id,organization_id,bank_name,branch,account_type,swift_code,is_primary,status,created_at
+c532da43-7df1-4b3c-b49a-9ea5f46ac0c1,00000000-0000-0000-0000-000000000001,Bank of India,Mylapore,current,,false,active,2026-03-17 16:23:23.106076+00
+43db28a9-c42c-47fd-9af0-3ce30d049921,00000000-0000-0000-0000-000000000001,Bank of India,,current,,false,active,2026-03-25 19:33:35.454636+00
+299c6734-7419-4bd9-8da3-71fedeee7d23,00000000-0000-0000-0000-000000000001,Axis Bank,,current,,false,active,2026-03-25 19:33:54.86869+00
+c048dfc9-697e-4116-8f17-8e2c30bcb640,00000000-0000-0000-0000-000000000001,Axis Bank,,current,,false,active,2026-03-25 19:34:21.839556+00
+e4b192b6-9da9-485c-b5be-26f3de3bea71,00000000-0000-0000-0000-000000000001,HDFC Bank,Mylapore,current,,false,active,2026-03-25 19:34:33.060929+00

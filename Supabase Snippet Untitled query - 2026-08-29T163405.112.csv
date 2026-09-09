@@ -1,0 +1,32 @@
+schema_name,routine_name,arguments,return_type,definition
+public,ensure_booking_receipt_number,,trigger,"CREATE OR REPLACE FUNCTION public.ensure_booking_receipt_number()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_property_id uuid;
+  v_number jsonb;
+BEGIN
+  IF COALESCE(NEW.receipt_type, '') = 'booking'
+     AND NULLIF(BTRIM(COALESCE(NEW.receipt_number, '')), '') IS NULL THEN
+    SELECT ta.property_id
+      INTO v_property_id
+      FROM public.tenant_allotments ta
+     WHERE ta.id = NEW.tenant_allotment_id;
+
+    IF v_property_id IS NOT NULL THEN
+      v_number := public.next_receipt_number(
+        NEW.organization_id,
+        v_property_id,
+        COALESCE(NEW.payment_date, current_date)
+      );
+      NEW.receipt_number := v_number->>'receipt_number';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$function$
+"

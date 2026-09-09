@@ -1,0 +1,189 @@
+schema_name,routine_name,arguments,return_type,definition
+public,trg_receipt_journal_post,,trigger,"CREATE OR REPLACE FUNCTION public.trg_receipt_journal_post()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_existing_je uuid;
+    v_lines       jsonb;
+    v_ar_id       uuid;
+    v_onb_inc_id  uuid;
+    v_property_id uuid;
+    v_apartment_id uuid;
+    v_bed_id      uuid;
+    v_amount      numeric;
+    v_inc_lines   jsonb;
+    v_receipt_label text;
+    v_needs_repost boolean;
+BEGIN
+    -- ── Shared poster: reverse nothing, just post the receipt's journal(s) from
+    --    the current NEW row. Used by INSERT and by the UPDATE repost path. ──
+    -- (inlined below rather than a sub-function to keep this self-contained)
+
+    IF TG_OP = 'INSERT' THEN
+        IF COALESCE(NEW.is_deleted, FALSE) THEN RETURN NEW; END IF;
+
+        v_receipt_label := 'Payment Received - ' || COALESCE(NULLIF(BTRIM(NEW.receipt_number), ''), NEW.id::text);
+        v_lines := build_receipt_lines(NEW.id);
+        IF jsonb_array_length(v_lines) > 0 THEN
+            PERFORM post_journal_entry(
+                NEW.organization_id,
+                COALESCE(NEW.payment_date, current_date),
+                v_receipt_label,
+                'receipts', NEW.id, v_lines,
+                jsonb_build_object('receipt_type', NEW.receipt_type,
+                                   'payment_mode', NEW.payment_mode)
+            );
+        END IF;
+
+        IF NEW.receipt_type = 'booking' AND NEW.tenant_allotment_id IS NOT NULL THEN
+            v_amount     := COALESCE(NEW.amount_paid, 0);
+            v_ar_id      := coa_id(NEW.organization_id, '1200');
+            v_onb_inc_id := coa_id(NEW.organization_id, '4300');
+            SELECT property_id, apartment_id, bed_id
+              INTO v_property_id, v_apartment_id, v_bed_id
+              FROM tenant_allotments WHERE id = NEW.tenant_allotment_id;
+
+            v_inc_lines := jsonb_build_array(
+                jsonb_build_object(
+                    'account_id',   v_ar_id,
+                    'debit',        v_amount,
+                    'party_kind',   'tenant',
+                    'party_id',     NEW.tenant_id,
+                    'allotment_id', NEW.tenant_allotment_id,
+                    'property_id',  v_property_id,
+                    'apartment_id', v_apartment_id,
+                    'bed_id',       v_bed_id,
+                    'memo',         'Onboarding Charges Received'
+                ),
+                jsonb_build_object(
+                    'account_id',   v_onb_inc_id,
+                    'credit',       v_amount,
+                    'property_id',  v_property_id,
+                    'memo',         'Onboarding Charges Received'
+                )
+            );
+            PERFORM post_journal_entry(
+                NEW.organization_id,
+                COALESCE(NEW.payment_date, current_date),
+                'Onboarding Charges Received',
+                'receipts', NEW.id, v_inc_lines,
+                jsonb_build_object('receipt_type', NEW.receipt_type, 'kind', 'onboarding_income')
+            );
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'UPDATE' THEN
+        -- 1) Soft-delete: reverse and stop (unchanged behaviour).
+        IF COALESCE(NEW.is_deleted, FALSE) AND NOT COALESCE(OLD.is_deleted, FALSE) THEN
+            FOR v_existing_je IN
+                SELECT je.id FROM journal_entries je
+                WHERE je.source_table='receipts' AND je.source_id=NEW.id
+                  AND je.is_reversal_of IS NULL
+                  AND NOT EXISTS (SELECT 1 FROM journal_entries r WHERE r.is_reversal_of=je.id)
+            LOOP
+                PERFORM reverse_journal_entry(v_existing_je, 'receipt soft-deleted');
+            END LOOP;
+            RETURN NEW;
+        END IF;
+
+        -- 2) Live row: repost when a journal-affecting field changed, or when the
+        --    row is being restored from soft-deleted.
+        v_needs_repost :=
+            NOT COALESCE(NEW.is_deleted, FALSE)
+            AND (
+                COALESCE(OLD.is_deleted, FALSE) = TRUE
+                OR NEW.amount_paid       IS DISTINCT FROM OLD.amount_paid
+                OR NEW.payment_date      IS DISTINCT FROM OLD.payment_date
+                OR NEW.payment_mode      IS DISTINCT FROM OLD.payment_mode
+                OR NEW.bank_account_id   IS DISTINCT FROM OLD.bank_account_id
+                OR NEW.receipt_type      IS DISTINCT FROM OLD.receipt_type
+                OR NEW.tenant_id         IS DISTINCT FROM OLD.tenant_id
+                OR NEW.tenant_allotment_id IS DISTINCT FROM OLD.tenant_allotment_id
+                OR NEW.receipt_number    IS DISTINCT FROM OLD.receipt_number
+            );
+
+        IF NOT v_needs_repost THEN
+            RETURN NEW;
+        END IF;
+
+        -- Reverse the receipt's existing live journal entries...
+        FOR v_existing_je IN
+            SELECT je.id FROM journal_entries je
+            WHERE je.source_table='receipts' AND je.source_id=NEW.id
+              AND je.is_reversal_of IS NULL
+              AND NOT EXISTS (SELECT 1 FROM journal_entries r WHERE r.is_reversal_of=je.id)
+        LOOP
+            PERFORM reverse_journal_entry(v_existing_je, 'receipt edited — reposting');
+        END LOOP;
+
+        -- ...then re-post fresh from the new values (mirrors the INSERT path).
+        v_receipt_label := 'Payment Received - ' || COALESCE(NULLIF(BTRIM(NEW.receipt_number), ''), NEW.id::text);
+        v_lines := build_receipt_lines(NEW.id);
+        IF jsonb_array_length(v_lines) > 0 THEN
+            PERFORM post_journal_entry(
+                NEW.organization_id,
+                COALESCE(NEW.payment_date, current_date),
+                v_receipt_label,
+                'receipts', NEW.id, v_lines,
+                jsonb_build_object('receipt_type', NEW.receipt_type,
+                                   'payment_mode', NEW.payment_mode)
+            );
+        END IF;
+
+        IF NEW.receipt_type = 'booking' AND NEW.tenant_allotment_id IS NOT NULL THEN
+            v_amount     := COALESCE(NEW.amount_paid, 0);
+            v_ar_id      := coa_id(NEW.organization_id, '1200');
+            v_onb_inc_id := coa_id(NEW.organization_id, '4300');
+            SELECT property_id, apartment_id, bed_id
+              INTO v_property_id, v_apartment_id, v_bed_id
+              FROM tenant_allotments WHERE id = NEW.tenant_allotment_id;
+
+            v_inc_lines := jsonb_build_array(
+                jsonb_build_object(
+                    'account_id',   v_ar_id,
+                    'debit',        v_amount,
+                    'party_kind',   'tenant',
+                    'party_id',     NEW.tenant_id,
+                    'allotment_id', NEW.tenant_allotment_id,
+                    'property_id',  v_property_id,
+                    'apartment_id', v_apartment_id,
+                    'bed_id',       v_bed_id,
+                    'memo',         'Onboarding Charges Received'
+                ),
+                jsonb_build_object(
+                    'account_id',   v_onb_inc_id,
+                    'credit',       v_amount,
+                    'property_id',  v_property_id,
+                    'memo',         'Onboarding Charges Received'
+                )
+            );
+            PERFORM post_journal_entry(
+                NEW.organization_id,
+                COALESCE(NEW.payment_date, current_date),
+                'Onboarding Charges Received',
+                'receipts', NEW.id, v_inc_lines,
+                jsonb_build_object('receipt_type', NEW.receipt_type, 'kind', 'onboarding_income')
+            );
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP = 'DELETE' THEN
+        FOR v_existing_je IN
+            SELECT je.id FROM journal_entries je
+            WHERE je.source_table='receipts' AND je.source_id=OLD.id
+              AND je.is_reversal_of IS NULL
+              AND NOT EXISTS (SELECT 1 FROM journal_entries r WHERE r.is_reversal_of=je.id)
+        LOOP
+            PERFORM reverse_journal_entry(v_existing_je, 'receipt hard-deleted');
+        END LOOP;
+        RETURN OLD;
+    END IF;
+    RETURN NULL;
+END
+$function$
+"

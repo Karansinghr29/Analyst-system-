@@ -1,0 +1,3 @@
+id,organization_id,property_id,caption,display_order,is_cover,created_at
+8543db00-123d-4528-954b-0d5eb6426a2a,00000000-0000-0000-0000-000000000001,5dda0b14-713b-46d0-a6ce-a7a33a2fb6f9,Elevation of the Property,0,true,2026-05-22 03:00:26.137646+00
+afa02472-b84a-4096-9168-9efa3e5f0f8a,00000000-0000-0000-0000-000000000001,5dda0b14-713b-46d0-a6ce-a7a33a2fb6f9,Driveway and parking Area,1,false,2026-05-22 03:00:51.639141+00

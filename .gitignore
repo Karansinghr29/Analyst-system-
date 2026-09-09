@@ -1,0 +1,36 @@
+# Local runtime state and caches. The evidence CSVs at the package root are NOT ignored: they
+# are the trusted export the deployed service reconstructs every figure from, and the image is
+# built from this repository.
+
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Local conversation and decision database. Production keeps decisions in the managed database
+# named by DATABASE_URL; committing a local one would ship someone's session into the image.
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets never enter the repository. They are set in the hosting platform's environment.
+.env
+.env.*
+*.pem
+*.key
+
+# Streamlit's local secrets file. It holds exactly what must never be committed -- the database
+# connection string and the model credential -- and it lives beside config.toml, which IS
+# committed, so it is easy to add by accident. On Streamlit Community Cloud the same values are
+# entered in the app's Secrets panel and reach the process as environment variables instead.
+.streamlit/secrets.toml
+secrets.toml
+
+# Editor and OS noise.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Agent working directory.
+.claude/

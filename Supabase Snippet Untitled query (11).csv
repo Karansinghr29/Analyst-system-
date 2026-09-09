@@ -1,0 +1,6 @@
+schema_name,table_name,discriminator_column,reference_id_column,reference_id_type,relationship_kind
+public,financial_audit_log,source_table,source_id,uuid,POLYMORPHIC
+public,invoices,reference_type,reference_id,uuid,POLYMORPHIC
+public,journal_entries,source_table,source_id,uuid,POLYMORPHIC
+public,tenant_adjustments,reference_type,reference_id,uuid,POLYMORPHIC
+public,tenant_transactions,reference_table,reference_id,uuid,POLYMORPHIC

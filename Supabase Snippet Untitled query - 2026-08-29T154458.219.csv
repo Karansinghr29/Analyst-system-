@@ -1,0 +1,2 @@
+organization_id,enabled,smtp_host,smtp_port,smtp_secure,from_name,imap_host,imap_port,imap_secure,pop3_host,pop3_port,pop3_secure,created_at,updated_at
+00000000-0000-0000-0000-000000000001,true,smtpout.secureserver.net,465,true,Vishful Living,imap.secureserver.net,993,true,pop.secureserver.net,995,true,2026-04-20 14:59:58.397659+00,2026-06-10 12:18:18.161894+00

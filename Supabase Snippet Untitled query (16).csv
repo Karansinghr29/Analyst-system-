@@ -1,0 +1,1577 @@
+schema_name,view_name,object_type,column_count,definition_length,definition
+public,maintenance_item_low_stock,view,5,201," SELECT organization_id,
+    maintenance_item_id,
+    current_stock,
+    minimum_stock_level,
+    last_purchase_cost
+   FROM maintenance_item_stock_summary
+  WHERE current_stock <= minimum_stock_level;"
+public,maintenance_item_stock_summary,view,5,478," SELECT mi.organization_id,
+    mi.id AS maintenance_item_id,
+    COALESCE(sum(se.quantity_available), 0::numeric) AS current_stock,
+    mi.minimum_stock_level,
+    max(se.purchase_cost_per_unit) FILTER (WHERE se.purchased_on IS NOT NULL) AS last_purchase_cost
+   FROM maintenance_items mi
+     LEFT JOIN maintenance_item_stock_entries se ON se.maintenance_item_id = mi.id AND se.organization_id = mi.organization_id
+  GROUP BY mi.organization_id, mi.id, mi.minimum_stock_level;"
+public,v_account_balances,view,23,1042," SELECT je.organization_id,
+    je.entry_date,
+    je.period,
+    je.id AS journal_entry_id,
+    je.source_table,
+    je.source_id,
+    je.is_reversal_of,
+    a.id AS account_id,
+    a.code AS account_code,
+    a.name AS account_name,
+    a.account_type,
+    a.normal_balance,
+    parent.code AS parent_code,
+    parent.name AS parent_name,
+    jl.party_kind,
+    jl.party_id,
+    jl.allotment_id,
+    jl.property_id,
+    jl.apartment_id,
+    jl.bed_id,
+    jl.debit,
+    jl.credit,
+        CASE a.normal_balance
+            WHEN 'DEBIT'::normal_balance THEN jl.debit - jl.credit
+            WHEN 'CREDIT'::normal_balance THEN jl.credit - jl.debit
+            ELSE NULL::numeric
+        END AS signed_amount
+   FROM journal_lines jl
+     JOIN journal_entries je ON je.id = jl.journal_entry_id
+     JOIN coa_accounts a ON a.id = jl.account_id
+     LEFT JOIN coa_accounts parent ON parent.id = a.parent_id
+  WHERE je.is_reversal_of IS NULL AND NOT (EXISTS ( SELECT 1
+           FROM journal_entries r
+          WHERE r.is_reversal_of = je.id));"
+public,v_account_rollup,view,10,1599," WITH RECURSIVE descendants AS (
+         SELECT coa_accounts.id AS root_id,
+            coa_accounts.id AS descendant_id,
+            coa_accounts.organization_id
+           FROM coa_accounts
+        UNION ALL
+         SELECT d_1.root_id,
+            c.id,
+            c.organization_id
+           FROM descendants d_1
+             JOIN coa_accounts c ON c.parent_id = d_1.descendant_id
+        ), balances AS (
+         SELECT journal_lines.account_id,
+            journal_lines.organization_id,
+            sum(journal_lines.debit) AS total_debit,
+            sum(journal_lines.credit) AS total_credit
+           FROM journal_lines
+          GROUP BY journal_lines.account_id, journal_lines.organization_id
+        )
+ SELECT a.organization_id,
+    a.id AS account_id,
+    a.code,
+    a.name,
+    a.account_type,
+    a.normal_balance,
+    a.parent_id,
+    COALESCE(sum(b.total_debit), 0::numeric) AS total_debit_rollup,
+    COALESCE(sum(b.total_credit), 0::numeric) AS total_credit_rollup,
+        CASE a.normal_balance
+            WHEN 'DEBIT'::normal_balance THEN COALESCE(sum(b.total_debit), 0::numeric) - COALESCE(sum(b.total_credit), 0::numeric)
+            ELSE COALESCE(sum(b.total_credit), 0::numeric) - COALESCE(sum(b.total_debit), 0::numeric)
+        END AS balance_rollup
+   FROM coa_accounts a
+     LEFT JOIN descendants d ON d.root_id = a.id AND d.organization_id = a.organization_id
+     LEFT JOIN balances b ON b.account_id = d.descendant_id AND b.organization_id = d.organization_id
+  GROUP BY a.organization_id, a.id, a.code, a.name, a.account_type, a.normal_balance, a.parent_id;"
+public,v_active_tenants,view,5,417," SELECT organization_id,
+    property_id,
+    count(DISTINCT tenant_id) FILTER (WHERE staying_status = ANY (ARRAY['Staying'::staying_status, 'On-Notice'::staying_status])) AS active_tenants,
+    count(DISTINCT tenant_id) FILTER (WHERE staying_status = 'Booked'::staying_status) AS booked_tenants,
+    count(DISTINCT tenant_id) AS total_tenants_ever
+   FROM tenant_allotments a
+  GROUP BY organization_id, property_id;"
+public,v_advance_balances,view,5,541," SELECT organization_id,
+    party_id AS tenant_id,
+    allotment_id,
+    sum(
+        CASE
+            WHEN account_code = '2100'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS deposit_held,
+    sum(
+        CASE
+            WHEN account_code = '2400'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS booking_advance
+   FROM v_account_balances
+  WHERE (account_code = ANY (ARRAY['2100'::text, '2400'::text])) AND party_kind = 'tenant'::party_kind
+  GROUP BY organization_id, party_id, allotment_id;"
+public,v_asset_payment_status,view,14,1424," WITH purchase_totals AS (
+         SELECT a.id AS asset_id,
+            a.organization_id,
+            a.asset_code,
+            a.purchase_price,
+            a.supplier_id,
+            a.invoice_number,
+            a.invoice_date,
+            a.purchase_date
+           FROM assets a
+          WHERE a.purchase_price IS NOT NULL AND a.purchase_price > 0::numeric
+        ), payments_totals AS (
+         SELECT ap.asset_id,
+            sum(ap.amount) AS total_paid,
+            count(*) AS payment_count,
+            max(ap.payment_date) AS last_payment_date
+           FROM asset_payments ap
+          GROUP BY ap.asset_id
+        )
+ SELECT pt.asset_id,
+    pt.organization_id,
+    pt.asset_code,
+    pt.invoice_number,
+    pt.invoice_date,
+    pt.purchase_date,
+    pt.purchase_price,
+    pt.supplier_id,
+    v.vendor_name,
+    COALESCE(p.total_paid, 0::numeric) AS total_paid,
+    pt.purchase_price - COALESCE(p.total_paid, 0::numeric) AS balance_due,
+    COALESCE(p.payment_count, 0::bigint) AS payment_count,
+    p.last_payment_date,
+        CASE
+            WHEN COALESCE(p.total_paid, 0::numeric) <= 0::numeric THEN 'unpaid'::text
+            WHEN COALESCE(p.total_paid, 0::numeric) >= pt.purchase_price THEN 'paid'::text
+            ELSE 'partial'::text
+        END AS status
+   FROM purchase_totals pt
+     LEFT JOIN payments_totals p ON p.asset_id = pt.asset_id
+     LEFT JOIN vendors v ON v.id = pt.supplier_id;"
+public,v_bed_expense_breakdown,view,8,519," SELECT organization_id,
+    bed_id,
+    apartment_id,
+    property_id,
+    date_trunc('month'::text, entry_date::timestamp with time zone)::date AS month,
+    account_code AS category_code,
+    account_name AS category_name,
+    sum(signed_amount) AS amount
+   FROM v_account_balances
+  WHERE account_type = 'EXPENSE'::account_type AND bed_id IS NOT NULL
+  GROUP BY organization_id, bed_id, apartment_id, property_id, (date_trunc('month'::text, entry_date::timestamp with time zone)::date), account_code, account_name;"
+public,v_deposit_ledger_anomalies,view,6,3633," WITH premature AS (
+         SELECT ds.organization_id,
+            ds.tenant_id,
+            ds.allotment_id,
+            ds.id AS settlement_id,
+            'premature_settlement'::text AS anomaly,
+            format('deductions=₹%s on allotment with status=%s, actual_exit_date=%s'::text, round(COALESCE(ds.total_deductions, 0::numeric))::text, COALESCE(ta.staying_status::text, 'unknown'::text), COALESCE(ta.actual_exit_date::text, 'NULL'::text)) AS details
+           FROM deposit_settlements ds
+             JOIN tenant_allotments ta ON ta.id = ds.allotment_id
+          WHERE COALESCE(ds.is_deleted, false) = false AND COALESCE(ds.total_deductions, 0::numeric) > 0::numeric AND ta.actual_exit_date IS NULL AND (ta.staying_status::text <> ALL (ARRAY['Exited'::text, 'Cancelled'::text]))
+        ), dupes AS (
+         SELECT ds.organization_id,
+            ds.tenant_id,
+            ds.allotment_id,
+            NULL::uuid AS settlement_id,
+            'duplicate_open_settlement'::text AS anomaly,
+            format('open settlements on this allotment: %s'::text, count(*)) AS details
+           FROM deposit_settlements ds
+          WHERE COALESCE(ds.is_deleted, false) = false AND COALESCE(ds.status, ''::text) <> 'completed'::text AND ds.allotment_id IS NOT NULL
+          GROUP BY ds.organization_id, ds.tenant_id, ds.allotment_id
+         HAVING count(*) > 1
+        ), deposit_per_allot AS (
+         SELECT jl.party_id AS tenant_id,
+            jl.allotment_id,
+            sum(jl.credit) - sum(jl.debit) AS net_deposit
+           FROM journal_lines jl
+             JOIN journal_entries je ON je.id = jl.journal_entry_id
+             JOIN coa_accounts a ON a.id = jl.account_id
+          WHERE jl.party_kind = 'tenant'::party_kind AND (a.code = ANY (ARRAY['2100'::text, '2400'::text])) AND je.is_reversal_of IS NULL AND NOT (EXISTS ( SELECT 1
+                   FROM journal_entries rev
+                  WHERE rev.is_reversal_of = je.id)) AND jl.allotment_id IS NOT NULL
+          GROUP BY jl.party_id, jl.allotment_id
+         HAVING (sum(jl.credit) - sum(jl.debit)) > 0::numeric
+        ), double_count AS (
+         SELECT ta.organization_id,
+            dpa.tenant_id,
+            dpa.allotment_id,
+            NULL::uuid AS settlement_id,
+            'transfer_double_count'::text AS anomaly,
+            format('this allotment holds ₹%s deposit; same tenant has %s other allotment(s) holding ₹%s combined'::text, round(dpa.net_deposit)::text, ( SELECT count(*) - 1
+                   FROM deposit_per_allot d2
+                  WHERE d2.tenant_id = dpa.tenant_id), ( SELECT round(COALESCE(sum(d3.net_deposit) - dpa.net_deposit, 0::numeric))::text AS round
+                   FROM deposit_per_allot d3
+                  WHERE d3.tenant_id = dpa.tenant_id)) AS details
+           FROM deposit_per_allot dpa
+             JOIN tenant_allotments ta ON ta.id = dpa.allotment_id
+          WHERE (EXISTS ( SELECT 1
+                   FROM deposit_per_allot d2
+                  WHERE d2.tenant_id = dpa.tenant_id AND d2.allotment_id <> dpa.allotment_id))
+        )
+ SELECT premature.organization_id,
+    premature.tenant_id,
+    premature.allotment_id,
+    premature.settlement_id,
+    premature.anomaly,
+    premature.details
+   FROM premature
+UNION ALL
+ SELECT dupes.organization_id,
+    dupes.tenant_id,
+    dupes.allotment_id,
+    dupes.settlement_id,
+    dupes.anomaly,
+    dupes.details
+   FROM dupes
+UNION ALL
+ SELECT double_count.organization_id,
+    double_count.tenant_id,
+    double_count.allotment_id,
+    double_count.settlement_id,
+    double_count.anomaly,
+    double_count.details
+   FROM double_count;"
+public,v_diag_allotment_balance_drift,view,5,1043," WITH agg AS (
+         SELECT tenant_transactions.allotment_id,
+            sum(
+                CASE
+                    WHEN tenant_transactions.direction = 'DEBIT'::text THEN tenant_transactions.amount
+                    ELSE 0::numeric
+                END) - sum(
+                CASE
+                    WHEN tenant_transactions.direction = 'CREDIT'::text THEN tenant_transactions.amount
+                    ELSE 0::numeric
+                END) AS computed_balance
+           FROM tenant_transactions
+          WHERE tenant_transactions.ledger_type = ANY (ARRAY['CHARGE'::text, 'PAYMENT'::text])
+          GROUP BY tenant_transactions.allotment_id
+        )
+ SELECT a.id AS allotment_id,
+    a.organization_id,
+    a.balance_due AS stored_balance,
+    GREATEST(agg.computed_balance, 0::numeric) AS computed_balance,
+    a.balance_due - GREATEST(agg.computed_balance, 0::numeric) AS drift
+   FROM tenant_allotments a
+     JOIN agg ON agg.allotment_id = a.id
+  WHERE abs(a.balance_due - GREATEST(agg.computed_balance, 0::numeric)) > 1.00;"
+public,v_diag_deposit_phantom,view,7,514," SELECT organization_id,
+    id AS allotment_id,
+    tenant_id,
+    deposit_paid,
+    staying_status,
+    actual_exit_date,
+    'Deposit held with no live tenant relationship'::text AS note
+   FROM tenant_allotments a
+  WHERE COALESCE(deposit_paid, 0::numeric) > 0::numeric AND (staying_status = ANY (ARRAY['Exited'::staying_status, 'Cancelled'::staying_status])) AND NOT (EXISTS ( SELECT 1
+           FROM deposit_settlements ds
+          WHERE ds.allotment_id = a.id AND COALESCE(ds.is_deleted, false) = false));"
+public,v_diag_invoice_drift,view,9,372," SELECT organization_id,
+    id AS invoice_id,
+    invoice_number,
+    billing_month,
+    total_amount,
+    amount_paid,
+    balance,
+    total_amount - amount_paid - balance AS drift,
+    status
+   FROM invoices
+  WHERE NOT COALESCE(is_deleted, false) AND abs(COALESCE(total_amount, 0::numeric) - COALESCE(amount_paid, 0::numeric) - COALESCE(balance, 0::numeric)) > 0.01;"
+public,v_diag_orphan_receipts,view,7,223," SELECT organization_id,
+    id AS receipt_id,
+    tenant_id,
+    payment_date,
+    amount_paid,
+    receipt_type,
+    receipt_number
+   FROM receipts
+  WHERE NOT COALESCE(is_deleted, false) AND tenant_allotment_id IS NULL;"
+public,v_diag_owner_rent_missing_from_profit,view,4,470," SELECT organization_id,
+    date_trunc('month'::text, COALESCE(paid_date, due_date)::timestamp with time zone)::date AS month,
+    sum(escalated_amount) AS owner_rent_paid_or_accrued,
+    'Currently NOT included in get_universal_metrics.totalProfit'::text AS note
+   FROM owner_payments op
+  WHERE status = ANY (ARRAY['paid'::text, 'pending'::text])
+  GROUP BY organization_id, (date_trunc('month'::text, COALESCE(paid_date, due_date)::timestamp with time zone)::date);"
+public,v_exit_reconciliation_worklist,view,17,1830," SELECT ta.organization_id,
+    ta.tenant_id,
+    ta.id AS allotment_id,
+    ta.property_id,
+    ta.apartment_id,
+    ta.bed_id,
+    t.full_name AS tenant_name,
+    p.property_name,
+    ap.apartment_code,
+    b.bed_code,
+    (ap.apartment_code || '-'::text) || b.bed_code AS bed_label,
+    ta.actual_exit_date,
+    COALESCE(cd.ar_balance, 0::numeric) AS dues_now,
+    COALESCE(cd.deposit_held, 0::numeric) + COALESCE(cd.booking_advance, 0::numeric) AS deposit_held,
+    COALESCE(eb.eb_already, 0::numeric) AS eb_already,
+    COALESCE(ec.exit_charge_already, 0::numeric) AS exit_charge_already,
+    ds.status AS settlement_status
+   FROM tenant_allotments ta
+     JOIN tenants t ON t.id = ta.tenant_id
+     JOIN apartments ap ON ap.id = ta.apartment_id
+     JOIN beds b ON b.id = ta.bed_id
+     JOIN properties p ON p.id = ta.property_id
+     LEFT JOIN v_tenant_current_dues cd ON cd.allotment_id = ta.id
+     LEFT JOIN LATERAL ( SELECT sum(i.total_amount) AS eb_already
+           FROM invoices i
+          WHERE i.allotment_id = ta.id AND i.reference_type = 'exit_estimated_eb'::text AND COALESCE(i.is_deleted, false) = false) eb ON true
+     LEFT JOIN LATERAL ( SELECT sum(i.total_amount) AS exit_charge_already
+           FROM invoices i
+          WHERE i.allotment_id = ta.id AND i.invoice_type = 'exit_charge'::text AND COALESCE(i.is_deleted, false) = false) ec ON true
+     LEFT JOIN LATERAL ( SELECT ds2.status
+           FROM deposit_settlements ds2
+          WHERE ds2.allotment_id = ta.id AND COALESCE(ds2.is_deleted, false) = false
+          ORDER BY ds2.created_at DESC NULLS LAST
+         LIMIT 1) ds ON true
+  WHERE ta.staying_status = 'Exited'::staying_status AND (COALESCE(cd.ar_balance, 0::numeric) <> 0::numeric OR (COALESCE(cd.deposit_held, 0::numeric) + COALESCE(cd.booking_advance, 0::numeric)) > 0::numeric);"
+public,v_expense_composition,view,10,1539," WITH base AS (
+         SELECT v_account_balances.organization_id,
+            v_account_balances.property_id,
+            date_trunc('month'::text, v_account_balances.entry_date::timestamp with time zone)::date AS month,
+            COALESCE(v_account_balances.parent_code, v_account_balances.account_code) AS category_code,
+            COALESCE(v_account_balances.parent_name, v_account_balances.account_name) AS category_name,
+            v_account_balances.account_code,
+            v_account_balances.account_name,
+            sum(v_account_balances.signed_amount) AS amount
+           FROM v_account_balances
+          WHERE v_account_balances.account_type = 'EXPENSE'::account_type
+          GROUP BY v_account_balances.organization_id, v_account_balances.property_id, (date_trunc('month'::text, v_account_balances.entry_date::timestamp with time zone)::date), (COALESCE(v_account_balances.parent_code, v_account_balances.account_code)), (COALESCE(v_account_balances.parent_name, v_account_balances.account_name)), v_account_balances.account_code, v_account_balances.account_name
+        )
+ SELECT organization_id,
+    property_id,
+    month,
+    category_code,
+    category_name,
+    account_code,
+    account_name,
+    amount,
+    round(100.0 * amount / NULLIF(sum(amount) OVER (PARTITION BY organization_id, property_id, month, category_code), 0::numeric), 2) AS pct_of_category,
+    round(100.0 * amount / NULLIF(sum(amount) OVER (PARTITION BY organization_id, property_id, month), 0::numeric), 2) AS pct_of_total
+   FROM base;"
+public,v_expenses_by_period,view,6,411," SELECT organization_id,
+    property_id,
+    date_trunc('month'::text, entry_date::timestamp with time zone)::date AS month,
+    account_code,
+    account_name,
+    sum(signed_amount) AS expense
+   FROM v_account_balances
+  WHERE account_type = 'EXPENSE'::account_type
+  GROUP BY organization_id, property_id, (date_trunc('month'::text, entry_date::timestamp with time zone)::date), account_code, account_name;"
+public,v_export_apartments,view,20,567," SELECT a.id,
+    a.organization_id,
+    a.property_id,
+    pr.property_name,
+    a.apartment_code,
+    a.apartment_type,
+    a.floor_number,
+    a.size_sqft,
+    a.gender_allowed,
+    a.status::text AS status,
+    a.owner_id,
+    a.star_rating,
+    a.eb_meter_number,
+    a.eb_consumer_number,
+    a.created_at,
+    NULL::timestamp with time zone AS updated_at,
+    NULL::uuid AS created_by,
+    NULL::text AS created_by_name,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name
+   FROM apartments a
+     LEFT JOIN properties pr ON pr.id = a.property_id;"
+public,v_export_assets,view,28,872," SELECT ast.id,
+    ast.organization_id,
+    apt.property_id,
+    pr.property_name,
+    ast.apartment_id,
+    apt.apartment_code,
+    ast.bed_id,
+    ast.asset_type_id,
+    at.name AS asset_type_name,
+    ast.asset_code,
+    ast.brand,
+    ast.model,
+    ast.serial_number,
+    ast.purchase_date,
+    ast.purchase_price,
+    ast.warranty_expiry,
+    ast.warranty_months,
+    ast.status,
+    ast.condition,
+    ast.vendor_name_manual,
+    ast.invoice_number,
+    ast.invoice_date,
+    ast.created_at,
+    NULL::timestamp with time zone AS updated_at,
+    NULL::uuid AS created_by,
+    NULL::text AS created_by_name,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name
+   FROM assets ast
+     LEFT JOIN apartments apt ON apt.id = ast.apartment_id
+     LEFT JOIN properties pr ON pr.id = apt.property_id
+     LEFT JOIN asset_types at ON at.id = ast.asset_type_id;"
+public,v_export_audit_logs,view,16,441," SELECT id,
+    organization_id,
+    table_name,
+    record_id,
+    action,
+    performed_at AS created_at,
+    performed_by AS created_by,
+    _export_profile_name(performed_by) AS created_by_name,
+    performed_at AS updated_at,
+    performed_by AS updated_by,
+    _export_profile_name(performed_by) AS updated_by_name,
+    old_value,
+    new_value,
+    changes,
+    NULL::text AS status,
+    NULL::uuid AS tenant_id
+   FROM audit_logs al;"
+public,v_export_beds,view,17,587," SELECT b.id,
+    b.organization_id,
+    a.property_id,
+    pr.property_name,
+    b.apartment_id,
+    a.apartment_code,
+    b.bed_code,
+    b.bed_type::text AS bed_type,
+    b.toilet_type::text AS toilet_type,
+    b.status::text AS status,
+    b.bed_lifecycle_status,
+    b.created_at,
+    NULL::timestamp with time zone AS updated_at,
+    NULL::uuid AS created_by,
+    NULL::text AS created_by_name,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name
+   FROM beds b
+     LEFT JOIN apartments a ON a.id = b.apartment_id
+     LEFT JOIN properties pr ON pr.id = a.property_id;"
+public,v_export_deposit_settlements,view,23,639," SELECT ds.id,
+    ds.organization_id,
+    ds.tenant_id,
+    tn.full_name AS tenant_name,
+    ds.allotment_id,
+    ds.settlement_date,
+    ds.deposit_amount,
+    ds.pending_rent,
+    ds.pending_eb,
+    ds.pending_late_fees,
+    ds.damages,
+    ds.other_deductions,
+    ds.total_deductions,
+    ds.refund_amount,
+    ds.status,
+    ds.notes,
+    ds.is_deleted,
+    ds.created_at,
+    NULL::timestamp with time zone AS updated_at,
+    NULL::uuid AS created_by,
+    NULL::text AS created_by_name,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name
+   FROM deposit_settlements ds
+     LEFT JOIN tenants tn ON tn.id = ds.tenant_id;"
+public,v_export_electricity_readings,view,24,962," SELECT er.id,
+    er.organization_id,
+    er.property_id,
+    pr.property_name,
+    er.apartment_id,
+    apt.apartment_code,
+    er.billing_month,
+    er.reading_start,
+    er.reading_end,
+    er.units_consumed,
+    er.unit_cost,
+    COALESCE(er.units_consumed, er.reading_end - er.reading_start) * er.unit_cost AS total_amount,
+    er.meter_photo_url,
+    er.is_locked,
+    er.locked_by,
+    _export_profile_name(er.locked_by) AS locked_by_name,
+    er.created_at,
+    NULL::timestamp with time zone AS updated_at,
+    er.locked_by AS created_by,
+    _export_profile_name(er.locked_by) AS created_by_name,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name,
+        CASE
+            WHEN er.is_locked THEN 'locked'::text
+            ELSE 'open'::text
+        END AS status,
+    NULL::uuid AS tenant_id
+   FROM electricity_readings er
+     LEFT JOIN properties pr ON pr.id = er.property_id
+     LEFT JOIN apartments apt ON apt.id = er.apartment_id;"
+public,v_export_expenses,view,29,1037," SELECT e.id,
+    e.organization_id,
+    e.property_id,
+    pr.property_name,
+    e.apartment_id,
+    apt.apartment_code,
+    e.bed_id,
+    bd.bed_code,
+    e.category_id,
+    ec.label AS category_label,
+    e.subcategory_id,
+    esc.label AS subcategory_label,
+    e.vendor_id,
+    v.vendor_name,
+    e.amount,
+    e.expense_date,
+    e.billing_month,
+    e.description,
+    e.data_source,
+    e.receipt_url,
+    e.related_asset_id,
+    e.ticket_resolution_id,
+    e.created_at,
+    NULL::timestamp with time zone AS updated_at,
+    NULL::uuid AS created_by,
+    NULL::text AS created_by_name,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name,
+    NULL::text AS status
+   FROM expenses e
+     LEFT JOIN properties pr ON pr.id = e.property_id
+     LEFT JOIN apartments apt ON apt.id = e.apartment_id
+     LEFT JOIN beds bd ON bd.id = e.bed_id
+     LEFT JOIN expense_categories ec ON ec.id = e.category_id
+     LEFT JOIN expense_subcategories esc ON esc.id = e.subcategory_id
+     LEFT JOIN vendors v ON v.id = e.vendor_id;"
+public,v_export_invoices,view,35,985," SELECT i.id,
+    i.organization_id,
+    i.tenant_id,
+    tn.full_name AS tenant_name,
+    i.allotment_id,
+    i.property_id,
+    pr.property_name,
+    i.apartment_id,
+    apt.apartment_code,
+    i.bed_id,
+    bd.bed_code,
+    i.invoice_number,
+    i.invoice_type,
+    i.billing_month,
+    i.invoice_date,
+    i.due_date,
+    i.rent_amount,
+    i.electricity_amount,
+    i.estimated_eb,
+    i.late_fee,
+    i.other_charges,
+    i.total_amount,
+    i.amount_paid,
+    i.balance,
+    i.status,
+    i.reference_type,
+    i.reference_id,
+    i.locked,
+    i.is_deleted,
+    i.created_at,
+    NULL::timestamp with time zone AS updated_at,
+    NULL::uuid AS created_by,
+    NULL::text AS created_by_name,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name
+   FROM invoices i
+     LEFT JOIN tenants tn ON tn.id = i.tenant_id
+     LEFT JOIN properties pr ON pr.id = i.property_id
+     LEFT JOIN apartments apt ON apt.id = i.apartment_id
+     LEFT JOIN beds bd ON bd.id = i.bed_id;"
+public,v_export_journal_entries,view,19,511," SELECT id,
+    organization_id,
+    entry_date,
+    period,
+    source_table,
+    source_id,
+    description,
+    is_reversal_of,
+    posted_at,
+    posted_by,
+    _export_profile_name(posted_by) AS posted_by_name,
+    metadata,
+    posted_at AS created_at,
+    NULL::timestamp with time zone AS updated_at,
+    posted_by AS created_by,
+    _export_profile_name(posted_by) AS created_by_name,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name,
+    NULL::text AS status
+   FROM journal_entries je;"
+public,v_export_journal_lines,view,30,981," SELECT jl.id,
+    jl.organization_id,
+    jl.journal_entry_id,
+    je.entry_date,
+    je.period,
+    je.source_table,
+    je.source_id,
+    jl.line_no,
+    jl.account_id,
+    coa.code AS account_code,
+    coa.name AS account_name,
+    coa.account_type::text AS account_type,
+    jl.debit,
+    jl.credit,
+    jl.memo,
+    jl.party_kind::text AS party_kind,
+    jl.party_id,
+    jl.allotment_id,
+    jl.property_id,
+    pr.property_name,
+    jl.apartment_id,
+    jl.bed_id,
+    NULL::timestamp with time zone AS created_at,
+    NULL::timestamp with time zone AS updated_at,
+    je.posted_by AS created_by,
+    _export_profile_name(je.posted_by) AS created_by_name,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name,
+    NULL::text AS status,
+    NULL::uuid AS tenant_id
+   FROM journal_lines jl
+     JOIN journal_entries je ON je.id = jl.journal_entry_id
+     LEFT JOIN coa_accounts coa ON coa.id = jl.account_id
+     LEFT JOIN properties pr ON pr.id = jl.property_id;"
+public,v_export_maintenance_tickets,view,32,1101," SELECT mt.id,
+    mt.organization_id,
+    mt.ticket_number,
+    mt.status,
+    mt.priority,
+    mt.description,
+    mt.issue_type_id,
+    it.name AS issue_type_name,
+    mt.issue_sub_type_id,
+    mt.property_id,
+    pr.property_name,
+    mt.apartment_id,
+    apt.apartment_code,
+    mt.bed_id,
+    bd.bed_code,
+    mt.tenant_id,
+    COALESCE(mt.tenant_name, tn.full_name) AS tenant_name,
+    mt.tenant_phone,
+    mt.assigned_to,
+    _export_profile_name(mt.assigned_to) AS assigned_to_name,
+    mt.asset_id,
+    mt.sla_deadline,
+    mt.resolved_at,
+    mt.closed_at,
+    mt.tenant_approved,
+    mt.tenant_rejection_reason,
+    mt.created_at,
+    mt.updated_at,
+    mt.created_by,
+    _export_profile_name(mt.created_by) AS created_by_name,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name
+   FROM maintenance_tickets mt
+     LEFT JOIN issue_types it ON it.id = mt.issue_type_id
+     LEFT JOIN properties pr ON pr.id = mt.property_id
+     LEFT JOIN apartments apt ON apt.id = mt.apartment_id
+     LEFT JOIN beds bd ON bd.id = mt.bed_id
+     LEFT JOIN tenants tn ON tn.id = mt.tenant_id;"
+public,v_export_properties,view,18,407," SELECT id,
+    organization_id,
+    property_name,
+    code AS property_code,
+    status,
+    address,
+    city,
+    state,
+    pincode,
+    gps_latitude,
+    gps_longitude,
+    start_date,
+    created_at,
+    NULL::timestamp with time zone AS updated_at,
+    NULL::uuid AS created_by,
+    NULL::text AS created_by_name,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name
+   FROM properties p;"
+public,v_export_receipt_allocations,view,18,691," SELECT ra.id,
+    ra.organization_id,
+    ra.receipt_id,
+    r.receipt_number,
+    ra.invoice_id,
+    i.invoice_number,
+    ra.amount,
+    ra.allocated_at AS created_at,
+    ra.allocated_at AS updated_at,
+    ra.allocated_by AS created_by,
+    _export_profile_name(ra.allocated_by) AS created_by_name,
+    ra.allocated_by AS updated_by,
+    _export_profile_name(ra.allocated_by) AS updated_by_name,
+    r.tenant_id,
+    tn.full_name AS tenant_name,
+    ra.adjustment_id,
+    ra.notes,
+    NULL::text AS status
+   FROM receipt_allocations ra
+     LEFT JOIN receipts r ON r.id = ra.receipt_id
+     LEFT JOIN invoices i ON i.id = ra.invoice_id
+     LEFT JOIN tenants tn ON tn.id = r.tenant_id;"
+public,v_export_receipts,view,25,812," SELECT r.id,
+    r.organization_id,
+    r.tenant_id,
+    tn.full_name AS tenant_name,
+    r.tenant_allotment_id AS allotment_id,
+    r.receipt_number,
+    r.receipt_type,
+    r.amount_paid,
+    r.base_amount,
+    r.processing_fee,
+    r.payment_date,
+    r.payment_mode,
+    r.reference_number,
+    r.bank_account_id,
+    oba.account_name AS bank_account_name,
+    r.is_locked,
+    r.locked_by,
+    _export_profile_name(r.locked_by) AS locked_by_name,
+    r.is_deleted,
+    r.created_at,
+    NULL::timestamp with time zone AS updated_at,
+    NULL::uuid AS created_by,
+    NULL::text AS created_by_name,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name
+   FROM receipts r
+     LEFT JOIN tenants tn ON tn.id = r.tenant_id
+     LEFT JOIN organization_bank_accounts oba ON oba.id = r.bank_account_id;"
+public,v_export_tenant_adjustments,view,30,1006," SELECT adj.id,
+    adj.organization_id,
+    adj.tenant_id,
+    tn.full_name AS tenant_name,
+    adj.allotment_id,
+    adj.property_id,
+    pr.property_name,
+    adj.apartment_id,
+    apt.apartment_code,
+    adj.bed_id,
+    bd.bed_code,
+    adj.adjustment_type,
+    adj.category,
+    adj.amount,
+    adj.adjustment_date,
+    adj.billing_month,
+    adj.reason,
+    adj.reference_type,
+    adj.reference_id,
+    adj.reference_number,
+    adj.is_locked,
+    adj.locked_by,
+    _export_profile_name(adj.locked_by) AS locked_by_name,
+    adj.is_deleted,
+    adj.created_at,
+    adj.created_by,
+    _export_profile_name(adj.created_by) AS created_by_name,
+    NULL::timestamp with time zone AS updated_at,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name
+   FROM tenant_adjustments adj
+     LEFT JOIN tenants tn ON tn.id = adj.tenant_id
+     LEFT JOIN properties pr ON pr.id = adj.property_id
+     LEFT JOIN apartments apt ON apt.id = adj.apartment_id
+     LEFT JOIN beds bd ON bd.id = adj.bed_id;"
+public,v_export_tenant_allotments,view,36,1117," SELECT ta.id,
+    ta.organization_id,
+    ta.tenant_id,
+    tn.full_name AS tenant_name,
+    tn.phone AS tenant_phone,
+    ta.property_id,
+    pr.property_name,
+    ta.apartment_id,
+    apt.apartment_code,
+    ta.bed_id,
+    bd.bed_code,
+    ta.staying_status::text AS status,
+    ta.booking_date,
+    ta.onboarding_date,
+    ta.notice_date,
+    ta.estimated_exit_date,
+    ta.actual_exit_date,
+    ta.monthly_rental,
+    ta.deposit_paid,
+    ta.onboarding_charges,
+    ta.processing_fee,
+    ta.discount,
+    ta.premium,
+    ta.prorated_rent,
+    ta.payment_status,
+    ta.paid_amount,
+    ta.total_due,
+    ta.balance_due,
+    ta.expected_stay_days,
+    ta.expected_payment_date,
+    ta.created_at,
+    NULL::timestamp with time zone AS updated_at,
+    NULL::uuid AS created_by,
+    NULL::text AS created_by_name,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name
+   FROM tenant_allotments ta
+     LEFT JOIN tenants tn ON tn.id = ta.tenant_id
+     LEFT JOIN properties pr ON pr.id = ta.property_id
+     LEFT JOIN apartments apt ON apt.id = ta.apartment_id
+     LEFT JOIN beds bd ON bd.id = ta.bed_id;"
+public,v_export_tenants,view,29,676," SELECT t.id,
+    t.organization_id,
+    t.property_id,
+    pr.property_name,
+    t.user_id,
+    t.first_name,
+    t.last_name,
+    t.full_name,
+    t.phone,
+    t.email,
+    t.gender,
+    t.date_of_birth,
+    t.date_of_joining,
+    t.staying_status,
+    t.profession,
+    t.company_name,
+    t.city,
+    t.state,
+    t.pincode,
+    t.kyc_completed,
+    t.tenant_rating,
+    t.pan_number,
+    t.gst_number,
+    t.created_at,
+    NULL::timestamp with time zone AS updated_at,
+    NULL::uuid AS created_by,
+    NULL::text AS created_by_name,
+    NULL::uuid AS updated_by,
+    NULL::text AS updated_by_name
+   FROM tenants t
+     LEFT JOIN properties pr ON pr.id = t.property_id;"
+public,v_invoice_settlement_status,view,10,2981," WITH ar_lines AS (
+         SELECT jl.organization_id,
+            jl.party_id AS tenant_id,
+            jl.allotment_id,
+            je.id AS journal_entry_id,
+            je.source_table,
+            je.source_id,
+            je.entry_date,
+            je.posted_at,
+            jl.line_no,
+            jl.debit,
+            jl.credit
+           FROM journal_lines jl
+             JOIN journal_entries je ON je.id = jl.journal_entry_id
+             JOIN coa_accounts a ON a.id = jl.account_id
+          WHERE a.code = '1200'::text AND jl.party_kind = 'tenant'::party_kind
+        ), ranked AS (
+         SELECT ar_lines.organization_id,
+            ar_lines.tenant_id,
+            ar_lines.allotment_id,
+            ar_lines.journal_entry_id,
+            ar_lines.source_table,
+            ar_lines.source_id,
+            ar_lines.entry_date,
+            ar_lines.posted_at,
+            ar_lines.line_no,
+            ar_lines.debit,
+            ar_lines.credit,
+            sum(ar_lines.debit) OVER w AS cum_debit,
+            sum(ar_lines.credit) OVER w AS cum_credit
+           FROM ar_lines
+          WINDOW w AS (PARTITION BY ar_lines.organization_id, ar_lines.tenant_id, ar_lines.allotment_id ORDER BY ar_lines.entry_date, ar_lines.posted_at, ar_lines.line_no ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
+        ), charges AS (
+         SELECT ranked.organization_id,
+            ranked.tenant_id,
+            ranked.allotment_id,
+            ranked.journal_entry_id,
+            ranked.source_table,
+            ranked.source_id,
+            ranked.entry_date,
+            ranked.posted_at,
+            ranked.line_no,
+            ranked.debit,
+            ranked.credit,
+            ranked.cum_debit,
+            ranked.cum_credit,
+            ranked.cum_debit - ranked.debit AS prior_debit,
+            ranked.cum_debit AS through_debit,
+            ( SELECT max(r2.cum_credit) AS max
+                   FROM ranked r2
+                  WHERE r2.organization_id = ranked.organization_id AND r2.tenant_id = ranked.tenant_id AND r2.allotment_id = ranked.allotment_id) AS total_credits
+           FROM ranked
+          WHERE ranked.debit > 0::numeric
+        )
+ SELECT organization_id,
+    tenant_id,
+    allotment_id,
+    source_table,
+    source_id AS invoice_id,
+    entry_date AS invoice_date,
+    debit AS invoice_amount,
+    GREATEST(0::numeric, LEAST(debit, COALESCE(total_credits, 0::numeric) - prior_debit)) AS amount_settled,
+    debit - GREATEST(0::numeric, LEAST(debit, COALESCE(total_credits, 0::numeric) - prior_debit)) AS amount_outstanding,
+        CASE
+            WHEN (debit - GREATEST(0::numeric, LEAST(debit, COALESCE(total_credits, 0::numeric) - prior_debit))) <= 0.01 THEN 'paid'::text
+            WHEN GREATEST(0::numeric, LEAST(debit, COALESCE(total_credits, 0::numeric) - prior_debit)) > 0::numeric THEN 'partial'::text
+            ELSE 'unpaid'::text
+        END AS settlement_status
+   FROM charges
+  WHERE source_table = 'invoices'::text;"
+public,v_je_amount_reconciliation,view,5,6346," WITH inv AS (
+         SELECT 'invoices'::text AS src,
+            ( SELECT COALESCE(sum(invoices.total_amount), 0::numeric) AS ""coalesce""
+                   FROM invoices
+                  WHERE COALESCE(invoices.is_deleted, false) = false) AS legacy_amount,
+            ( SELECT COALESCE(sum(
+                        CASE
+                            WHEN je.is_reversal_of IS NULL THEN jl.debit
+                            ELSE - jl.debit
+                        END), 0::numeric) AS ""coalesce""
+                   FROM journal_entries je
+                     JOIN journal_lines jl ON jl.journal_entry_id = je.id
+                     JOIN coa_accounts a ON a.id = jl.account_id
+                  WHERE je.source_table = 'invoices'::text AND a.account_type = 'ASSET'::account_type) AS je_net_amount
+        ), rcp AS (
+         SELECT 'receipts'::text AS ""?column?"",
+            ( SELECT COALESCE(sum(receipts.amount_paid), 0::numeric) AS ""coalesce""
+                   FROM receipts
+                  WHERE COALESCE(receipts.is_deleted, false) = false) AS ""coalesce"",
+            ( SELECT COALESCE(sum(
+                        CASE
+                            WHEN je.is_reversal_of IS NULL THEN jl.debit
+                            ELSE - jl.debit
+                        END), 0::numeric) AS ""coalesce""
+                   FROM journal_entries je
+                     JOIN journal_lines jl ON jl.journal_entry_id = je.id
+                     JOIN coa_accounts a ON a.id = jl.account_id
+                  WHERE je.source_table = 'receipts'::text AND a.account_type = 'ASSET'::account_type AND a.code ~~ '11%'::text) AS ""coalesce""
+        ), exp AS (
+         SELECT 'expenses'::text AS ""?column?"",
+            ( SELECT COALESCE(sum(expenses.amount), 0::numeric) AS ""coalesce""
+                   FROM expenses) AS ""coalesce"",
+            ( SELECT COALESCE(sum(
+                        CASE
+                            WHEN je.is_reversal_of IS NULL THEN jl.debit
+                            ELSE - jl.debit
+                        END), 0::numeric) AS ""coalesce""
+                   FROM journal_entries je
+                     JOIN journal_lines jl ON jl.journal_entry_id = je.id
+                     JOIN coa_accounts a ON a.id = jl.account_id
+                  WHERE je.source_table = 'expenses'::text AND a.account_type = 'EXPENSE'::account_type) AS ""coalesce""
+        ), op AS (
+         SELECT 'owner_payments'::text AS ""?column?"",
+            ( SELECT COALESCE(sum(COALESCE(owner_payments.escalated_amount, owner_payments.base_amount)), 0::numeric) AS ""coalesce""
+                   FROM owner_payments) AS ""coalesce"",
+            ( SELECT COALESCE(sum(
+                        CASE
+                            WHEN je.is_reversal_of IS NULL THEN jl.debit
+                            ELSE - jl.debit
+                        END), 0::numeric) AS ""coalesce""
+                   FROM journal_entries je
+                     JOIN journal_lines jl ON jl.journal_entry_id = je.id
+                     JOIN coa_accounts a ON a.id = jl.account_id
+                  WHERE je.source_table = 'owner_payments'::text AND a.account_type = 'EXPENSE'::account_type) AS ""coalesce""
+        ), adj AS (
+         SELECT 'tenant_adjustments'::text AS ""?column?"",
+            ( SELECT COALESCE(sum(tenant_adjustments.amount), 0::numeric) AS ""coalesce""
+                   FROM tenant_adjustments
+                  WHERE COALESCE(tenant_adjustments.is_deleted, false) = false) AS ""coalesce"",
+            ( SELECT COALESCE(sum(
+                        CASE
+                            WHEN je.is_reversal_of IS NULL THEN GREATEST(jl.debit, jl.credit)
+                            ELSE - GREATEST(jl.debit, jl.credit)
+                        END) / 2::numeric, 0::numeric) AS ""coalesce""
+                   FROM journal_entries je
+                     JOIN journal_lines jl ON jl.journal_entry_id = je.id
+                  WHERE je.source_table = 'tenant_adjustments'::text) AS ""coalesce""
+        ), ds AS (
+         SELECT 'deposit_settlements'::text AS ""?column?"",
+            ( SELECT COALESCE(sum(deposit_settlements.refund_amount), 0::numeric) AS ""coalesce""
+                   FROM deposit_settlements
+                  WHERE COALESCE(deposit_settlements.is_deleted, false) = false) AS ""coalesce"",
+            ( SELECT COALESCE(sum(
+                        CASE
+                            WHEN je.is_reversal_of IS NULL THEN jl.credit
+                            ELSE - jl.credit
+                        END), 0::numeric) AS ""coalesce""
+                   FROM journal_entries je
+                     JOIN journal_lines jl ON jl.journal_entry_id = je.id
+                     JOIN coa_accounts a ON a.id = jl.account_id
+                  WHERE je.source_table = 'deposit_settlements'::text AND a.account_type = 'ASSET'::account_type AND a.code ~~ '11%'::text) AS ""coalesce""
+        )
+ SELECT src AS source_table,
+    legacy_amount::numeric(16,2) AS legacy_amount,
+    je_net_amount::numeric(16,2) AS je_net_amount,
+    (je_net_amount - legacy_amount)::numeric(16,2) AS diff,
+        CASE
+            WHEN abs(je_net_amount - legacy_amount) < 0.50 THEN 'PERFECT'::text
+            WHEN (abs(je_net_amount - legacy_amount) / NULLIF(legacy_amount, 0::numeric)) < 0.001 THEN 'WITHIN_TOLERANCE'::text
+            ELSE 'INVESTIGATE'::text
+        END AS verdict
+   FROM ( SELECT inv.src,
+            inv.legacy_amount,
+            inv.je_net_amount
+           FROM inv
+        UNION ALL
+         SELECT rcp.""?column?"",
+            rcp.""coalesce"",
+            rcp.coalesce_1 AS ""coalesce""
+           FROM rcp rcp(""?column?"", ""coalesce"", coalesce_1)
+        UNION ALL
+         SELECT exp.""?column?"",
+            exp.""coalesce"",
+            exp.coalesce_1 AS ""coalesce""
+           FROM exp exp(""?column?"", ""coalesce"", coalesce_1)
+        UNION ALL
+         SELECT op.""?column?"",
+            op.""coalesce"",
+            op.coalesce_1 AS ""coalesce""
+           FROM op op(""?column?"", ""coalesce"", coalesce_1)
+        UNION ALL
+         SELECT adj.""?column?"",
+            adj.""coalesce"",
+            adj.coalesce_1 AS ""coalesce""
+           FROM adj adj(""?column?"", ""coalesce"", coalesce_1)
+        UNION ALL
+         SELECT ds.""?column?"",
+            ds.""coalesce"",
+            ds.coalesce_1 AS ""coalesce""
+           FROM ds ds(""?column?"", ""coalesce"", coalesce_1)) z
+  ORDER BY src;"
+public,v_je_intentional_skips,view,6,1390," WITH posted AS (
+         SELECT DISTINCT je.source_table,
+            je.source_id
+           FROM journal_entries je
+             JOIN journal_lines jl ON jl.journal_entry_id = je.id
+          WHERE je.is_reversal_of IS NULL
+        )
+ SELECT 'invoices'::text AS kind,
+    i.id AS source_id,
+    i.invoice_number AS reference,
+    i.invoice_date::text AS dt,
+    i.total_amount::numeric AS amount,
+    i.status
+   FROM invoices i
+  WHERE COALESCE(i.is_deleted, false) = false AND NOT (EXISTS ( SELECT 1
+           FROM posted p
+          WHERE p.source_table = 'invoices'::text AND p.source_id = i.id))
+UNION ALL
+ SELECT 'receipts'::text AS kind,
+    r.id AS source_id,
+    r.receipt_number AS reference,
+    r.payment_date::text AS dt,
+    r.amount_paid::numeric AS amount,
+    NULL::text AS status
+   FROM receipts r
+  WHERE COALESCE(r.is_deleted, false) = false AND NOT (EXISTS ( SELECT 1
+           FROM posted p
+          WHERE p.source_table = 'receipts'::text AND p.source_id = r.id))
+UNION ALL
+ SELECT 'deposit_settlements'::text AS kind,
+    d.id AS source_id,
+    NULL::text AS reference,
+    d.created_at::text AS dt,
+    d.refund_amount AS amount,
+    d.status
+   FROM deposit_settlements d
+  WHERE COALESCE(d.is_deleted, false) = false AND NOT (EXISTS ( SELECT 1
+           FROM posted p
+          WHERE p.source_table = 'deposit_settlements'::text AND p.source_id = d.id));"
+public,v_je_source_counts,view,7,2841," WITH src AS (
+         SELECT 'invoices'::text AS src,
+            ( SELECT count(*) AS count
+                   FROM invoices
+                  WHERE COALESCE(invoices.is_deleted, false) = false) AS legacy_live,
+            ( SELECT count(*) AS count
+                   FROM invoices) AS legacy_total
+        UNION ALL
+         SELECT 'receipts'::text,
+            ( SELECT count(*) AS count
+                   FROM receipts
+                  WHERE COALESCE(receipts.is_deleted, false) = false) AS count,
+            ( SELECT count(*) AS count
+                   FROM receipts) AS count
+        UNION ALL
+         SELECT 'expenses'::text,
+            ( SELECT count(*) AS count
+                   FROM expenses) AS count,
+            ( SELECT count(*) AS count
+                   FROM expenses) AS count
+        UNION ALL
+         SELECT 'tenant_transactions'::text,
+            ( SELECT count(*) AS count
+                   FROM tenant_transactions) AS count,
+            ( SELECT count(*) AS count
+                   FROM tenant_transactions) AS count
+        UNION ALL
+         SELECT 'tenant_adjustments'::text,
+            ( SELECT count(*) AS count
+                   FROM tenant_adjustments
+                  WHERE COALESCE(tenant_adjustments.is_deleted, false) = false) AS count,
+            ( SELECT count(*) AS count
+                   FROM tenant_adjustments) AS count
+        UNION ALL
+         SELECT 'deposit_settlements'::text,
+            ( SELECT count(*) AS count
+                   FROM deposit_settlements
+                  WHERE COALESCE(deposit_settlements.is_deleted, false) = false) AS count,
+            ( SELECT count(*) AS count
+                   FROM deposit_settlements) AS count
+        UNION ALL
+         SELECT 'owner_payments'::text,
+            ( SELECT count(*) AS count
+                   FROM owner_payments) AS count,
+            ( SELECT count(*) AS count
+                   FROM owner_payments) AS count
+        ), je AS (
+         SELECT journal_entries.source_table AS src,
+            count(*) FILTER (WHERE journal_entries.is_reversal_of IS NULL) AS je_forward,
+            count(*) FILTER (WHERE journal_entries.is_reversal_of IS NOT NULL) AS je_reversal,
+            count(DISTINCT journal_entries.source_id) FILTER (WHERE journal_entries.is_reversal_of IS NULL) AS distinct_forward_sources
+           FROM journal_entries
+          GROUP BY journal_entries.source_table
+        )
+ SELECT s.src AS source_table,
+    s.legacy_live,
+    s.legacy_total,
+    COALESCE(j.je_forward, 0::bigint) AS je_forward,
+    COALESCE(j.je_reversal, 0::bigint) AS je_reversal,
+    COALESCE(j.distinct_forward_sources, 0::bigint) AS je_distinct_sources,
+    s.legacy_live - COALESCE(j.distinct_forward_sources, 0::bigint) AS gap_live_minus_je
+   FROM src s
+     LEFT JOIN je j ON j.src = s.src
+  ORDER BY s.src;"
+public,v_je_stub_pollution,view,5,659," SELECT source_table,
+    count(*) FILTER (WHERE jl_cnt = 0 AND is_reversal_of IS NULL) AS empty_forward_je,
+    count(*) FILTER (WHERE jl_cnt = 0 AND is_reversal_of IS NOT NULL) AS empty_reversal_je,
+    count(*) FILTER (WHERE jl_cnt > 0) AS posted_je,
+    count(*) AS total_je
+   FROM ( SELECT je_1.id,
+            je_1.source_table,
+            je_1.is_reversal_of,
+            ( SELECT count(*) AS count
+                   FROM journal_lines jl
+                  WHERE jl.journal_entry_id = je_1.id) AS jl_cnt
+           FROM journal_entries je_1) je
+  GROUP BY source_table
+  ORDER BY (count(*) FILTER (WHERE jl_cnt = 0 AND is_reversal_of IS NULL)) DESC;"
+public,v_maintenance_by_issue_type,view,9,1031," WITH agg AS (
+         SELECT e.organization_id,
+            e.property_id,
+            date_trunc('month'::text, e.expense_date::timestamp with time zone)::date AS month,
+            it.id AS issue_type_id,
+            it.name AS issue_type_name,
+            count(DISTINCT e.ticket_resolution_id) AS resolved_tickets,
+            sum(e.amount) AS total_cost,
+            round(avg(e.amount), 2) AS avg_cost_per_ticket
+           FROM expenses e
+             JOIN issue_types it ON it.id = e.issue_type_id
+          WHERE e.ticket_resolution_id IS NOT NULL
+          GROUP BY e.organization_id, e.property_id, (date_trunc('month'::text, e.expense_date::timestamp with time zone)::date), it.id, it.name
+        )
+ SELECT organization_id,
+    property_id,
+    month,
+    issue_type_id,
+    issue_type_name,
+    resolved_tickets,
+    total_cost,
+    avg_cost_per_ticket,
+    round(100.0 * total_cost / NULLIF(sum(total_cost) OVER (PARTITION BY organization_id, property_id, month), 0::numeric), 2) AS pct_of_maintenance
+   FROM agg;"
+public,v_maintenance_metrics,view,7,680," SELECT mt.organization_id,
+    mt.property_id,
+    date_trunc('month'::text, mt.created_at)::date AS month,
+    count(*) AS tickets,
+    count(*) FILTER (WHERE mt.status = ANY (ARRAY['closed'::text, 'resolved'::text, 'completed'::text])) AS closed,
+    count(*) FILTER (WHERE mt.status <> ALL (ARRAY['closed'::text, 'resolved'::text, 'completed'::text, 'cancelled'::text])) AS open,
+    COALESCE(sum(e.amount), 0::numeric) AS cost
+   FROM maintenance_tickets mt
+     LEFT JOIN ticket_resolutions tr ON tr.ticket_id = mt.id
+     LEFT JOIN expenses e ON e.ticket_resolution_id = tr.id
+  GROUP BY mt.organization_id, mt.property_id, (date_trunc('month'::text, mt.created_at)::date);"
+public,v_occupancy,view,8,1482," WITH live_beds AS (
+         SELECT b.id,
+            b.organization_id,
+            b.apartment_id,
+            ap.property_id
+           FROM beds b
+             JOIN apartments ap ON ap.id = b.apartment_id
+          WHERE b.status = 'Live'::entity_status AND ap.status = 'Live'::entity_status
+        ), state AS (
+         SELECT b.organization_id,
+            b.property_id,
+            b.id AS bed_id,
+            (EXISTS ( SELECT 1
+                   FROM tenant_allotments a
+                  WHERE a.bed_id = b.id AND a.staying_status = 'Staying'::staying_status)) AS occupied,
+            (EXISTS ( SELECT 1
+                   FROM tenant_allotments a
+                  WHERE a.bed_id = b.id AND a.staying_status = 'Booked'::staying_status)) AS booked,
+            (EXISTS ( SELECT 1
+                   FROM tenant_allotments a
+                  WHERE a.bed_id = b.id AND a.staying_status = 'On-Notice'::staying_status)) AS on_notice
+           FROM live_beds b
+        )
+ SELECT organization_id,
+    property_id,
+    count(*) AS total_beds,
+    count(*) FILTER (WHERE occupied) AS occupied,
+    count(*) FILTER (WHERE on_notice AND occupied) AS on_notice,
+    count(*) FILTER (WHERE NOT occupied AND booked) AS booked,
+    count(*) FILTER (WHERE NOT occupied AND NOT booked AND NOT on_notice) AS vacant,
+    round(100.0 * count(*) FILTER (WHERE occupied)::numeric / NULLIF(count(*), 0)::numeric, 2) AS occupancy_pct
+   FROM state
+  GROUP BY organization_id, property_id;"
+public,v_org_cash_balance,view,2,181," SELECT organization_id,
+    sum(signed_amount) AS cash_on_hand
+   FROM v_account_balances
+  WHERE account_code = ANY (ARRAY['1110'::text, '1120'::text])
+  GROUP BY organization_id;"
+public,v_outstanding_receivables,view,6,412," SELECT organization_id,
+    party_id AS tenant_id,
+    allotment_id,
+    sum(signed_amount) AS outstanding,
+    max(entry_date) FILTER (WHERE debit > 0::numeric) AS last_charge_date,
+    max(entry_date) FILTER (WHERE credit > 0::numeric) AS last_payment_date
+   FROM v_account_balances
+  WHERE account_code = '1200'::text AND party_kind = 'tenant'::party_kind
+  GROUP BY organization_id, party_id, allotment_id;"
+public,v_pnl,view,6,937," SELECT organization_id,
+    property_id,
+    date_trunc('month'::text, entry_date::timestamp with time zone)::date AS month,
+    sum(
+        CASE
+            WHEN account_type = 'INCOME'::account_type THEN signed_amount
+            ELSE 0::numeric
+        END) AS revenue,
+    sum(
+        CASE
+            WHEN account_type = 'EXPENSE'::account_type THEN signed_amount
+            ELSE 0::numeric
+        END) AS expenses,
+    sum(
+        CASE
+            WHEN account_type = 'INCOME'::account_type THEN signed_amount
+            ELSE 0::numeric
+        END) - sum(
+        CASE
+            WHEN account_type = 'EXPENSE'::account_type THEN signed_amount
+            ELSE 0::numeric
+        END) AS net_profit
+   FROM v_account_balances
+  WHERE account_type = ANY (ARRAY['INCOME'::account_type, 'EXPENSE'::account_type])
+  GROUP BY organization_id, property_id, (date_trunc('month'::text, entry_date::timestamp with time zone)::date);"
+public,v_pnl_by_category,view,22,3949," SELECT organization_id,
+    property_id,
+    date_trunc('month'::text, entry_date::timestamp with time zone)::date AS month,
+    sum(
+        CASE
+            WHEN account_type = 'INCOME'::account_type THEN signed_amount
+            ELSE 0::numeric
+        END) AS revenue,
+    sum(
+        CASE
+            WHEN account_type = 'INCOME'::account_type AND account_code = '4100'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS rental_income,
+    sum(
+        CASE
+            WHEN account_type = 'INCOME'::account_type AND account_code = '4200'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS electricity_income,
+    sum(
+        CASE
+            WHEN account_type = 'INCOME'::account_type AND account_code = '4250'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS guest_stay_income,
+    sum(
+        CASE
+            WHEN account_type = 'INCOME'::account_type AND account_code = '4300'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS onboarding_income,
+    sum(
+        CASE
+            WHEN account_type = 'INCOME'::account_type AND account_code = '4400'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS late_fees_income,
+    sum(
+        CASE
+            WHEN account_type = 'INCOME'::account_type AND account_code = '4500'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS exit_charges_income,
+    sum(
+        CASE
+            WHEN account_type = 'EXPENSE'::account_type THEN signed_amount
+            ELSE 0::numeric
+        END) AS total_expenses,
+    sum(
+        CASE
+            WHEN account_type = 'EXPENSE'::account_type AND account_code ~~ '510%'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS owner_rent,
+    sum(
+        CASE
+            WHEN account_type = 'EXPENSE'::account_type AND account_code ~~ '52%'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS maintenance,
+    sum(
+        CASE
+            WHEN account_type = 'EXPENSE'::account_type AND account_code ~~ '53%'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS housekeeping,
+    sum(
+        CASE
+            WHEN account_type = 'EXPENSE'::account_type AND account_code ~~ '54%'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS utilities,
+    sum(
+        CASE
+            WHEN account_type = 'EXPENSE'::account_type AND account_code ~~ '55%'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS property_ops,
+    sum(
+        CASE
+            WHEN account_type = 'EXPENSE'::account_type AND account_code ~~ '56%'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS administrative,
+    sum(
+        CASE
+            WHEN account_type = 'EXPENSE'::account_type AND account_code ~~ '57%'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS salaries,
+    sum(
+        CASE
+            WHEN account_type = 'EXPENSE'::account_type AND account_code ~~ '58%'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS marketing,
+    sum(
+        CASE
+            WHEN account_type = 'EXPENSE'::account_type AND account_code ~~ '59%'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS other_expenses,
+    sum(
+        CASE
+            WHEN account_type = 'INCOME'::account_type THEN signed_amount
+            ELSE 0::numeric
+        END) - sum(
+        CASE
+            WHEN account_type = 'EXPENSE'::account_type THEN signed_amount
+            ELSE 0::numeric
+        END) AS net_profit,
+    sum(
+        CASE
+            WHEN account_type = 'EXPENSE'::account_type AND account_code ~~ '515%'::text THEN signed_amount
+            ELSE 0::numeric
+        END) AS electricity
+   FROM v_account_balances
+  WHERE account_type = ANY (ARRAY['INCOME'::account_type, 'EXPENSE'::account_type])
+  GROUP BY organization_id, property_id, (date_trunc('month'::text, entry_date::timestamp with time zone)::date);"
+public,v_property_expense_share,view,5,836," WITH p AS (
+         SELECT v_account_balances.organization_id,
+            date_trunc('month'::text, v_account_balances.entry_date::timestamp with time zone)::date AS month,
+            v_account_balances.property_id,
+            sum(v_account_balances.signed_amount) AS expenses
+           FROM v_account_balances
+          WHERE v_account_balances.account_type = 'EXPENSE'::account_type AND v_account_balances.property_id IS NOT NULL
+          GROUP BY v_account_balances.organization_id, (date_trunc('month'::text, v_account_balances.entry_date::timestamp with time zone)::date), v_account_balances.property_id
+        )
+ SELECT organization_id,
+    month,
+    property_id,
+    expenses,
+    round(100.0 * expenses / NULLIF(sum(expenses) OVER (PARTITION BY organization_id, month), 0::numeric), 2) AS pct_of_org_expenses
+   FROM p;"
+public,v_revenue_by_period,view,6,410," SELECT organization_id,
+    property_id,
+    date_trunc('month'::text, entry_date::timestamp with time zone)::date AS month,
+    account_code,
+    account_name,
+    sum(signed_amount) AS revenue
+   FROM v_account_balances
+  WHERE account_type = 'INCOME'::account_type
+  GROUP BY organization_id, property_id, (date_trunc('month'::text, entry_date::timestamp with time zone)::date), account_code, account_name;"
+public,v_tenant_aging,view,8,1285," WITH ar_charges AS (
+         SELECT jl.organization_id,
+            jl.party_id AS tenant_id,
+            jl.allotment_id,
+            je.entry_date AS charge_date,
+            jl.debit - jl.credit AS net
+           FROM journal_lines jl
+             JOIN journal_entries je ON je.id = jl.journal_entry_id
+             JOIN coa_accounts a ON a.id = jl.account_id
+          WHERE a.code = '1200'::text AND jl.party_kind = 'tenant'::party_kind
+        )
+ SELECT organization_id,
+    tenant_id,
+    allotment_id,
+    sum(
+        CASE
+            WHEN (CURRENT_DATE - charge_date) >= 0 AND (CURRENT_DATE - charge_date) <= 30 THEN net
+            ELSE 0::numeric
+        END) AS bucket_0_30,
+    sum(
+        CASE
+            WHEN (CURRENT_DATE - charge_date) >= 31 AND (CURRENT_DATE - charge_date) <= 60 THEN net
+            ELSE 0::numeric
+        END) AS bucket_31_60,
+    sum(
+        CASE
+            WHEN (CURRENT_DATE - charge_date) >= 61 AND (CURRENT_DATE - charge_date) <= 90 THEN net
+            ELSE 0::numeric
+        END) AS bucket_61_90,
+    sum(
+        CASE
+            WHEN (CURRENT_DATE - charge_date) > 90 THEN net
+            ELSE 0::numeric
+        END) AS bucket_90_plus,
+    sum(net) AS total
+   FROM ar_charges
+  GROUP BY organization_id, tenant_id, allotment_id;"
+public,v_tenant_current_dues,view,11,1367," SELECT jl.organization_id,
+    jl.party_id AS tenant_id,
+    jl.allotment_id,
+    sum(
+        CASE
+            WHEN a.code = '1200'::text THEN jl.debit - jl.credit
+            ELSE 0::numeric
+        END) AS ar_balance,
+    sum(
+        CASE
+            WHEN a.code = '2100'::text THEN jl.credit - jl.debit
+            ELSE 0::numeric
+        END) AS deposit_held,
+    sum(
+        CASE
+            WHEN a.code = '2400'::text THEN jl.credit - jl.debit
+            ELSE 0::numeric
+        END) AS booking_advance,
+    sum(
+        CASE
+            WHEN a.code = '1200'::text THEN jl.debit - jl.credit
+            ELSE 0::numeric
+        END) AS net_dues,
+    max(je.entry_date) FILTER (WHERE a.code = '1200'::text AND jl.credit > 0::numeric) AS last_payment_date,
+    max(je.entry_date) FILTER (WHERE a.code = '1200'::text AND jl.debit > 0::numeric) AS last_charge_date,
+    count(*) FILTER (WHERE a.code = '1200'::text AND jl.debit > 0::numeric) AS charge_count,
+    count(*) FILTER (WHERE a.code = '1200'::text AND jl.credit > 0::numeric) AS payment_count
+   FROM journal_lines jl
+     JOIN journal_entries je ON je.id = jl.journal_entry_id
+     JOIN coa_accounts a ON a.id = jl.account_id
+  WHERE jl.party_kind = 'tenant'::party_kind AND (a.code = ANY (ARRAY['1200'::text, '2100'::text, '2400'::text]))
+  GROUP BY jl.organization_id, jl.party_id, jl.allotment_id;"
+public,v_tenant_ledger,view,19,928," SELECT je.organization_id,
+    jl.party_id AS tenant_id,
+    jl.allotment_id,
+    je.entry_date,
+    je.posted_at,
+    je.id AS journal_entry_id,
+    je.is_reversal_of,
+    je.source_table,
+    je.source_id,
+    COALESCE(NULLIF(btrim(jl.memo), ''::text), je.description) AS description,
+    a.code AS account_code,
+    a.name AS account_name,
+    jl.debit,
+    jl.credit,
+    sum(jl.debit - jl.credit) OVER (PARTITION BY je.organization_id, jl.party_id, jl.allotment_id, jl.account_id ORDER BY je.entry_date, je.posted_at, jl.line_no, jl.id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_balance,
+    jl.memo,
+    jl.property_id,
+    jl.apartment_id,
+    jl.bed_id
+   FROM journal_lines jl
+     JOIN journal_entries je ON je.id = jl.journal_entry_id
+     JOIN coa_accounts a ON a.id = jl.account_id
+  WHERE jl.party_kind = 'tenant'::party_kind AND (a.code = ANY (ARRAY['1200'::text, '2100'::text, '2400'::text]));"
+public,v_tenant_lifecycle_events,view,9,615," SELECT a.organization_id,
+    a.property_id,
+    a.apartment_id,
+    a.bed_id,
+    a.tenant_id,
+    a.id AS allotment_id,
+    a.onboarding_date AS event_date,
+    'move_in'::text AS event,
+    a.staying_status::text AS staying_status
+   FROM tenant_allotments a
+  WHERE a.onboarding_date IS NOT NULL
+UNION ALL
+ SELECT a.organization_id,
+    a.property_id,
+    a.apartment_id,
+    a.bed_id,
+    a.tenant_id,
+    a.id AS allotment_id,
+    a.actual_exit_date AS event_date,
+    'move_out'::text AS event,
+    a.staying_status::text AS staying_status
+   FROM tenant_allotments a
+  WHERE a.actual_exit_date IS NOT NULL;"
+public,v_trial_balance,view,8,315," SELECT organization_id,
+    account_code,
+    account_name,
+    account_type,
+    normal_balance,
+    sum(debit) AS total_debit,
+    sum(credit) AS total_credit,
+    sum(debit) - sum(credit) AS balance
+   FROM v_account_balances
+  GROUP BY organization_id, account_code, account_name, account_type, normal_balance;"
+public,v_trial_balance_detailed,view,15,1924," WITH RECURSIVE account_tree AS (
+         SELECT a.id,
+            a.organization_id,
+            a.code,
+            a.name,
+            a.account_type,
+            a.normal_balance,
+            a.parent_id,
+            a.is_active,
+            a.code AS root_code,
+            a.name AS root_name,
+            0 AS depth
+           FROM coa_accounts a
+          WHERE a.parent_id IS NULL
+        UNION ALL
+         SELECT c.id,
+            c.organization_id,
+            c.code,
+            c.name,
+            c.account_type,
+            c.normal_balance,
+            c.parent_id,
+            c.is_active,
+            t_1.root_code,
+            t_1.root_name,
+            t_1.depth + 1
+           FROM coa_accounts c
+             JOIN account_tree t_1 ON t_1.id = c.parent_id
+        ), account_balances AS (
+         SELECT journal_lines.organization_id,
+            journal_lines.account_id,
+            sum(journal_lines.debit) AS total_debit,
+            sum(journal_lines.credit) AS total_credit
+           FROM journal_lines
+          GROUP BY journal_lines.organization_id, journal_lines.account_id
+        )
+ SELECT t.organization_id,
+    t.id AS account_id,
+    t.code,
+    t.name,
+    t.account_type,
+    t.normal_balance,
+    t.parent_id,
+    t.depth,
+    t.root_code,
+    t.root_name,
+    COALESCE(ab.total_debit, 0::numeric) AS total_debit,
+    COALESCE(ab.total_credit, 0::numeric) AS total_credit,
+    COALESCE(ab.total_debit, 0::numeric) - COALESCE(ab.total_credit, 0::numeric) AS net_debit,
+        CASE t.normal_balance
+            WHEN 'DEBIT'::normal_balance THEN COALESCE(ab.total_debit, 0::numeric) - COALESCE(ab.total_credit, 0::numeric)
+            ELSE COALESCE(ab.total_credit, 0::numeric) - COALESCE(ab.total_debit, 0::numeric)
+        END AS balance,
+    t.is_active
+   FROM account_tree t
+     LEFT JOIN account_balances ab ON ab.account_id = t.id AND ab.organization_id = t.organization_id;"

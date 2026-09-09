@@ -1,0 +1,3 @@
+source,rows,total_ar,total_deposit_held,total_booking_advance
+v_outstanding_receivables (reversals EXCLUDED),626,83297.85,null,null
+v_tenant_current_dues (reversals INCLUDED),645,83297.85,4221150.00,0.00

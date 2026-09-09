@@ -1,0 +1,61 @@
+schema_name,routine_name,arguments,return_type,definition
+public,get_universal_metrics_series,"p_organization_id uuid, p_months integer","TABLE(period text, revenue numeric, collections numeric, expenses numeric, pending_dues numeric, deposits_held numeric)","CREATE OR REPLACE FUNCTION public.get_universal_metrics_series(p_organization_id uuid, p_months integer DEFAULT 12)
+ RETURNS TABLE(period text, revenue numeric, collections numeric, expenses numeric, pending_dues numeric, deposits_held numeric)
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+  with months as (
+    select
+      to_char(d, 'YYYY-MM') as period,
+      d::date as month_start
+    from generate_series(
+      date_trunc('month', now())
+        - make_interval(months => greatest(1, least(coalesce(p_months, 12), 36)) - 1),
+      date_trunc('month', now()),
+      interval '1 month'
+    ) as d
+  ),
+  monthly as (
+    select
+      date_trunc('month', entry_date)::date as month_start,
+      sum(signed_amount) filter (where account_code like '4%') as revenue,
+      sum(signed_amount) filter (where account_code = '1000' and source_table = 'receipts') as collections,
+      sum(signed_amount) filter (where account_code like '5%') as expenses,
+      sum(signed_amount) filter (where account_code = '1200') as ar_delta,
+      sum(signed_amount) filter (where account_code in ('2100', '2400')) as dep_delta
+    from v_account_balances
+    where organization_id = p_organization_id
+    group by 1
+  ),
+  cum as (
+    select
+      month_start,
+      revenue,
+      collections,
+      expenses,
+      sum(coalesce(ar_delta, 0)) over (order by month_start) as pending_dues,
+      sum(coalesce(dep_delta, 0)) over (order by month_start) as deposits_held
+    from monthly
+  )
+  select
+    m.period,
+    coalesce(c.revenue, 0) as revenue,
+    coalesce(c.collections, 0) as collections,
+    coalesce(c.expenses, 0) as expenses,
+    -- Balances carry forward through months with no journal activity.
+    coalesce((
+      select c2.pending_dues from cum c2
+      where c2.month_start <= m.month_start
+      order by c2.month_start desc limit 1
+    ), 0) as pending_dues,
+    coalesce((
+      select c2.deposits_held from cum c2
+      where c2.month_start <= m.month_start
+      order by c2.month_start desc limit 1
+    ), 0) as deposits_held
+  from months m
+  left join cum c on c.month_start = m.month_start
+  order by m.period;
+$function$
+"

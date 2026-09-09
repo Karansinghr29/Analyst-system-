@@ -1,0 +1,31 @@
+# Runtime dependencies for the deployed Owner Intelligence service.
+#
+# Pinned to the versions this application was built and verified against. A deployment that
+# resolves different majors is a deployment running different arithmetic: pandas in particular
+# decides dtypes, and the calculators were validated against these dtypes.
+#
+# Deliberately absent: any vendor LLM SDK. The LLM boundary speaks OpenAI-compatible HTTP
+# through the adapter the deployment configures, so no model vendor's library is a dependency
+# of this service.
+
+# The owner application on Streamlit Community Cloud. Presentation only: it renders projections
+# the engine below produces and calculates nothing.
+streamlit==1.59.0
+
+# The engine. pandas and numpy in particular decide dtypes, and every calculator was validated
+# against these versions -- a deployment that resolves different majors is running different
+# arithmetic.
+pandas==3.0.1
+numpy==2.4.2
+
+# The FastAPI surface. Not imported by the Streamlit app (api/service.py imports the framework
+# inside create_app, and AnalyticsService needs none of it), but kept so the same repository can
+# still serve the HTTP deployment.
+fastapi==0.135.1
+uvicorn[standard]==0.41.0
+pydantic==2.12.5
+starlette==0.52.1
+
+# Only used when DATABASE_URL names a managed Postgres for owner-decision persistence.
+# Imported lazily, so a deployment without DATABASE_URL never loads it.
+psycopg[binary]==3.2.10

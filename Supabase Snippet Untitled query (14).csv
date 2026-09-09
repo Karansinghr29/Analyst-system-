@@ -1,0 +1,14 @@
+table_schema,table_name,column_name,enum_type,is_nullable,column_default
+public,coa_accounts,account_type,account_type,false,null
+public,user_roles,role,app_role,false,null
+public,bed_rates,bed_type,bed_type,false,null
+public,beds,bed_type,bed_type,false,null
+public,apartments,status,entity_status,true,'In-Progress'::entity_status
+public,beds,status,entity_status,true,null
+public,properties,status,entity_status,true,'In-Progress'::entity_status
+public,coa_accounts,normal_balance,normal_balance,false,null
+public,coa_accounts,party_kind,party_kind,true,null
+public,journal_lines,party_kind,party_kind,true,null
+public,tenant_allotments,staying_status,staying_status,true,'Booked'::staying_status
+public,bed_rates,toilet_type,toilet_type,false,null
+public,beds,toilet_type,toilet_type,false,'Common'::toilet_type

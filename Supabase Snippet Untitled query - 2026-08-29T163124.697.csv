@@ -1,0 +1,31 @@
+schema_name,routine_name,arguments,return_type,definition
+public,enforce_subledger_completeness,,trigger,"CREATE OR REPLACE FUNCTION public.enforce_subledger_completeness()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+    v_requires_party     boolean;
+    v_requires_allotment boolean;
+    v_code               text;
+BEGIN
+    SELECT requires_party, requires_allotment, code
+      INTO v_requires_party, v_requires_allotment, v_code
+      FROM coa_accounts
+     WHERE id = NEW.account_id;
+
+    IF v_requires_party AND (NEW.party_kind IS NULL OR NEW.party_id IS NULL) THEN
+        RAISE EXCEPTION
+          'Account % (code %) requires party_kind + party_id on every posting',
+          NEW.account_id, v_code;
+    END IF;
+
+    IF v_requires_allotment AND NEW.allotment_id IS NULL THEN
+        RAISE EXCEPTION
+          'Account % (code %) requires allotment_id on every posting',
+          NEW.account_id, v_code;
+    END IF;
+
+    RETURN NEW;
+END
+$function$
+"

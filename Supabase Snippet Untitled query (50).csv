@@ -1,0 +1,5 @@
+party_kind,lines,distinct_parties,distinct_accounts,total_debit,total_credit,net
+(NULL),18850,0,20,112771276,94376330,18394947
+tenant,14407,513,4,100952546,105314283,-4361737
+owner,350,8,1,3488625,16121000,-12632375
+vendor,287,6,1,0,1400835,-1400835

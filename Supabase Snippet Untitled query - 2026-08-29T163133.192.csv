@@ -1,0 +1,22 @@
+schema_name,routine_name,arguments,return_type,definition
+public,delete_journal_entries_on_source_delete,,trigger,"CREATE OR REPLACE FUNCTION public.delete_journal_entries_on_source_delete()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_ids uuid[];
+  v_source_table text := TG_ARGV[0];
+BEGIN
+  SELECT array_agg(id) INTO v_ids
+  FROM journal_entries
+  WHERE source_table = v_source_table AND source_id = OLD.id;
+
+  IF v_ids IS NOT NULL THEN
+    DELETE FROM journal_lines   WHERE journal_entry_id = ANY(v_ids);
+    DELETE FROM journal_entries WHERE id               = ANY(v_ids);
+  END IF;
+  RETURN OLD;
+END $function$
+"

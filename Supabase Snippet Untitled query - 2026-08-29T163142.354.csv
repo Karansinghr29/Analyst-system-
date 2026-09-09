@@ -1,0 +1,16 @@
+schema_name,routine_name,arguments,return_type,definition
+public,delete_invoice_journal_entries_on_invoice_delete,,trigger,"CREATE OR REPLACE FUNCTION public.delete_invoice_journal_entries_on_invoice_delete()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+BEGIN
+  DELETE FROM public.journal_entries
+  WHERE source_table = 'invoices'
+    AND source_id = OLD.id;
+
+  RETURN OLD;
+END;
+$function$
+"

@@ -1,0 +1,46 @@
+schema_name,routine_name,arguments,return_type,definition
+public,validate_deposit_settlement,,trigger,"CREATE OR REPLACE FUNCTION public.validate_deposit_settlement()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_exit_date date;
+  v_status    text;
+  v_total_ded numeric;
+BEGIN
+  v_total_ded := COALESCE(NEW.pending_rent, 0)
+               + COALESCE(NEW.pending_eb, 0)
+               + COALESCE(NEW.pending_late_fees, 0)
+               + COALESCE(NEW.damages, 0)
+               + COALESCE(NEW.other_deductions, 0);
+
+  IF v_total_ded <= 0 THEN
+    RETURN NEW;   -- pure transfer / refund-only row: always allowed
+  END IF;
+
+  IF NEW.allotment_id IS NULL THEN
+    RETURN NEW;   -- legacy tenant-only settlement: keep prior behaviour
+  END IF;
+
+  SELECT staying_status::text, actual_exit_date
+    INTO v_status, v_exit_date
+    FROM public.tenant_allotments
+   WHERE id = NEW.allotment_id;
+
+  -- Block ONLY the obviously wrong case: deductions on an allotment that
+  -- has neither an actual_exit_date nor an Exited / Cancelled status.
+  IF v_exit_date IS NULL
+     AND COALESCE(v_status, '') NOT IN ('Exited', 'Cancelled') THEN
+    RAISE EXCEPTION
+      'deposit_settlements: cannot record ₹% in deductions on allotment % (status=%, actual_exit_date IS NULL). The tenant must have exited (or the row must be a deduction-free transfer settlement).',
+      v_total_ded, NEW.allotment_id, COALESCE(v_status, 'unknown')
+      USING ERRCODE = 'check_violation',
+            HINT = 'If you intended to record a deposit transfer, leave all deduction fields at zero.';
+  END IF;
+
+  RETURN NEW;
+END;
+$function$
+"

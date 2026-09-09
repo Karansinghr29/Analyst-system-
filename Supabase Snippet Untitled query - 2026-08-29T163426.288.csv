@@ -1,0 +1,37 @@
+schema_name,routine_name,arguments,return_type,definition
+market,refresh_org_metrics,IN p_organization_id uuid,null,"CREATE OR REPLACE PROCEDURE market.refresh_org_metrics(IN p_organization_id uuid)
+ LANGUAGE plpgsql
+AS $procedure$
+BEGIN
+  INSERT INTO market.locality_market_metrics (
+    organization_id, locality_id, room_type_label, period_month,
+    price_p25, price_median, price_p75, price_avg, property_count, calculated_at
+  )
+  SELECT
+    cp.organization_id,
+    cp.locality_id,
+    rt.label,
+    to_char(now(), 'YYYY-MM'),
+    ROUND(percentile_cont(0.25) WITHIN GROUP (ORDER BY rt.current_price)::numeric, 0),
+    ROUND(percentile_cont(0.50) WITHIN GROUP (ORDER BY rt.current_price)::numeric, 0),
+    ROUND(percentile_cont(0.75) WITHIN GROUP (ORDER BY rt.current_price)::numeric, 0),
+    ROUND(AVG(rt.current_price)::numeric, 0),
+    COUNT(DISTINCT cp.id)::integer,
+    now()
+  FROM market.competitor_properties cp
+  JOIN market.competitor_room_types rt ON rt.competitor_id = cp.id
+  WHERE cp.organization_id = p_organization_id
+    AND cp.is_active = true
+    AND rt.current_price IS NOT NULL
+  GROUP BY cp.organization_id, cp.locality_id, rt.label
+  ON CONFLICT (organization_id, locality_id, room_type_label, period_month)
+  DO UPDATE SET
+    price_p25      = EXCLUDED.price_p25,
+    price_median   = EXCLUDED.price_median,
+    price_p75      = EXCLUDED.price_p75,
+    price_avg      = EXCLUDED.price_avg,
+    property_count = EXCLUDED.property_count,
+    calculated_at  = now();
+END;
+$procedure$
+"

@@ -1,0 +1,37 @@
+# What does NOT belong in the deployed image.
+#
+# The evidence CSVs at the package root are deliberately NOT excluded: they are the product's
+# source of truth and the image is meant to carry them.
+
+.git
+.github
+.claude
+.pytest_cache
+**/__pycache__
+*.pyc
+*.pyo
+
+# The test suite and its fixtures are ~4 MB and run nowhere in production.
+tests/
+
+# The one-off build scripts that produced the export and the manifest. They still carry the
+# absolute path of the machine the export was built on, they are never imported by the service,
+# and shipping them would invite someone to run one against a deployed container.
+scripts/01_verify_zip_redundancy.py
+scripts/02_verify_row_counts.py
+scripts/03_build_manifest.py
+
+# Local runtime state. The deployed service keeps decisions in the configured database.
+*.db
+*.sqlite
+*.sqlite3
+
+# Local environment. Secrets are set in the platform, never baked into an image.
+.env
+.env.*
+
+# Editor and OS noise.
+.vscode
+.idea
+.DS_Store
+Thumbs.db

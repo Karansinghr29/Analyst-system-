@@ -1,0 +1,32 @@
+schema_name,routine_name,arguments,return_type,definition
+public,enforce_journal_balanced,,trigger,"CREATE OR REPLACE FUNCTION public.enforce_journal_balanced()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+    v_diff numeric;
+    v_id   uuid;
+BEGIN
+    v_id := COALESCE(NEW.id, OLD.id);
+
+    SELECT COALESCE(SUM(debit) - SUM(credit), 0)
+      INTO v_diff
+      FROM journal_lines
+     WHERE journal_entry_id = v_id;
+
+    -- Allow header-only inserts that haven't yet written lines (helper functions
+    -- write lines after creating the header within the same transaction)
+    IF NOT EXISTS (SELECT 1 FROM journal_lines WHERE journal_entry_id = v_id) THEN
+        RETURN NEW;
+    END IF;
+
+    IF ABS(v_diff) > 0.005 THEN
+        RAISE EXCEPTION
+          'Journal entry % is unbalanced by %. Debits must equal credits.',
+          v_id, v_diff;
+    END IF;
+
+    RETURN NEW;
+END
+$function$
+"

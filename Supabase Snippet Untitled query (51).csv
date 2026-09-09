@@ -1,0 +1,23 @@
+party_kind,code,name,account_type,lines,debit,credit
+owner,2200,Owner Rent Payable,LIABILITY,350,3488625,16121000
+vendor,2500,Accounts Payable - Vendors,LIABILITY,287,0,1400835
+null,1120,Bank - Operating Account,ASSET,7050,87851416,19160428
+null,4100,Rental Income,INCOME,4902,1941242,66855202
+null,4200,Electricity Income,INCOME,4437,437291,7064256
+null,4900,Other Income,INCOME,653,317370,751959
+null,5260,Maintenance - HVAC,EXPENSE,596,579741,0
+null,5100,Owner Rent Expense,EXPENSE,345,19019250,0
+null,1500,Property Assets,ASSET,287,1400835,0
+null,4500,Exit Charges Income,INCOME,141,27000,292105
+null,4300,Onboarding Fees,INCOME,120,2000,118000
+null,5150,Electricity Payments,EXPENSE,70,1030618,0
+null,5900,Other Expenses,EXPENSE,51,39366,0
+null,5290,Maintenance - Other,EXPENSE,42,37601,0
+null,5630,Bank Charges & CC Fees,EXPENSE,39,3193,9262
+null,4250,Guest Stay Income,INCOME,37,0,122489
+null,5240,Maintenance - Appliances,EXPENSE,35,45835,0
+null,5800,Marketing & Tenant Acquisition,EXPENSE,23,24660,29
+null,5220,Maintenance - Electrical,EXPENSE,11,12010,0
+null,4400,Late Fees,INCOME,6,0,2600
+null,5230,Maintenance - Carpentry,EXPENSE,4,559,0
+null,5210,Maintenance - Plumbing,EXPENSE,1,1290,0

@@ -1,0 +1,23 @@
+schema_name,routine_name,arguments,return_type,definition
+public,sync_tenant_staying_status_on_delete,,trigger,"CREATE OR REPLACE FUNCTION public.sync_tenant_staying_status_on_delete()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE latest_status text;
+BEGIN
+  SELECT staying_status::text INTO latest_status
+  FROM tenant_allotments
+  WHERE tenant_id = OLD.tenant_id
+  ORDER BY
+    CASE staying_status::text
+      WHEN 'Staying' THEN 1 WHEN 'On-Notice' THEN 2 WHEN 'Booked' THEN 3 ELSE 4
+    END, created_at DESC
+  LIMIT 1;
+  UPDATE tenants
+    SET staying_status = COALESCE(latest_status, 'new')
+  WHERE id = OLD.tenant_id;
+  RETURN OLD;
+END;
+$function$
+"

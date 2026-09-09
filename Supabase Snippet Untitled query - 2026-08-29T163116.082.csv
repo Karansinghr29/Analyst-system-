@@ -1,0 +1,35 @@
+schema_name,routine_name,arguments,return_type,definition
+public,enforce_period_lock,,trigger,"CREATE OR REPLACE FUNCTION public.enforce_period_lock()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+    v_status text;
+    v_period text;
+    v_org    uuid;
+BEGIN
+    v_period := COALESCE(NEW.period, OLD.period);
+    v_org    := COALESCE(NEW.organization_id, OLD.organization_id);
+
+    SELECT status INTO v_status
+      FROM public.accounting_periods
+     WHERE organization_id = v_org AND period = v_period;
+
+    IF v_status IS NULL OR v_status = 'open' THEN
+        RETURN COALESCE(NEW, OLD);
+    END IF;
+
+    -- Reversal entries are allowed on closed (but not locked) periods for inserts/updates.
+    IF TG_OP <> 'DELETE'
+       AND v_status = 'closed'
+       AND NEW.is_reversal_of IS NOT NULL THEN
+        RETURN NEW;
+    END IF;
+
+    RAISE EXCEPTION
+      'Cannot write journal entry to period % (status=%). Reopen the period first.',
+      v_period, v_status;
+END
+$function$
+"

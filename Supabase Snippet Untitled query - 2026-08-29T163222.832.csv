@@ -1,0 +1,30 @@
+schema_name,routine_name,arguments,return_type,definition
+public,normalize_owner_payment_journal_dates,,trigger,"CREATE OR REPLACE FUNCTION public.normalize_owner_payment_journal_dates()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_bill_date date;
+BEGIN
+  IF NEW.source_table IS DISTINCT FROM 'owner_payments' OR NEW.source_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT bill_date
+    INTO v_bill_date
+    FROM owner_payments
+   WHERE id = NEW.source_id;
+
+  IF v_bill_date IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  NEW.entry_date := v_bill_date;
+  NEW.period     := to_char(v_bill_date, 'YYYY-MM');
+
+  RETURN NEW;
+END;
+$function$
+"
