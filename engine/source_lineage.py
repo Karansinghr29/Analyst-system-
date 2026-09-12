@@ -115,7 +115,10 @@ class LineageRecord:
         if self.validation_reference:
             lines.append(f"Validation reference: {self.validation_reference[:160]}")
         if self.validation_status:
-            lines.append(f"Validation status: {self.validation_status}")
+            # A stored offline result looked up by reference name -- not a comparison of the
+            # live value, so it is labelled as a record rather than as this figure's status.
+            lines.append(f"Offline validation record: {self.validation_status} "
+                         f"(stored result, not a live comparison)")
         if self.trust_level:
             lines.append(f"Trust level: {self.trust_level}")
         if self.conflict_ids:

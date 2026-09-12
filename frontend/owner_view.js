@@ -462,7 +462,31 @@ export function ownerInsight(insight) {
     why: ownerProse(source.why_it_matters),
     action: ownerProse(source.recommended_action),
     actions: source.ai_entry_points || [],
+    guidance: ownerGuidance(source.guidance),
   };
+}
+
+/*
+ * The five-part guidance on an item that asks something of the owner: what is happening, why it
+ * is flagged, what to do, the decision needed (absent where none is), and how the figures are
+ * treated until it is resolved. Scrubbed like any other owner text; null when the item has none.
+ */
+export const GUIDANCE_PARTS = [
+  ['what', 'What is happening'],
+  ['why', 'Why this is flagged'],
+  ['do', 'What you should do'],
+  ['decision', 'Decision needed'],
+  ['until', 'Until resolved'],
+];
+
+export function ownerGuidance(guidance) {
+  if (!guidance || !guidance.what) return null;
+  const out = {};
+  GUIDANCE_PARTS.forEach(function (part) {
+    const text = ownerProse(guidance[part[0]]);
+    if (text) out[part[0]] = text;
+  });
+  return out;
 }
 
 /*
@@ -484,6 +508,7 @@ export function ownerAction(item) {
   return {
     recommendation: ownerProse(source.recommendation),
     confidence: ownerText(source.confidence),
+    guidance: ownerGuidance(source.guidance),
   };
 }
 

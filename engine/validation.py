@@ -72,6 +72,10 @@ class ValidationIndex:
                         k: row[k] for k in ValidationRow.__dataclass_fields__
                     })
 
+    def row(self, check_id):
+        """One stored check by its id, or None."""
+        return self._by_check_id.get(check_id)
+
     def rows_for(self, metric_id):
         check_ids = self._PREFIX_MAP.get(metric_id, ())
         return [self._by_check_id[c] for c in check_ids if c in self._by_check_id]

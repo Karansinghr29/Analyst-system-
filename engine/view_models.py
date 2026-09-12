@@ -37,6 +37,7 @@ from engine.citation import chain_for
 from engine import analyst_roles, trust_presentation as tp
 from engine import owner_presentation as op
 from engine import owner_semantics as osem
+from engine import role_scope
 from engine import capability_disclosure as cd
 from engine import change_detection as cd_detect
 from engine import variance
@@ -191,6 +192,11 @@ class InsightCard:
     # Where the item came from a data-quality finding, that finding's kind -- so Owner Home and
     # the Data Quality page describe the same finding with the same words.
     action_kind: str = ""
+    # For an item that asks something of the owner: what is happening, why it is flagged, what to
+    # do, the decision needed (empty where none is), and how the figures are treated until then.
+    # `what_happened`, `why_it_matters` and `recommended_action` carry the same text for surfaces
+    # that read only those fields.
+    guidance: dict = field(default_factory=dict)
 
     def as_dict(self):
         return {k: (list(v) if isinstance(v, tuple) else v)
@@ -482,7 +488,9 @@ class ViewModelBuilder:
         answer_degraded = (card.trust_level == "NOT_DETERMINABLE"
                            and gate_level != "NOT_DETERMINABLE")
         effective_level = gate_level
-        pres = tp.present(effective_level)
+        # The validation result decides whether a SAFE tile may say "checked"; the gate's level
+        # is unchanged.
+        pres = tp.present(effective_level, validation_status=card.validation_status)
 
         # The owner-safe half of the semantic contract, attached to the tile so no surface has to
         # derive a business name, a business question or a usability answer for itself. The
@@ -784,7 +792,10 @@ class ViewModelBuilder:
         # the changes, the Positive category is permanently empty -- not because nothing moved,
         # but because movements were only ever rendered in a separate strip the owner might not
         # connect to the risk feed.
-        insights = (tuple(self._insight_card(i) for i in self.insight_engine.generate())
+        # The figures the owner guidance quotes: calculator outputs and register fields, gathered
+        # once for this page. Nothing is computed for the guidance itself.
+        facts = self._guidance_facts()
+        insights = (tuple(self._insight_card(i, facts) for i in self.insight_engine.generate())
                     + tuple(c for c in (self._change_insight(ch) for ch in raw_changes)
                             if c is not None))
 
@@ -814,6 +825,8 @@ class ViewModelBuilder:
         # subject is resolved once and every surface says the same thing.
         owner_actions = {card.insight_id: card.recommended_action
                          for card in insights if card.recommended_action}
+        guidance_by_insight = {card.insight_id: card.guidance
+                               for card in insights if card.guidance}
 
         def _owner_action(insight_id, fallback):
             return owner_actions.get(insight_id) or op.sanitize_owner_text(fallback) or (
@@ -826,10 +839,17 @@ class ViewModelBuilder:
         subjects_by_insight = {card.insight_id: op.owner_subject_names(card.metric_ids,
                                                                        self.registry)
                                for card in insights}
+        # Which measures each queued item is actually about. Owner Home does not use it -- it
+        # shows the whole queue -- but a role workspace does, to leave out a decision about
+        # measures its lens cannot see.
+        metrics_by_insight = {card.insight_id: tuple(card.metric_ids or ())
+                              for card in insights}
         grouped = op.group_owner_decisions(
             [{"insight_id": a["insight_id"], "trust": a["trust"],
               "decision": _owner_action(a["insight_id"], a["decision"]),
-              "conflict_ids": list(a["conflict_ids"])}
+              "conflict_ids": list(a["conflict_ids"]),
+              "metric_ids": metrics_by_insight.get(a["insight_id"], ()),
+              "guidance": guidance_by_insight.get(a["insight_id"], {})}
              for a in summary.attention_required],
             subjects_by_insight)
         decision_queue = tuple(
@@ -847,7 +867,8 @@ class ViewModelBuilder:
              "recommendation": _owner_action(a["insight_id"], a["recommendation"]),
              "trust": a["trust"],
              "confidence": op.owner_confidence(a["confidence"]),
-             "evidence": list(a["evidence"])}
+             "evidence": list(a["evidence"]),
+             "guidance": guidance_by_insight.get(a["insight_id"], {})}
             for a in summary.what_to_do)
 
         # The same canonical census the trust-overview measure now presents, so the two cannot
@@ -919,7 +940,55 @@ class ViewModelBuilder:
             ),
         )
 
-    def _insight_card(self, insight):
+    def _guidance_facts(self):
+        """The figures the owner guidance quotes, read from the engine's own outputs and the
+        data-quality register. Nothing is computed here: every value is a calculator output or a
+        recorded register field. A figure that cannot be read is left out, and the guidance that
+        needed it falls back to the item's existing wording."""
+        facts = {"dq": dict(self._dq_rows)}
+
+        def answer(metric_id):
+            try:
+                return self.executor.execute(metric_id)
+            except Exception:
+                return None
+
+        def definitions(result):
+            if result is None or not result.results:
+                return []
+            labels = [r.definition_label for r in result.results]
+            owner = op.owner_definition_labels(labels) if len(labels) > 1 else labels
+            return [(label, r.value) for label, r in zip(owner, result.results)]
+
+        def first(result):
+            return result.results[0] if result is not None and result.results else None
+
+        occupancy = answer("M.OCC.001")
+        facts["occupancy"] = definitions(occupancy)
+        facts["historical"] = [label for label, _ in definitions(answer("M.OCC.005"))]
+        facts["staying"] = getattr(first(answer("M.TEN.001")), "value", None)
+        facts["on_notice"] = getattr(first(answer("M.TEN.002")), "value", None)
+        facts["tenant_dues"] = definitions(answer("M.AR.001A"))
+        facts["owner_rent"] = definitions(answer("M.OWN.002"))
+        profit = answer("M.PROFIT.001")
+        facts["profit"] = definitions(profit)
+        gaps = [d.get("absolute_difference")
+                for d in ((profit.numeric_difference or {}).values() if profit else ())]
+        facts["profit_gap"] = max((g for g in gaps if isinstance(g, (int, float))), default=None)
+        facts["repeated_invoices"] = getattr(first(answer("M.RISK.005")), "value", None)
+        facts["phantom_deposits"] = getattr(first(answer("M.RISK.004")), "value", None)
+        receipts = first(answer("M.RISK.006"))
+        facts["duplicate_receipts"] = getattr(receipts, "value", None)
+        facts["duplicate_receipts_note"] = getattr(receipts, "limitations", "") or ""
+        facts["overlaps"] = getattr(first(answer("M.RISK.007")), "value", None)
+        reconciliation = getattr(first(answer("M.RISK.008")), "value", None) or {}
+        facts["settlement_recon"] = reconciliation.get("deposit_settlements")
+        facts["settlement_totals"] = getattr(first(answer("M.DEP.002")), "value", None)
+        categories = getattr(first(answer("M.EXP.002")), "value", None) or {}
+        facts["electricity"] = categories.get("electricity")
+        return facts
+
+    def _insight_card(self, insight, facts=None):
         dq_sev = ""
         dq_kind = ""
         # The findings behind this insight, classified by the same classifier the Data Quality
@@ -948,7 +1017,16 @@ class ViewModelBuilder:
         # originals stay on the insight object for the evidence chain.
         subjects = op.owner_subject_names(insight.trigger_metric_ids, self.registry)
         what, why, action, changes_it = op.owner_insight_view(insight, cat, subjects)
+        # An item that asks something of the owner is said in the five-part guidance structure,
+        # built from the evidence behind it. Its trust posture and category are unchanged.
+        guidance = {}
+        if osem.needs_attention(action_category):
+            guidance = op.owner_guidance(insight.insight_id, facts or {}, insight.trust_level,
+                                         op.owner_subject_of(subjects), (what, why, action))
+            what, why = guidance["what"], guidance["why"]
+            action = op.guidance_action_text(guidance)
         return InsightCard(
+            guidance=guidance,
             insight_id=insight.insight_id,
             category=cat,
             category_label=tp.INSIGHT_CATEGORIES[cat]["label"],
@@ -1626,8 +1704,15 @@ class ViewModelBuilder:
         if role is None:
             return {"role_id": role_id, "available": False,
                     "reason": f"{role_id!r} is not a registered analyst role."}
-        metric_ids = tuple(m for m in self.registry.all_ids()
+        # What the role MAY see, by its declared domains. Authorization, unchanged.
+        authorized = tuple(m for m in self.registry.all_ids()
                            if self.registry.get(m).domain in role.domains)
+        # What the workspace is ABOUT, from links the registry records -- a calculator
+        # computing a metric, or a working set its specification cites. Never wider than
+        # `authorized`, and never a word matched against a description. Every list below is
+        # scoped by it, so a decision or a finding about another lens's measures stays there.
+        scope = role_scope.workspace_scope(role, authorized)
+        metric_ids = scope.scope_ids
         home = home if home is not None else self.owner_home()
         in_scope = set(metric_ids)
         return {
@@ -1640,9 +1725,24 @@ class ViewModelBuilder:
             "tiles": tuple(self.tile(m, role.display_name).as_dict()
                            for m in metric_ids),
             "metric_count": len(metric_ids),
+            # What leads, in the role's own capability order. Emphasis only: every id is
+            # already in `tiles`.
+            "foreground": scope.foreground_ids,
+            # Which rule produced the scope, and -- where the records could not narrow this
+            # lens -- the owner's sentence saying so. `scope_reason` is for the audit trail.
+            "scope_basis": scope.basis,
+            "scope_note": scope.note,
+            "scope_reason": scope.reason,
             "changes": tuple(_change_dict(c) for c in home.changes
                              if c.metric_id in in_scope),
-            "decision_queue": tuple(home.decision_queue),
+            # Scoped like every other list in this method. It was not, so an Operations or
+            # Risk lens received the same five decisions as everyone -- about tenant dues,
+            # owner rent, profit and occupancy, measures outside its own scope. The decision
+            # itself is untouched and still shows in full on Owner Home; this only leaves out
+            # the ones this lens cannot see the measures for.
+            "decision_queue": tuple(d for d in home.decision_queue
+                                    if not d.get("metric_ids")
+                                    or in_scope & set(d.get("metric_ids") or ())),
             "insights": tuple(i.as_dict() for i in home.insights
                               if in_scope & set(i.metric_ids or ())),
             # The same three-way split Owner Home renders, narrowed to this lens. A workspace
@@ -1935,6 +2035,16 @@ class ViewModelBuilder:
             changes = tuple(_change_dict(self._change_card(c)) for c in usable)
             insights = tuple(card.as_dict() for card in
                              (self._change_insight(c) for c in usable) if card is not None)
+
+        # One heading per measure. Each tile is named on its own, so the four tenant-dues
+        # definitions and the two collections readings arrive under the same owner name and render
+        # as the same card repeated. Where names collide within this section, each colliding tile
+        # carries its own qualifier from the registry name; every other tile keeps its name.
+        # Naming only: no tile is added, dropped, merged or re-postured.
+        semantic = [self.registry.get(t["metric_id"]).semantic_name for t in tiles]
+        tiles = tuple(
+            dict(t, business_name=name) if name != op.owner_measure_name(sem) else t
+            for t, sem, name in zip(tiles, semantic, op.distinct_measure_names(semantic)))
 
         # Conflicts and data-quality findings that actually touch this section's metrics. Both
         # are read off the tiles, so a metric cannot appear clean here and conflicted elsewhere.

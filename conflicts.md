@@ -828,59 +828,72 @@ on the other convention.
 **Definition A — source amount.** `SUM(receipts.amount_paid) WHERE NOT is_deleted` = **5758
 live receipts**, aggregate ₹81 855 686.97 (`H.001`).
 
-**Definition B — ledger net amount.** `SUM(CASE WHEN is_reversal_of IS NULL THEN debit ELSE
--debit END)` for `journal_entries` with `source_table='receipts' AND account_type='ASSET' AND
-code LIKE '11%'` = ₹87 196 482.59 (`H.001`).
+**Definition B — ledger cash posted (`M.COL.003`).** `SUM(debit)` for `journal_entries` with
+`source_table='receipts' AND code IN ('1110','1120')`, reversal-**excluded** (reversal entries
+and the forward entries they reverse are both dropped) = **₹81 839 404.52**, from 5 755
+bank-debit lines — exactly one per posted live receipt, credit side ₹0.00. This is the
+convention `get_universal_metrics_v2`'s own `v_collections` SQL applies.
 
-**Exact numerical difference:** **₹5 340 795.62**, verdict `INVESTIGATE` (`H.001`).
-`H.048` (11-row trace, all rows examined in this pass) shows the row-level pattern: most rows
-have `entry_count` 3–9 and `reversal_count` 1–4 with `ledger_amount` a multiple of
-`source_amount` roughly proportional to `entry_count` — e.g. receipt `d4bc6a49…`: `source_amount
-₹43 089.00`, `ledger_amount ₹232 356.00` (≈5.4×), `entry_count=9, reversal_count=4` (5 forward
-postings); receipt `381520ec…`: `₹40 300.00` vs `₹80 242.00` (≈2×), `entry_count=3,
-reversal_count=1` (2 forward postings). One row (`8a8f7848…`) shows `ledger_amount=0,
-entry_count=0` against a nonzero `source_amount` of ₹16 627.45 — the opposite failure mode (no
-ledger posting exists at all for a live receipt).
+**Definition B′ — `H.001`'s diagnostic figure (a view construction, not a registry metric).**
+`SUM(CASE WHEN is_reversal_of IS NULL THEN debit ELSE -debit END)` over the same rows =
+₹87 196 482.59 (`H.001`). The `-debit` branch never fires: reversal lines carry credit and not
+debit, so nothing is subtracted and the result is gross debit including ₹5 357 078.07 of
+forward postings that were later reversed.
 
-**Which datasets/views produce each:** `receipts` (A, `T.receipts`); `journal_entries`/
-`journal_lines` filtered to `source_table='receipts'` (B); `v_je_amount_reconciliation` (`H.001`)
-computes the aggregate; the row-level trace (`H.048`) is **not** one of the 54 exported view
-definitions — its exact generating SQL is not in `M.016`, so its precise filter logic (beyond
-what the column names and observed values reveal) is **not determinable from exported
-evidence**.
+**Exact numerical difference (A vs B):** **₹16 282.45**, traced to exactly 4 receipts:
 
-**Likely mechanism, consistent with the observed pattern but not proven by an exported query
-definition:** receipts with multiple forward postings (`entry_count` > 1 net of reversals)
-suggest repeated edit-and-repost cycles (`FN.trg_receipt_journal_post`'s `UPDATE` branch reverses
-and reposts on any change to `amount_paid, payment_date, payment_mode, bank_account_id,
-receipt_type, tenant_id, tenant_allotment_id, receipt_number`). If `H.048`'s "ledger_amount" sums
-raw forward-postings without netting historical corrections against each other (i.e. treats each
-repost as additive rather than only counting the *current* live posting), a receipt edited
-5 times would show a ledger total roughly 5× its current `amount_paid` — consistent with the
-`d4bc6a49…` example above. **This is offered as the most evidence-consistent explanation of the
-observed ratio pattern, not as a proven mechanism**, since `H.048`'s own SQL is not exported for
-direct inspection.
+| receipt | number | source amount | ledger debit | source − ledger |
+|---|---|---|---|---|
+| `8a8f7848…` | `VISTA/26-27/04/R00250` | ₹16 627.45 | ₹0.00 (no journal entry exists) | +₹16 627.45 |
+| `3789971b…` | `VISTA/26-27/08/R00062` | ₹19 519.00 | ₹19 919.00 | −₹400.00 |
+| `118da474…` | `VISTA/26-27/08/R00156` | ₹17 630.00 | ₹17 577.00 | +₹53.00 |
+| `ec8a0992…` | `VISTA/26-27/08/R00136` | ₹18 042.00 | ₹18 040.00 | +₹2.00 |
 
-**Evidence:** `H.001`, `H.048`, `T.receipts`, `FN.trg_receipt_journal_post`.
+These are rows 5, 8, 9 and 10 of `H.048`; `H.033` reports the same 3 unposted live receipts
+(₹16 627) independently. The other 7 `H.048` rows all carry `reversal_count ≥ 1` — their
+inflation is netted away entirely under B and contributes ₹0.00.
 
-**Resolution status:** Conflicting definitions exist; partial mechanism traced (repeated
-edit/repost cycles correlate with the size of the drift) but not proven from source, and one
-receipt (`8a8f7848…`) shows the opposite failure (missing ledger posting entirely, unrelated to
-the repost-inflation hypothesis).
+**Exact numerical difference (A vs B′):** ₹5 340 795.62, verdict `INVESTIGATE` (`H.001`).
+This is **a formula artifact, proven by direct recomputation**, not a receipts drift: 112
+reversal credit lines totalling ₹5 357 078.07 exactly offset the 112 forward debit lines they
+reverse, and ₹5 357 078.07 − ₹16 282.45 = ₹5 340 795.62 exactly. The repost-accumulation
+hypothesis recorded earlier does explain the per-row `H.048` ratios, but it does **not**
+explain this aggregate, which the missing subtraction accounts for in full.
 
-**Recommended handling:** flag receipts with `entry_count > 1` (i.e. any edit history) for
-review before using ledger-derived receipt totals at the individual-receipt grain; org-level
-aggregates (`v_pnl`, `v_revenue_by_period`) are **not** directly affected by this drift since
-they use `v_account_balances` (reversals excluded), which nets forward+reversal pairs to zero
-correctly — this diagnostic's "ledger_amount" figure appears to be a different, non-netted
-computation specific to `H.048`'s own (unexported) query, not a flaw in the aggregate ledger
-views themselves.
+**Which datasets/views produce each:** `receipts` (A, `T.receipts`); `journal_lines` joined to
+`coa_accounts`, filtered to `source_table='receipts'` (B, `T.journal_lines`/`T.coa_accounts`);
+`v_je_amount_reconciliation` (`H.001`) computes B′; the row-level trace (`H.048`) is **not**
+one of the 54 exported view definitions — its generating SQL is not in `M.016`.
 
-**Expose both to AI?** Only when asked about a specific receipt's history; not needed for
-org-level revenue/collections totals (those are unaffected per the note above).
+**Why the 4 residual receipts differ: not determinable from exported evidence.** `8a8f7848…`
+has zero `journal_entries` rows, so no posting was ever made; the reason is not recorded. The
+other three each have one entry, never reversed, internally balanced at the ledger amount,
+with `posted_at` equal to `receipts.created_at` to the microsecond. `build_receipt_lines()` —
+the function that decides the posted amount — is not among the 28 exported function
+definitions, and `receipts` carries no `updated_at` column, so a later edit can be neither
+confirmed nor ruled out.
 
-**Blocks/limits:** Limits — affects individual-receipt-level ledger tracing and the aggregate
-`H.001` reconciliation figure; does not block `v_pnl`/`v_revenue_by_period` totals.
+**Evidence:** `H.001`, `H.033`, `H.048`, `T.receipts`, `T.journal_lines`, `T.coa_accounts`,
+`FN.get_universal_metrics_v2`, `FN.trg_receipt_journal_post`.
+
+**Resolution status:** **Conflicting definitions exist. Business decision required.** A and B
+are each faithful to a definition the application itself ships — `get_universal_metrics`
+computes A, `get_universal_metrics_v2` computes B — and no exported view, function or document
+names either as the official collections figure. B′ is not a candidate definition; it is a
+defective reproduction of B. Neither A nor B has been selected as canonical.
+
+**Recommended handling:** keep A (`M.COL.001`) and B (`M.COL.003`) as separate metrics, both
+disclosed, neither merged and neither retired. Route the 4 residual receipts to operations as
+records to check, starting with `VISTA/26-27/04/R00250` (₹16 627.45, unposted). Do not quote
+₹5 340 795.62 as a receipts drift.
+
+**Expose both to AI?** Both definitions stay exposed as separate metrics (`M.COL.001`,
+`M.COL.003`), with the ₹16 282.45 residual disclosed alongside either figure. Trust
+classification unchanged: `DISCLOSE`.
+
+**Blocks/limits:** Limits — a business decision is outstanding on which definition is
+official, and individual-receipt ledger tracing is affected for the 4 named receipts; does not
+block `v_pnl`/`v_revenue_by_period` totals.
 
 ---
 

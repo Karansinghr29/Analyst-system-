@@ -37,18 +37,20 @@ rows.append(compare("COLL.01", "Collections Def A: receipts.amount_paid total (l
                      round(collections_A, 2), round(money(pd.Series([h001_r["legacy_amount"]])).iloc[0], 2),
                      "H.001 v_je_amount_reconciliation (legacy_amount)"))
 
-# ---- Definition B: ledger-derived, account 1110/1120 debit, source_table=receipts,
-#      reversal-excluded (matches get_universal_metrics_v2's v_collections logic exactly) ----
+# ---- Definition B reference check: H.001's own je_net_amount construction for
+#      receipts -- sign-inverted on debit, which leaves reversed forwards in the total.
+#      This is NOT M.COL.003's definition (that one is reversal-EXCLUDED, matching
+#      get_universal_metrics_v2's v_collections); it is supporting evidence only. ----
 m = jl.merge(coa[["id", "code"]].rename(columns={"id": "account_id"}), on="account_id", how="left")
 m["debit"] = money(m["debit"]).fillna(0)
 m["credit"] = money(m["credit"]).fillna(0)
 recv = m[(m["source_table"] == "receipts") & (m["code"].isin(["1110", "1120"]))]
 recv_net = recv.apply(lambda r: r["debit"] if pd.isna(r.get("is_reversal_of")) else -r["debit"], axis=1).sum()
-rows.append(compare("COLL.02", "Collections Def B: ledger net (1110/1120 debit, source=receipts)",
+rows.append(compare("COLL.02", "H.001 je_net_amount reproduction for receipts (gross 1110/1120 debit, reversed forwards not netted)",
                      round(recv_net, 2), round(money(pd.Series([h001_r["je_net_amount"]])).iloc[0], 2),
                      "H.001 v_je_amount_reconciliation (je_net_amount)",
-                     explanation_ok="Reproduces H.001's INVESTIGATE-flagged receipts drift "
-                                    "(Rs.5,340,795.62) exactly -- see DQ.006/C.014."))
+                     explanation_ok="Supporting evidence only, NOT a reference for M.COL.003. Reproduces H.001's own construction exactly: CASE WHEN is_reversal_of IS NULL THEN debit ELSE -debit END never subtracts, because reversal lines carry credit and not debit, so the figure is gross debit including Rs.5,357,078.07 of forward postings that were later reversed. "
+                                    "M.COL.003's reversal-excluded value is Rs.81,839,404.52 and its residual against M.COL.001 is Rs.16,282.45 (DQ.006/C.014)."))
 
 # ---- DQ.030 proof: get_universal_metrics_series' account_code='1000' filter ----
 wrong_code = m[(m["source_table"] == "receipts") & (m["code"] == "1000")]
@@ -65,12 +67,12 @@ rows.append({
         f"account, not a leaf posting account) for source_table='receipts' returns {len(wrong_code)} "
         f"rows and Rs.{wrong_code_total:,.2f} total. This is the exact filter used in "
         f"get_universal_metrics_series' 'collections' column -- proving from real data (not just "
-        f"code-reading) that it returns zero for every month. Compare to COLL.02's correct "
+        f"code-reading) that it returns zero for every month. Compare to COLL.02's gross "
         f"1110/1120-based figure of Rs.{recv_net:,.2f}."
     ),
 })
 print(f"  DQ.030 proof: account_code='1000' matches {len(wrong_code)} rows, "
-      f"Rs.{wrong_code_total:,.2f} (should be Rs.{recv_net:,.2f} using the correct 1110/1120 accounts)")
+      f"Rs.{wrong_code_total:,.2f} (H.001's gross 1110/1120 figure is Rs.{recv_net:,.2f})")
 
 # ---- monthly collections series (Def A, by payment_date) ----
 r_live = r_live.copy()

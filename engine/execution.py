@@ -216,7 +216,8 @@ class MetricExecutor:
     def _to_result(self, spec: MetricSpec, label: str, calc_out: CalcOutput) -> MetricResult:
         # [9] Validation -- the Validator role. Sanity failures HALT (analytics_execution_spec 8);
         # they are re-raised as SanityCheckFailure rather than degraded into a returned answer.
-        verdict = self.validator.validate(spec, calc_out.value, calc_out.unit)
+        verdict = self.validator.validate(spec, calc_out.value, calc_out.unit,
+                                          definition_label=label)
 
         chain = citation_mod.chain_for(spec)
         conf = confidence_mod.assess(spec.trust_level, verdict, spec)

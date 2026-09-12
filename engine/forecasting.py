@@ -26,9 +26,10 @@ Two of those results decided the design:
     to 0.44, and using occupancy as a regressor produces 5-7x the error of a univariate model.
     It is therefore NOT used. See `evaluate_drivers()`, which reports this rather than hiding it.
 
-  * **There is no usable seasonality.** Seasonal naive is the worst method tested. The apparent
-    August trough is one artifact month (2023-08 recorded 20,400 between neighbours of 411,010
-    and 430,289), and 3.4 years is too short to separate a seasonal pattern from the growth ramp.
+  * **There is no usable seasonality.** Seasonal naive is the worst method tested, and 3.4 years
+    is too short to separate a seasonal pattern from the growth ramp. (An apparent August trough
+    -- 2023-08 at 20,400 -- was a revenue-by-month calculator defect that dropped one of the
+    month's two (property, month) rows; the ledger records 448,141 for that month.)
 
 Prediction intervals are EMPIRICAL -- the 10th/90th percentiles of the backtest's own residuals
 at each horizon. No normality is assumed, because nothing in the evidence establishes one.

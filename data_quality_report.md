@@ -30,19 +30,24 @@ Formal data-quality register for the future AI analytics trust layer. Consolidat
 | [DQ.004](#dq004) | HIGH | Five structurally different, non-interchangeable occupancy definitions coexist | N/A (definitional, not row-level) | N/A | Occupancy % (all forms), 'current occupancy' AI answers, ... | CONFLICTING DEFINITIONS EXIST |
 | [DQ.005](#dq005) | HIGH | v_occupancy SQL defect: 7 On-Notice-only beds fall into none of the view's ... | 7 beds (of 195 Live-in-Live-apa... | N/A | v_occupancy.on_notice (structurally always 0), v_occupanc... | MEASURED |
 | [DQ.008](#dq008) | HIGH | Deposit settlement source amount vs ledger amount, with a suspected systema... | 43 settlements (H.050) | ₹583,495.34 (H.001 aggreg... | Individual-settlement ledger tracing, deposit-refund reco... | MEASURED |
-| [DQ.011](#dq011) | HIGH | Deposit-phantom exposure: deposit held with no live tenant relationship and... | 32 allotments | Not determinable from exp... | Deposit-held total, refund liability estimation | MEASURED |
+| [DQ.011](#dq011) | HIGH | Deposit-phantom exposure: deposit held with no live tenant relationship and... | 32 allotments | ₹722,700.00 | Deposit-held total, refund liability estimation | MEASURED |
 | [DQ.013](#dq013) | HIGH | Duplicate invoices: same allotment + billing_month + invoice_type appearing... | 322 duplicate groups, 356 exces... | ₹4,040,627.00 combined va... | Total invoiced revenue, invoice-count-based metrics, AR i... | MEASURED |
 | [DQ.015](#dq015) | HIGH | P&L named category buckets exclude account 5150 (Electricity Payments) enti... | 57 of 57 months affected (100% ... | ₹1,030,618.00 (57-month t... | v_pnl_by_category's 9 named category columns, any expense... | MEASURED |
 | [DQ.028](#dq028) | HIGH | EB billing_month text format ('Mon-YY') is incompatible with every other bi... | 1411 of 1411 electricity_readin... | N/A (formatting defect, n... | Any join or comparison between EB billing_month and invoi... | MEASURED |
 | [DQ.030](#dq030) | HIGH | get_universal_metrics_series.collections filters on the wrong account code ... | N/A (code-level defect, not a r... | N/A | get_universal_metrics_series.collections (a monthly colle... | MEASURED |
+| [DQ.033](#dq033) | HIGH | Payroll materially absent from the ledger: 2 of 3 team payments never posted; the... | 2 of 3 team_payments unposted; 71... | ₹45,420.00 proven absent... | M.EXP.001, M.EXP.002, M.PNL.001 (M.PROFIT.001 already BLOCK) | MEASURED |
+| [DQ.034](#dq034) | HIGH | Two maintenance-cost definitions disagree by 23.51x; the ticket-linked subset is shown as 100% of... | 450 of 465 maintenance expenses ha... | ₹648,240.00 difference... | M.MAINT.002, M.EXP.002 (M.MAINT.001/M.EXP.001/M.PNL.001 unaffected) | CONFLICTING DEFINITIONS EXIST |
+| [DQ.035](#dq035) | HIGH | Five populations each answer "deposit exposure"; two overlap by ₹386,500.00 becaus... | 32 flagged allotments across 25 t... | ₹722,700.00, of which ₹386,500.00... | M.RISK.004, M.RISK.003, M.DEP.001 | CONFLICTING DEFINITIONS EXIST |
+| [DQ.036](#dq036) | HIGH | v_tenant_aging is net ledger movement by posting age, not overdue aging; its bucke... | 644 rows (F.008); 3 future-dated... | bucket sum ₹78,329.85 vs total ₹83,297.85, gap ₹4,968.00... | M.RISK.002 | CONFLICTING DEFINITIONS EXIST |
+| [DQ.037](#dq037) | HIGH | Every tenant-dues definition mixes current and ended tenancies; the sign of the ans... | 626 allotments with AR activity, ... | ₹83,297.85 = current −₹26,494.15 + ended +₹109,792.00... | M.AR.001A, M.AR.001B, M.AR.001C, M.AR.001D | CONFLICTING DEFINITIONS EXIST |
 | [DQ.003](#dq003) | MEDIUM | Overlapping tenant_allotments on the same bed (concurrent occupancy conflicts) | 187 bed x allotment-pair rows | Not determinable from exp... | Occupancy (all definitions that count allotments per bed)... | MEASURED |
-| [DQ.006](#dq006) | MEDIUM | Receipt source amount vs ledger amount diagnostic diff | 11 receipts traced (H.048); agg... | Aggregate diff ₹5,340,795... | Individual-receipt ledger tracing; the H.001/H.048 diagno... | MEASURED |
+| [DQ.006](#dq006) | MEDIUM | Receipt source vs ledger amount: ₹16,282.45 residual; H.001's ₹5,340,795.62 is a formula artifact | 4 receipts (of the 11 traced in H.048); 3 li... | ₹16,282.45 residual (0.02%)... | M.COL.003 vs M.COL.001 reconciliation; individual-rece... | MEASURED |
 | [DQ.007](#dq007) | MEDIUM | Invoice source amount vs ledger amount diagnostic diff, fully row-reconciled | 120 invoices (H.049) | ₹2,423,270.00 (H.001 aggr... | Individual-invoice ledger tracing | MEASURED |
 | [DQ.010](#dq010) | MEDIUM | 200 journal entries reference a currently soft-deleted receipt | 200 of 6085 receipt-sourced jou... | Not determinable from exp... | Receipt-sourced ledger completeness checks | MEASURED |
 | [DQ.012](#dq012) | MEDIUM | Deposit settlement anomalies: premature settlements, duplicate open settlem... | 22 rows across 3 anomaly types | Not determinable from exp... | Deposit settlement validity, deposit-held balance by tenant | MEASURED |
 | [DQ.014](#dq014) | MEDIUM | Duplicate receipts detected but not remediated; some duplicates hard-delete... | 9 detection groups, 23 receipt ... | Sum of duplicate_count=2 ... | Total collections if duplicates remain live and unremediated | MEASURED |
 | [DQ.017](#dq017) | MEDIUM | Owner-rent date-basis mismatch causes 7 of 54 months to show a nonzero ledg... | 7 of 54 months | Net ₹0.00 across all 54 m... | Month-by-month owner-rent P&L trend (not the annual/lifet... | MEASURED |
-| [DQ.018](#dq018) | MEDIUM | v_tenant_aging buckets are CURRENT_DATE-dependent and not reproducible from... | 644 rows (F.008, all rows affec... | N/A (bucket totals sum co... | AR aging bucket distribution (0-30/31-60/61-90/90+) | MEASURED |
+| [DQ.018](#dq018) | MEDIUM | v_tenant_aging buckets are CURRENT_DATE-dependent and not reproducible from... | 644 rows (F.008, all rows affec... | ₹4,968.00 bucket gap; buckets... | AR aging bucket distribution (0-30/31-60/61-90/90+) | MEASURED |
 | [DQ.020](#dq020) | MEDIUM | All 345 owner_payments ledger postings occurred in a single ~82-minute batc... | 345 of 345 owner_payments rows;... | ₹19,019,250.00 (full owne... | Any owner-payment posting-time or cash-flow-timing analys... | MEASURED |
 | [DQ.025](#dq025) | MEDIUM | NULL organization_id rows in 4 tables | whatsapp_events 600/1943; ticke... | N/A (operational tables, ... | Any org-scoped rollup of ticket_logs (maintenance activit... | MEASURED |
 | [DQ.026](#dq026) | MEDIUM | 4 of 5 declared polymorphic relationships have no exported orphan-check dia... | N/A (verification coverage gap,... | N/A | Confidence in referential integrity for owner_payments/te... | UNVERIFIED |
@@ -305,12 +310,12 @@ Ordered by severity (CRITICAL first), matching the summary matrix above.
 **Business area:** Deposits
 
 **Affected rows:** 32 allotments
-**Affected amount:** Not determinable from exported evidence (v_diag_deposit_phantom does not export a deposit_paid sum; per-row deposit_paid values are in the underlying rows)
+**Affected amount:** ₹722,700.00 (sum of `deposit_paid` over the 32 flagged allotments, computed directly from `tenant_allotments`; `v_diag_deposit_phantom` itself exports no summed amount)
 **Percentage:** Not meaningfully expressible as a % without a comparable denominator
 
 **Evidence file(s):** H.045 (v_diag_deposit_phantom)
 
-**Root cause / mechanism:** tenant_allotments rows with deposit_paid > 0, staying_status IN ('Exited','Cancelled'), and NO deposit_settlements row at all -- the tenant has left but the deposit was never processed for refund or forfeiture through the settlement workflow.
+**Root cause / mechanism:** tenant_allotments rows with deposit_paid > 0, staying_status IN ('Exited','Cancelled'), and NO deposit_settlements row at all -- the allotment has ended and no settlement was recorded against it. This does NOT mean the deposit was never processed for every row: deposits transfer between a tenant's allotments through manual journal entries, and at least 13 of the 32 flagged amounts are still represented in the ledger through another allotment of the same tenant ([DQ.035](#dq035)). 15 have no account 2100 balance for the tenant at all and 4 are partly represented. What happened to each is Not determinable from exported evidence.
 
 **Root cause confidence:** PROVEN (direct query result, unambiguous filter conditions)
 
@@ -462,6 +467,339 @@ Ordered by severity (CRITICAL first), matching the summary matrix above.
 
 ---
 
+<a id="dq033"></a>
+### DQ.033 — Payroll is materially absent from the ledger: 2 of 3 team payments never posted, and the 1 posted salary payment is classified outside the salaries bucket
+
+**Severity:** HIGH
+**Business area:** Payroll / ledger completeness
+
+**Affected rows:** 2 of 3 `team_payments` rows unposted (1 posted); 71 `team_salary_bills` rows, 0 posted; 18 `payroll_sync` rows, 0 posted; 0 journal lines on account `5700 Salaries & Benefits` and 0 on `5310 Housekeeping - Salaries`
+**Affected amount:** **₹45,420.00 proven absent from the ledger** — a ₹18,000.00 team payment and a ₹27,420.00 team payment, both `payment_date` 2026-04-27, both `payment_month` 2026-03. Neither has an `expenses` row, neither has a journal entry, neither has a ledger posting. A further ₹2,420.00 **is** in the ledger, but on `5900 Other Expenses`.
+**Percentage:** 0.219% of M.EXP.001 (₹45,420.00 of ₹20,784,831.96)
+
+**Evidence file(s):** T.team_payments, T.team_salary_bills, T.payroll_sync, T.expenses, T.expense_categories, T.journal_lines, T.journal_entries, T.coa_accounts, FN.TRG (55 triggers, none on the three payroll tables), FN.trg_expense_journal_post, M.009 (declared FK `expenses_team_payment_id_fkey`), M.006
+
+**What is proven.** Proven from exported evidence:
+
+1. **₹45,420.00 is absent from the ledger.** The ₹18,000.00 and ₹27,420.00 payments (both `payment_date` 2026-04-27) have no row in `expenses` referencing them, no `journal_entries` row, and no `journal_lines` row carrying their ids in `source_id` or `memo`.
+2. **₹2,420.00 is present but classified as `5900 Other Expenses`.** It reaches the ledger through the declared foreign key `expenses.team_payment_id -> team_payments.id` and a `journal_entries` row with `source_table='expenses'` and `source_id` equal to that expense row — a declared relationship and a journal source, not an amount or date resemblance. Because it posted to 5900, it falls in the `other_expenses` bucket and **not** in the `salaries` bucket, which reports ₹0.00.
+3. **No posting mechanism exists for payroll.** `FN.TRG` lists 55 triggers; none is on `team_payments`, `team_salary_bills` or `payroll_sync`. The journal-posting triggers cover assets, asset_payments, deposit_settlements, eb_payments, expenses, invoices, owner_payments, receipts and tenant_adjustments only.
+4. **Both salary accounts are empty.** `5700 Salaries & Benefits` and `5310 Housekeeping - Salaries` carry zero journal lines and ₹0.00 under either reversal convention.
+
+**Observation, not a cause.** The active `Salaries` expense category has a **NULL** `gl_account_id`, while a separate active category `Staff Salaries` maps to `5700 Salaries & Benefits` and has zero expense rows. This is recorded as an observation only. It is **not** claimed to have caused the 5900 classification.
+
+**Root cause / mechanism:** Not determinable from exported evidence. `build_expense_lines()`, the function that selects the account for an expense posting, is not among the 28 exported function definitions, so the account-selection rule cannot be read. Why the two payments were never entered as expenses is likewise not recorded — operator omission, deliberate exclusion and a failed backfill are all consistent with the export, and nothing distinguishes them.
+
+**Root cause confidence:** PROVEN for the ₹45,420.00 absence, the ₹2,420.00 posting to 5900, the empty 5700/5310 accounts and the absence of any payroll posting trigger — each re-derived directly from the exported CSVs. Not determinable from exported evidence for why the payments were never entered and why the posted one was classified to 5900.
+
+**Status:** MEASURED
+
+**Metrics affected:** M.EXP.001, M.EXP.002, M.PNL.001. M.PROFIT.001 is already `BLOCK` and is not changed by this finding.
+
+**What SAFE and MATCH mean here.** M.EXP.001 and M.PNL.001 remain `SAFE` with a `MATCH` validation label, and that is correct: each reproduces `v_pnl` (`F.001`) exactly. That label means **the metric accurately represents what the ledger holds. It is not evidence that payroll is complete.** The ₹45,420.00 never reached the ledger, so no ledger-versus-ledger check can detect it. M.EXP.002 reports `salaries: ₹0.00`, which is wrong as a business statement in two separate ways — ₹2,420.00 of salary sits in `other_expenses`, and ₹45,420.00 is not in the ledger at all.
+
+**Business impact:** M.EXP.001 is understated by the proven ₹45,420.00 (0.219%). The unresolved basis question is materially larger than that: depending on which basis the business adopts, the amount that belongs in Expenses ranges from ₹47,840.00 to ₹1,063,458.44.
+
+**Records requiring operational reconciliation:** the two unposted `team_payments` rows — ₹18,000.00 (`payment_month` 2026-03, team member `caa1b17f…`) and ₹27,420.00 (`payment_month` 2026-03, team member `274203e6…`), both `payment_date` 2026-04-27, both `bank transfer`.
+
+**Payroll basis is unresolved.** Three defensible readings of "payroll expense" exist in the evidence, and **these must not be added together** — their periods overlap and no foreign key links the three tables, so the overlap is unquantified:
+
+| Basis | Source | Amount |
+|---|---|---|
+| Cash paid | `team_payments` | ₹47,840.00 |
+| Earned / accrued | `team_salary_bills.net_payable` | ₹1,063,458.44 (draft ₹961,288.47; approved ₹33,653.85; paid ₹68,516.12) |
+| Computed payroll | `payroll_sync.payable_salary` | ₹220,451.61 (one period, 2026-05-29 to 2026-06-28) |
+
+Whether a `team_salary_bills` row and a `team_payments` row describe the same obligation is **Not determinable from exported evidence** — `M.009` shows each table's only foreign keys are `organization_id` and `team_member_id`, and `payroll_sync` declares none at all. **Conflicting definitions exist. Business decision required.**
+
+**Offline-fixable from exported evidence:** No  |  **Live-DB investigation/fix required:** Yes
+
+**Blocks an AI/business metric:** No, with disclosure
+
+**Recommended handling in the semantic layer:** Carry this finding on M.EXP.001, M.EXP.002 and M.PNL.001 as a disclosure. Do not create a calculated payroll-expense metric, and do not select cash-paid, accrued or computed payroll as the official basis — the exported evidence does not establish which the business intends.
+
+**Recommended AI disclosure/response behavior:** `DISCLOSE` — When asked about expenses, profit or a monthly P&L, give the figure and state that ₹45,420.00 of salary paid is proven absent from the ledger and that the payroll basis is undecided. When asked specifically about salary or staff cost, state that the `salaries` bucket reports ₹0.00, that ₹2,420.00 of salary is recorded under `other_expenses`, and that no single payroll total can be stated until the business names the basis.
+
+---
+
+<a id="dq034"></a>
+### DQ.034 — Two maintenance-cost definitions disagree by 23.51x, and the ticket-linked subset is presented as 100% of maintenance
+
+**Severity:** HIGH
+**Business area:** Maintenance
+
+**Affected rows:** 450 of 465 maintenance-category expenses have no ticket link (15 are linked); 451 of 466 `ticket_resolutions` have no expense row; 689 ledger lines across 6 maintenance accounts
+**Affected amount:** **₹648,240.00** — the difference between ₹677,036.00 (maintenance-category ledger spend) and ₹28,796.00 (ticket-linked maintenance)
+**Percentage:** the ticket-linked figure is 4.25% of maintenance-category ledger spend; ledger/category is **23.51x** ticket-linked
+
+**Evidence file(s):** T.expenses, T.expense_categories, T.maintenance_tickets, T.ticket_resolutions, T.issue_types, T.journal_lines, T.journal_entries, T.coa_accounts, F.015 (`v_maintenance_metrics`), F.016 (`v_maintenance_by_issue_type`), M.016 (both view definitions), H.058 (`maintenance_cost_linkage`), H.018, H.019
+
+**What is proven.** Proven from exported evidence:
+
+1. **Ticket-linked maintenance = ₹28,796.00**, from **15** `expenses` rows carrying `ticket_resolution_id IS NOT NULL`. Both exported views agree: `F.015.cost` and `F.016.total_cost` each sum to ₹28,796.00, and `H.058.expense_amount_linked` records the same figure.
+2. **Maintenance-category ledger spend = ₹677,036.00**, from **465** maintenance-category expenses, posted across accounts **5210** Plumbing ₹1,290.00, **5220** Electrical ₹12,010.00, **5230** Carpentry ₹559.00, **5240** Appliances ₹45,835.00, **5260** HVAC ₹579,741.00 and **5290** Other ₹37,601.00 — 689 journal lines, every one `source_table='expenses'`.
+3. **Exact difference = ₹648,240.00.** The 15 ticket-linked expense ids are a subset of the 465 by id-set membership, so the difference is exactly the **450** maintenance expenses that have no ticket link.
+4. **The difference splits in two.** **₹203,440.00** (130 expenses) is dated before the first maintenance ticket exists — maintenance `expense_date` runs from 2023-03-11 while `maintenance_tickets.created_at` begins 2025-01-29, so that spend structurally cannot carry a ticket link. **₹444,800.00** (320 expenses) is dated on or after the first ticket and still has no ticket link.
+5. **Ticket resolutions: 466 total, only 15 with a linked expense.** `ticket_resolutions.total_cost` sums to **₹31,596.00**; ₹28,796.00 of that sits on the 15 resolutions that have an expense (matching the expense amounts exactly), leaving **₹2,800.00** of declared resolution cost on the other 451 resolutions with **no corresponding expense row and no ledger posting**.
+6. **`v_maintenance_by_issue_type` presents the ticket-linked subset as 100% of maintenance.** Its SQL filters `WHERE e.ticket_resolution_id IS NOT NULL` and then computes `pct_of_maintenance` as a window over that already-filtered set, so the exported rows sum to 100% per month with ₹28,796.00 as the denominator. All 465 maintenance expenses carry an `issue_type_id`, so that single predicate produces the entire ₹648,240.00 gap.
+
+**Root cause / mechanism:** Not determinable from exported evidence — for each of:
+
+- why 450 maintenance expenses have no ticket link (no field records whether a ticket was expected);
+- whether the `ticket_resolution_id IS NOT NULL` predicate in `v_maintenance_by_issue_type` was intentional scoping or an oversight (no comment, spec or changelog is exported);
+- whether the 451 unexpensed resolutions correspond to the 450 unlinked expenses (nothing links them; the near-equal counts are a coincidence of arithmetic, not a relationship);
+- whether the 76 repeated maintenance expense rows (56 groups sharing `amount`, `expense_date` and `description`) are duplicates or genuine same-day repeat purchases;
+- why account 5260 HVAC holds ₹579,741.00, 85.6% of all maintenance, across 596 lines.
+
+**Root cause confidence:** PROVEN for every figure recorded here — each re-derived directly from the exported CSVs, with the view behaviour read from its own SQL in `M.016`. Not determinable from exported evidence for the five questions above.
+
+**Status:** CONFLICTING DEFINITIONS EXIST
+
+**Metrics affected:** M.MAINT.002 and M.EXP.002 only.
+
+| Metric | Trust | Reports | Basis |
+|---|---|---|---|
+| M.MAINT.002 | SAFE | ₹28,796.00 as "Maintenance cost" | ticket-linked |
+| M.EXP.002 | DISCLOSE | ₹677,036.00 in its `maintenance` bucket | ledger/category |
+
+**M.MAINT.001, M.EXP.001 and M.PNL.001 are NOT affected** and this finding is deliberately not attached to them: the investigation found **no calculation omission** in any of the three. M.MAINT.001 counts tickets, not cost. The full ₹677,036.00 is already inside M.EXP.001's ₹20,784,831.96 and inside M.PNL.001's monthly series — unlike DQ.033, no maintenance amount is missing from the ledger.
+
+**What SAFE and MATCH mean here.** M.MAINT.002 keeps `SAFE` and its `MATCH` validation label, and both are correct: the calculator reproduces `F.015` and `F.016` exactly. That label means **the metric reproduces its exported view correctly. It does not establish that ₹28,796.00 is the complete maintenance spend.** The existing `C.023`/`DQ.027` caveat on this metric concerns Path A versus Path B — two figures that are identical — and says nothing about the ₹648,240.00.
+
+**Business impact:** A measure labelled "Maintenance cost" reports 4.25% of what the business spent on maintenance, while "Expenses by category" reports the other figure for the same period. Read side by side without this finding, the two look like a reconciliation error rather than two definitions.
+
+**Three competing bases — these must NOT be added together.** They overlap: the ticket-linked rows are contained in the ledger/category set, and the resolution-declared figure covers the same 15 rows.
+
+| Basis | Source | Amount |
+|---|---|---|
+| Ticket-linked resolved work | `expenses.ticket_resolution_id IS NOT NULL` (F.015 / F.016) | ₹28,796.00 |
+| All maintenance-category ledger spend | `expenses` category `maintenance` -> accounts 5210-5290 | ₹677,036.00 |
+| Resolution-declared cost | `ticket_resolutions.total_cost` | ₹31,596.00 (₹2,800.00 of it never expensed) |
+
+**Conflicting definitions exist. Business decision required.**
+
+**Offline-fixable from exported evidence:** No  |  **Live-DB investigation/fix required:** No — the open question is a business definition, not a data repair
+
+**Blocks an AI/business metric:** No, with both figures shown
+
+**Owner decision required:** Management must decide whether "maintenance cost" means (1) ticket-linked work, (2) all maintenance-category spend, or (3) resolution-declared cost. Separately, and as a process question rather than a definition: whether maintenance expenses should require a ticket link going forward.
+
+**Recommended handling in the semantic layer:** Carry this finding on M.MAINT.002 and M.EXP.002. Present both figures with the basis named beside each; never merge them, never add them, and do not select one as official — the exported evidence does not establish which the business intends.
+
+**Recommended AI disclosure/response behavior:** `SHOW_BOTH` — When asked what maintenance cost, give ₹28,796.00 and ₹677,036.00 side by side, say which basis each is, and state that the official definition is undecided. Never present ₹28,796.00 alone as total maintenance spend, and never add the bases together.
+
+---
+
+<a id="dq035"></a>
+### DQ.035 — Five populations each answer "deposit exposure", and two of them overlap by ₹386,500.00
+
+**Severity:** HIGH
+**Business area:** Deposits / tenant exits
+
+**Affected rows:** 32 flagged allotments (29 with an exit record, 3 `Cancelled` without) across 25 distinct tenants; 26 exit records with `refund_status='none'`; 200 live settlements with no live exit row; 36 live exits with no settlement row
+**Affected amount:** M.RISK.004 **₹722,700.00**, of which **₹386,500.00** is also represented in M.DEP.001 for the same tenant and **₹336,200.00** has no corresponding account 2100 balance at all
+**Percentage:** the overlap is 53.5% of M.RISK.004's figure and 9.2% of M.DEP.001's ₹4,221,150.00
+
+**Evidence file(s):** T.tenant_allotments, T.tenant_exits, T.deposit_settlements, T.receipts, T.tenant_transactions, T.journal_lines, T.journal_entries, T.coa_accounts, F.010 (`v_advance_balances`), H.045 (`v_diag_deposit_phantom`), H.046 (`v_deposit_ledger_anomalies`), FN.validate_deposit_settlement
+
+**M.RISK.004's current definition, and that it is correct.** Proven from exported evidence:
+
+```
+tenant_allotments
+  WHERE deposit_paid > 0
+    AND staying_status IN ('Exited','Cancelled')
+    AND no live deposit_settlements row exists for the allotment
+```
+
+This returns **32 allotments** and **₹722,700.00**, and the row set matches `H.045` exactly. **The metric is mathematically correct under its current definition.** Its `PARTIAL` validation label reflects only that `H.045` exports no summed amount, so the count was independently confirmed and the amount is a first computation.
+
+**`tenant_exits` does NOT feed M.RISK.004.** The calculator reads `tenant_allotments` and `deposit_settlements` only, and no deposit metric in the registry reads the 147-row exit register at all — despite its carrying `advance_held`, `refund_due`, `refund_status` and `refund_date`. Proven from exported evidence.
+
+**Five competing populations and bases. These must NOT be added together** — they are different populations over different keys, and two of them overlap:
+
+| # | Basis | Population | Amount |
+|---|---|---|---|
+| 1 | Application ended-allotment exposure (M.RISK.004) | 32 allotments | **₹722,700.00** |
+| 2 | Ledger liability on those same allotments | same 32 | **₹6,000.00** |
+| 3 | Ledger liability for the same tenants, all allotments | 25 tenants | **₹396,250.00** |
+| 4 | Exit-register refund obligation | 143 live exits | **₹1,527,276.59** incl. the soft-deleted exit; **₹1,465,724.59** live completed refunds; **₹61,552.00** pending |
+| 5 | Settlement workflow | 307 live settlements | **₹5,023,390.33** completed refunds; **₹62,569.00** pending across 5 |
+
+**The overlap, and why it exists.** Proven from exported evidence: every journal line on account **2100 Tenant Deposits Held** carries an `allotment_id`, so matching the 32 flagged allotment_ids returns ₹6,000.00 while matching the same 25 tenants across all their allotments returns ₹396,250.00. Deposits move between a tenant's allotments through manual journal entries whose memos read **"Deposit transfer out"** and **"Deposit transfer in"**, paired with "Security Deposit Received"; `tenant_transactions` records the same concept independently as `DEPOSIT_TRANSFER` rows. Classifying the 32 by what the ledger holds for the same tenant:
+
+| Ledger position for that tenant | Allotments | Flagged amount |
+|---|---|---|
+| Still holds at least the flagged amount, on another allotment | 13 | ₹303,750.00 |
+| Holds part of it | 4 | ₹93,900.00 |
+| Holds nothing for the tenant | 15 | ₹325,050.00 |
+
+**M.RISK.004 and M.DEP.001 must NOT be treated as additive.** ₹386,500.00 is common to both — inside M.DEP.001's ₹4,221,150.00 under a different allotment of the same tenant, and inside M.RISK.004's ₹722,700.00 under the flagged one. Only ₹336,200.00 of the flagged amount appears in no 2100 balance.
+
+**M.DEP.001 stays SAFE, and its calculation stays correct.** It reproduces `F.010` (`v_advance_balances.deposit_held`) exactly under its own ledger definition, and its `MATCH` label is accurate. The issue is not its arithmetic: it is that its figure **overlaps** M.RISK.004's and could be misunderstood as a separate, additional amount.
+
+**Exit and settlement register inconsistencies.** Proven from exported evidence:
+
+- **29 of the 32** flagged allotments have an exit record; **3 are `Cancelled` and have none**.
+- Those 3 carry **₹65,250.00** of `deposit_paid` between them, but only a **₹1,000.00** booking receipt each and **zero** lines on account 2100. Whether those deposits were actually received is **Not determinable from exported evidence**.
+- **26 exit records carry `refund_status='none'`**, with **₹595,350.00** of `advance_held` and **₹0.00** `refund_due`. (The other 3 are `completed`, with ₹19,003.00 due.)
+- **200 live deposit settlements have no live `tenant_exits` row**; all 200 have a valid allotment, and all 200 allotments are `Exited`.
+- **36 live tenant exits have no settlement row.**
+- The cause of these register differences is **Not determinable from exported evidence**.
+
+**Root cause / mechanism:** the transfer mechanism above is proven. What is **Not determinable from exported evidence**: why 26 exits carry no refund amount against ₹595,350.00 of advance held; whether the 3 `Cancelled` deposits were ever received; why 200 settlements have no exit row and 36 exits have no settlement; and which of the five bases the business intends.
+
+**Root cause confidence:** PROVEN for every figure and relationship recorded here — the 32-row population and ₹722,700.00, the ₹6,000.00 and ₹396,250.00 ledger attributions, the ₹386,500.00 overlap and ₹336,200.00 residual, the 13/4/15 split, the transfer mechanism read from the journal memos and corroborated by `tenant_transactions`, and the exit and settlement counts — each re-derived directly from the exported CSVs. Not determinable from exported evidence for the four questions above.
+
+**Status:** CONFLICTING DEFINITIONS EXIST
+
+**Metrics affected:** M.RISK.004, M.RISK.003 and M.DEP.001 only.
+
+| Metric | Trust | Value | Why it is here |
+|---|---|---|---|
+| M.RISK.004 | DISCLOSE | 32 allotments / ₹722,700.00 | the figure whose basis is disputed |
+| M.RISK.003 | DISCLOSE | carries M.RISK.004 as a component | inherits it |
+| M.DEP.001 | SAFE | ₹4,221,150.00 | overlaps M.RISK.004 by ₹386,500.00; calculation unchanged and correct |
+
+**Business impact:** Read side by side without this finding, "Deposits held ₹4,221,150.00" and "Deposit exposure at risk ₹722,700.00" look like two separate amounts. ₹386,500.00 is the same money counted in both, and ₹303,750.00 of the flagged amount sits under allotments whose tenants are currently `Staying`.
+
+**Conflicting definitions exist. Business decision required.**
+
+**Offline-fixable from exported evidence:** No  |  **Live-DB investigation/fix required:** Yes for the record-level questions (the 3 `Cancelled` deposits, the 26 zero-refund exits); the definition question is a business decision, not a data repair
+
+**Blocks an AI/business metric:** No, with both figures shown and the overlap stated
+
+**Owner decision required:** Management must decide **which population and basis define "deposit exposure at risk"** — any of the five in the table above. Two further decisions are recorded separately, because they are process questions rather than definitions: **whether transferred deposits should be cleared from the old allotment** (it is what makes the application and ledger figures diverge), and **which register is authoritative for exits and settlements**, given 200 settlements have no exit row and 36 exits have no settlement.
+
+**Recommended handling in the semantic layer:** Carry this finding on M.RISK.004, M.RISK.003 and M.DEP.001. Never present M.RISK.004 and M.DEP.001 as additive; state the ₹386,500.00 overlap whenever both appear. Do not select a basis — the exported evidence does not establish which the business intends.
+
+**Recommended AI disclosure/response behavior:** `SHOW_BOTH` — When asked about deposit exposure or deposits at risk, name the basis of any figure given, state that ₹386,500.00 of the ₹722,700.00 is also inside the ₹4,221,150.00 held, and say the official basis is undecided. Never add the five bases together, and never present ₹722,700.00 as money confirmed lost.
+
+---
+
+<a id="dq036"></a>
+### DQ.036 — v_tenant_aging is net ledger movement by posting age, not overdue aging, and its buckets lose ₹4,968.00
+
+**Severity:** HIGH
+**Business area:** AR aging
+
+**Affected rows:** 644 rows (F.008, every row structurally); 3 future-dated invoice lines excluded from all buckets; **0 rows** in `receipt_allocations` against **5,758** live receipts
+**Affected amount:** bucket sum **₹78,329.85** against F.008's own total of **₹83,297.85** — a proven gap of **₹4,968.00**
+**Percentage:** the 31–60 bucket alone is ₹4,488,604.27 against a portfolio net of ₹83,297.85 — 53.9× the net balance, because the buckets hold movement, not balances
+
+**Evidence file(s):** F.008 (`v_tenant_aging`), M.016 (`v_tenant_aging` SQL), H.020 (`receipt_allocations_empty`), T.journal_lines, T.journal_entries, T.coa_accounts, T.receipts
+
+**What is proven.** Proven from exported evidence:
+
+1. **`v_tenant_aging` is net ledger movement grouped by posting age, not conventional overdue/open-invoice aging.** Its CTE is named `ar_charges` but carries **no `debit > 0` filter**: it selects `debit - credit` over every account 1200 line with `party_kind = 'tenant'`.
+2. **It includes AR debit *and* credit movement**, not only unpaid invoice charges — payments, credit notes, reversals and deposit-settlement lines all land in the buckets.
+3. **Payments and credits therefore create negative buckets.** The exported figures:
+
+| Bucket | Exported value |
+|---|---|
+| 0–30 | **−₹57,463.94** |
+| 31–60 | **₹4,488,604.27** |
+| 61–90 | **−₹154,043.45** |
+| 90+ | **−₹4,198,767.03** |
+| **bucket sum** | **₹78,329.85** |
+| **F.008 `total`** | **₹83,297.85** |
+| **gap** | **₹4,968.00** |
+
+4. **Each line is bucketed by its own `journal_entries.entry_date`**, never by the settlement date of the invoice it relates to, so a payment ages from its own posting date rather than from the charge it settles. All four exported buckets were reproduced to **₹0.00 absolute error** from `journal_lines` at `CURRENT_DATE = 2026-08-29`.
+5. **The ₹4,968.00 gap is a bucket-completeness defect.** Every bucket requires `CURRENT_DATE - charge_date >= 0`, so lines dated after the query date fall into **no bucket** while still counting in the view's `total`. Exactly three invoice-sourced debits qualify:
+
+| entry_date | amount |
+|---|---|
+| 2026-08-31 | ₹468.00 |
+| 2026-09-06 | ₹2,250.00 |
+| 2026-09-20 | ₹2,250.00 |
+| **total** | **₹4,968.00** |
+
+   and ₹78,329.85 + ₹4,968.00 = ₹83,297.85 exactly.
+6. **`receipt_allocations` holds 0 rows against 5,758 live receipts** (`H.020`), so no payment can be tied to the invoice it settles.
+
+**Conventional overdue/open-invoice aging: Not determinable from exported evidence.** With no receipt-to-invoice allocation anywhere in the package, exact receipt-to-invoice settlement aging cannot be derived at all — only modelled, as `F.009` does with a FIFO waterfall.
+
+**Root cause / mechanism:** the two mechanisms above are read directly from the view's own SQL. Which meaning of "aging" the business intends is not established anywhere in the export.
+
+**Root cause confidence:** PROVEN for the semantics and for every figure — the SQL read in full from `M.016`, all four buckets reproduced to ₹0.00 error, the ₹4,968.00 traced to three named lines, and the empty allocation table confirmed in `H.020`. Not determinable from exported evidence for conventional overdue aging and for which meaning the business intends.
+
+**Status:** CONFLICTING DEFINITIONS EXIST
+
+**Metrics affected:** **M.RISK.002** only. No tenant-dues metric is affected — M.AR.001A through M.AR.001D read account 1200 directly and do not consume F.008.
+
+**Business impact:** A figure labelled "aging" answers a different question from the one an owner asks of it. A negative bucket does not mean money is owed back in that age band; it means credits posted in that band exceeded charges. And the four buckets do not add to the view's own total.
+
+**Conflicting definitions exist. Business decision required.**
+
+**Offline-fixable from exported evidence:** No  |  **Live-DB investigation/fix required:** No for the exported-evidence conclusion; a live database would be needed only to build overdue aging, which this export cannot support
+
+**Blocks an AI/business metric:** No, with both meanings stated
+
+**Owner decision required:** Management must decide whether "aging" means net ledger movement by posting age — what the view computes today — or conventional overdue open-invoice aging, which would require receipt-to-invoice allocation the system does not currently record.
+
+**Recommended handling in the semantic layer:** Carry this finding on M.RISK.002. State which meaning any bucket figure carries, and never present a negative bucket as an amount owed. Do not select a meaning — the exported evidence does not establish which the business intends.
+
+**Recommended AI disclosure/response behavior:** `SHOW_BOTH` — When asked about aging or overdue amounts, say that the available buckets are net ledger movement by posting age, give them with their signs, and state that conventional overdue aging is not determinable from the exported evidence because no receipt-to-invoice allocation exists. Never add the buckets and present the result as the outstanding balance: they are short of the view's own total by ₹4,968.00.
+
+---
+
+<a id="dq037"></a>
+### DQ.037 — Every tenant-dues definition mixes current and ended tenancies, and the sign of the answer depends on which is meant
+
+**Severity:** HIGH
+**Business area:** AR / tenant dues
+
+**Affected rows:** 626 allotments carry ledger AR activity, of which **92** have a nonzero balance — 47 ended (27 debtors, 20 in credit) and 45 current (23 debtors, 22 in credit). Def C covers all 1,213 allotments; Def D covers 1,047.
+**Affected amount:** the ledger headline **₹83,297.85** is **current −₹26,494.15 plus ended +₹109,792.00**
+**Percentage:** ended tenancies are 131.8% of the ledger headline; current tenants are −31.8% of it
+
+**Evidence file(s):** T.tenant_allotments, T.tenant_transactions, T.journal_lines, T.journal_entries, T.coa_accounts, F.006 (`v_outstanding_receivables`), F.007 (`v_tenant_current_dues`), M.016 (both view definitions), H.052
+
+**What is proven.** Proven from exported evidence:
+
+1. **No tenant-dues definition applies any tenancy-state filter.** `v_outstanding_receivables` filters only `account_code='1200' AND party_kind='tenant'`. `v_tenant_current_dues` filters only `party_kind='tenant' AND code IN ('1200','2100','2400')` — **despite its name it carries no `staying_status` filter** and is not restricted to current tenants. The engine adds none either: `staying_status` appears nowhere in `engine/calculators/receivables.py`, only in the occupancy and deposit calculators.
+2. **Def A and Def B include Exited and Cancelled allotments**, and those dominate the total.
+3. **The population split, by definition:**
+
+| Definition | Current (Staying + On-Notice + Booked) | Ended (Exited + Cancelled) | Total |
+|---|---|---|---|
+| A — ledger, reversals excluded | **−₹26,494.15** | **+₹109,792.00** | ₹83,297.85 |
+| B — ledger, reversals included | **−₹26,494.15** | **+₹109,792.00** | ₹83,297.85 |
+| C — `tenant_allotments.balance_due` | ₹202,383.06 | ₹806,742.72 | ₹1,009,125.78 |
+| D — `tenant_transactions` (frozen legacy) | −₹18,479.46 | ₹9,986,502.78 | ₹9,968,023.32 |
+
+4. **The sign flips on the ledger definitions.** Current tenants owe ₹96,460.00 across 23 allotments but hold −₹122,954.15 in credit across 22, netting **−₹26,494.15**. Ended tenancies owe ₹211,263.00 across 27 and hold −₹101,471.00 in credit across 20, netting **+₹109,792.00**. An owner asking what current tenants owe would be handed a positive receivable for a population that is collectively in credit.
+5. **Def A's and Def B's splits are identical.** They differ only in line counts — 454 Exited allotments carry reversal-only rows under the reversal-included convention against 436 under the excluded one — while every amount matches.
+6. **Def C and Def D are dominated by ended tenancies even more heavily**: 79.9% and 100.2% of their respective totals.
+
+**This is not a calculation bug.** Each definition is arithmetically correct over the population it selects, and every published total reconciles exactly to its exported view (A → F.006, B → F.007, C → the stored column, D → the legacy table). No code defect was found in `engine/calculators/receivables.py`.
+
+**It is a semantic-definition conflict.** No exported view, function or document states which tenancy states "tenant dues" is meant to cover. Whether current-only, ended-only or combined is intended is **Not determinable from exported evidence.**
+
+**Root cause confidence:** PROVEN for every figure and for the absence of any tenancy-state filter — the two view definitions read in full from `M.016`, the calculator read directly, and each population split re-derived from the exported CSVs by joining to `tenant_allotments.staying_status`. Not determinable from exported evidence for which population the business intends.
+
+**Status:** CONFLICTING DEFINITIONS EXIST
+
+**Metrics affected:** M.AR.001A, M.AR.001B, M.AR.001C, M.AR.001D — every tenant-dues definition. Transitively M.AR.002, M.AR.003 and M.RISK.001, which present the four-way view.
+
+**Does it block a metric?** No, and no trust level changes. M.AR.001A and M.AR.001B are already `SHOW_BOTH`; M.AR.001C and M.AR.001D are already `BLOCK`. This finding adds a second axis — population scope — to the definition conflict `DQ.002` already records on the same metrics, and the existing postures already prevent a single silent answer.
+
+**Business impact:** "Tenant dues ₹83,297.85" reads as money current residents owe. It is not: the current population is net in credit, and the figure is ended-tenancy money, most of it concentrated in a few allotments (the five largest ended debtors run from ₹52,493.00 down to ₹14,267.00). Collectability differs sharply between the two populations, and the headline does not distinguish them.
+
+**Conflicting definitions exist. Business decision required.**
+
+**Offline-fixable from exported evidence:** No  |  **Live-DB investigation/fix required:** No — the figures are all computable offline; the open question is a business definition, not a data repair
+
+**Blocks an AI/business metric:** No, with the population named alongside any figure
+
+**Owner decision required:** Management must decide **which tenancy population "tenant dues" covers** — current tenants only (−₹26,494.15 on the ledger definitions), ended tenancies only (+₹109,792.00), or both combined (₹83,297.85). The same choice applies to Def C and Def D if either is ever adopted. This is separate from, and additional to, `DQ.002`'s question of which of the four definitions is official.
+
+**Recommended handling in the semantic layer:** Carry this finding on all four tenant-dues metrics. Name the population alongside any dues figure, and never present the combined headline as what current tenants owe. Do not select a population — the exported evidence does not establish which the business intends.
+
+**Recommended AI disclosure/response behavior:** `SHOW_BOTH` — When asked what tenants owe, give the figure with its population named, and state that current tenants are collectively ₹26,494.15 in credit while ended tenancies account for ₹109,792.00. Never answer a question about current tenants with the combined total.
+
+---
+
 <a id="dq003"></a>
 ### DQ.003 — Overlapping tenant_allotments on the same bed (concurrent occupancy conflicts)
 
@@ -500,29 +838,29 @@ Ordered by severity (CRITICAL first), matching the summary matrix above.
 **Severity:** MEDIUM
 **Business area:** Receipts / ledger
 
-**Affected rows:** 11 receipts traced (H.048); aggregate diff across all receipts
-**Affected amount:** Aggregate diff ₹5,340,795.62 (H.001); traced 11-row sample shows individual diffs from -₹16,627.45 to +₹189,267.00
-**Percentage:** 6.5% of total receipt value (₹5.34M of ₹81.86M)
+**Affected rows:** 4 receipts carry the residual after reversal netting (of the 11 traced in H.048); 3 live receipts have no ledger posting at all (H.033)
+**Affected amount:** ₹16,282.45 residual (M.COL.001 ₹81,855,686.97 vs M.COL.003 ₹81,839,404.52): +₹16,627.45, -₹400.00, +₹53.00, +₹2.00. The ₹5,340,795.62 reported by H.001 is not a residual — it is ₹5,357,078.07 of reversed forward postings that H.001's formula never subtracts, less the ₹16,282.45.
+**Percentage:** 0.02% of total receipt value (₹16,282.45 of ₹81.86M)
 
-**Evidence file(s):** H.001 (v_je_amount_reconciliation), H.048
+**Evidence file(s):** H.001 (v_je_amount_reconciliation), H.048, H.033 (source_vs_ledger_diff_summary), T.journal_lines, T.coa_accounts, T.receipts
 
-**Root cause / mechanism:** Receipts with multiple forward postings (repeated edit-and-repost cycles via trg_receipt_journal_post) show ledger_amount roughly proportional to entry_count, consistent with the diagnostic's own query summing raw postings without netting historical corrections. Aggregate P&L/revenue views (v_pnl, v_revenue_by_period) are NOT shown to share this drift, since they use the reversal-excluded v_account_balances convention which nets forward+reversal pairs to zero correctly.
+**Root cause / mechanism:** H.001's je_net_amount is `SUM(CASE WHEN is_reversal_of IS NULL THEN debit ELSE -debit END)`. Reversal lines carry credit and not debit, so the `-debit` branch always evaluates to zero and no reversal is ever subtracted: 112 reversal credits totalling ₹5,357,078.07 exactly offset the 112 forward debits they reverse, and ₹5,357,078.07 − ₹16,282.45 = ₹5,340,795.62 exactly. The remaining ₹16,282.45 is 4 receipts: `8a8f7848…` (VISTA/26-27/04/R00250, ₹16,627.45, zero journal entries), `3789971b…` (−₹400.00), `118da474…` (+₹53.00), `ec8a0992…` (+₹2.00). Aggregate P&L/revenue views (v_pnl, v_revenue_by_period) are unaffected: they use the reversal-excluded v_account_balances convention, which nets forward and reversal pairs correctly.
 
-**Root cause confidence:** SUSPECTED (H.048's own generating SQL is not among the 54 exported view definitions, so the exact mechanism cannot be confirmed from source)
+**Root cause confidence:** PROVEN for the ₹5,340,795.62 artifact (H.001's formula recomputed directly from journal_lines; the decomposition is exact). NOT DETERMINABLE for why the 4 residual receipts differ — build_receipt_lines is not among the 28 exported function definitions and receipts carries no updated_at column, so a post-posting edit can be neither confirmed nor ruled out.
 
 **Status:** MEASURED
 
-**Metrics affected:** Individual-receipt ledger tracing; the H.001/H.048 diagnostic's own reliability
+**Metrics affected:** M.COL.003 vs M.COL.001 reconciliation (₹16,282.45); individual-receipt ledger tracing; the H.001/H.048 diagnostic's own reliability
 
-**Business impact:** Does not threaten top-line revenue/collections KPIs; threatens confidence in individual-receipt ledger tracing and the diagnostic tool itself pending live-DB re-verification.
+**Business impact:** Does not threaten top-line revenue/collections KPIs — the two collections definitions are ₹16,282.45 apart, 0.02%. It does affect individual-receipt ledger tracing, and it removes the H.001 receipts figure as a usable reconciliation reference.
 
 **Offline-fixable from exported evidence:** No  |  **Live-DB investigation/fix required:** Yes
 
 **Blocks an AI/business metric:** No, with disclosure
 
-**Recommended handling in the semantic layer:** Flag any receipt with entry_count > 1 for review before quoting its individual ledger-derived total. Org-level revenue/collections totals are unaffected and remain SAFE.
+**Recommended handling in the semantic layer:** Keep M.COL.001 and M.COL.003 as separate disclosed definitions; neither is canonical on the exported evidence. Route the 4 named receipts to operations as records to check. Do not quote ₹5,340,795.62 as a receipts drift.
 
-**Recommended AI disclosure/response behavior:** `DISCLOSE` — For org-level revenue/collections questions: answer normally. For a specific receipt's ledger history: disclose that edited receipts can show inflated ledger totals in this diagnostic.
+**Recommended AI disclosure/response behavior:** `DISCLOSE` — For org-level collections questions: give the figure asked for, name which of the two definitions it is, and disclose the ₹16,282.45 residual. For a specific receipt's ledger history: disclose that edited receipts can show inflated totals in the H.001/H.048 diagnostics.
 
 ---
 
@@ -693,20 +1031,20 @@ Ordered by severity (CRITICAL first), matching the summary matrix above.
 **Business area:** AR aging
 
 **Affected rows:** 644 rows (F.008, all rows affected structurally)
-**Affected amount:** N/A (bucket totals sum correctly; only the day-bucket assignment shifts)
+**Affected amount:** **₹4,968.00** — F.008's bucket totals are **short** of F.008's own `total` column (₹78,329.85 against ₹83,297.85), because three future-dated invoice lines are counted in `total` but excluded from every age bucket by the `CURRENT_DATE - charge_date >= 0` condition ([DQ.036](#dq036)). The day-bucket assignment also shifts with the query date.
 **Percentage:** 100% of aging rows are snapshot-dependent by construction
 
 **Evidence file(s):** M.016 (v_tenant_aging SQL), M.002/M.099 (snapshot timestamps)
 
 **Root cause / mechanism:** v_tenant_aging's bucket filters use CURRENT_DATE - charge_date, evaluated at query time. The exported CSV (F.008) reflects buckets computed at whatever moment inside the 09:02-11:18 export window the query ran, not a fixed historical fact.
 
-**Root cause confidence:** PROVEN (direct SQL reading -- this is expected application behavior, not a defect)
+**Root cause confidence:** PROVEN (direct SQL reading). The `CURRENT_DATE` dependence is expected application behaviour; the bucket incompleteness recorded above is a defect — the four buckets are not exhaustive of the view's own `total` ([DQ.036](#dq036)).
 
 **Status:** MEASURED
 
 **Metrics affected:** AR aging bucket distribution (0-30/31-60/61-90/90+)
 
-**Business impact:** Reproducibility hazard only; the underlying AR totals are stable, only the day-bucket labels shift over time.
+**Business impact:** Two distinct problems. The bucket assignment shifts with the query date, so an aging figure is not reproducible from a frozen export without fixing an as-of date. Separately, and not merely a reproducibility hazard, the buckets are **incomplete**: they omit ₹4,968.00 that the view's own `total` includes, so the four buckets do not add up to it ([DQ.036](#dq036)). The underlying AR total itself is stable at ₹83,297.85.
 
 **Offline-fixable from exported evidence:** Yes  |  **Live-DB investigation/fix required:** No
 
@@ -1124,6 +1462,7 @@ of a conflict already recorded there; neither document repeats the other's full 
 | DQ.018 | C.019 (aging bucket snapshot dependence) |
 | DQ.026 | C.017 (live source counts vs JE source counts, partial coverage) |
 | DQ.027 | C.023 (maintenance cost linkage) |
+| DQ.034 | C.023 (maintenance cost linkage) — related but distinct: C.023 contrasts the two ticket-linked paths with each other, DQ.034 contrasts ticket-linked cost against maintenance-category ledger spend |
 | DQ.028 | C.013 (electricity account 5150), extended to a schema-level format defect not previously isolated as its own conflict |
 | DQ.030 | C.021 (get_universal_metrics_series collections bug) |
 
@@ -1155,20 +1494,20 @@ Ranked by potential magnitude of financial/decision misstatement, not by severit
 
 | Question | Answer |
 |---|---|
-| Total DQ issues | **32** |
+| Total DQ issues | **37** |
 | CRITICAL | **4** — DQ.001, DQ.002, DQ.016, DQ.019 |
-| HIGH | **8** — DQ.004, DQ.005, DQ.008, DQ.011, DQ.013, DQ.015, DQ.028, DQ.030 |
+| HIGH | **13** — DQ.004, DQ.005, DQ.008, DQ.011, DQ.013, DQ.015, DQ.028, DQ.030, DQ.033, DQ.034, DQ.035, DQ.036, DQ.037 |
 | MEDIUM | **12** — DQ.003, DQ.006, DQ.007, DQ.010, DQ.012, DQ.014, DQ.017, DQ.018, DQ.020, DQ.025, DQ.026, DQ.027 |
 | LOW | **6** — DQ.021, DQ.022, DQ.023, DQ.024, DQ.031, DQ.032 |
 | INFORMATIONAL | **2** — DQ.009, DQ.029 |
 | UNVERIFIED (status) | **2** — DQ.026, DQ.032 |
 | BLOCK metrics | **7** — DQ.001, DQ.002, DQ.005, DQ.016, DQ.019, DQ.028, DQ.030 |
-| DISCLOSE metrics | **15** — DQ.003, DQ.006, DQ.007, DQ.008, DQ.011, DQ.012, DQ.013, DQ.014, DQ.015, DQ.017, DQ.018, DQ.020, DQ.021, DQ.024, DQ.025 |
-| SHOW_BOTH metrics | **2** — DQ.004, DQ.027 |
+| DISCLOSE metrics | **16** — DQ.003, DQ.006, DQ.007, DQ.008, DQ.011, DQ.012, DQ.013, DQ.014, DQ.015, DQ.017, DQ.018, DQ.020, DQ.021, DQ.024, DQ.025, DQ.033 |
+| SHOW_BOTH metrics | **6** — DQ.004, DQ.027, DQ.034, DQ.035, DQ.036, DQ.037 |
 | SAFE metrics | **6** — DQ.009, DQ.010, DQ.022, DQ.023, DQ.029, DQ.031 |
 | UNVERIFIED (ai_handling) | **2** — DQ.026, DQ.032 |
 
-7 + 15 + 2 + 6 + 2 = **32**, matching the total exactly. These figures are read directly from
+7 + 16 + 6 + 6 + 2 = **37**, matching the total exactly. These figures are read directly from
 `data_quality_registry.csv`, which is the source of truth for all counts in this section.
 
 ---

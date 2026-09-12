@@ -48,5 +48,5 @@ def calc_collections_ledger(spec):
         value=total, unit="INR",
         evidence_sources=("T.journal_lines", "T.journal_entries", "T.coa_accounts", "H.001"),
         provenance="SUM(debit) WHERE source_table='receipts' AND account_code IN ('1110','1120'), reversal-excluded.",
-        limitations="Rs.5,340,795.62 aggregate diagnostic gap vs application-level total (DQ.006/C.014) -- suspected repost-accumulation, not proven from an exported query.",
+        limitations="Rs.16,282.45 residual against the application-level collections total (Rs.81,839,404.52 vs Rs.81,855,686.97), traced to 4 receipts: one of Rs.16,627.45 with no journal entry at all, and three posted at a different amount than the receipt records (-Rs.400.00, +Rs.53.00, +Rs.2.00). Why each differs is not determinable from exported evidence: build_receipt_lines is not among the exported function definitions and receipts carries no updated_at column (DQ.006, C.014).",
     )

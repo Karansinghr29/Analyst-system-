@@ -89,6 +89,9 @@ export async function renderWorkspace(root, roleId, ctx) {
   boundary.appendChild(el('p', null, ws.never_does));
   page.appendChild(boundary);
 
+  // The engine's own sentence, when the records could not narrow this lens to measures of
+  // its own. Rendered as given; the page adds no judgement of its own.
+  if (ws.scope_note) page.appendChild(el('p', 'workspace-note', ws.scope_note));
   buildWorkspaceBody(page, ws, ctx);
 
   const caps = el('section', 'workspace-caps');
@@ -110,18 +113,17 @@ export async function renderWorkspace(root, roleId, ctx) {
  * the sorting. So the same tiles are arranged -- headline measures, then what moved, then what
  * is waiting on a decision, then everything else.
  *
- * ARRANGED, not filtered. Every measure the role may see is still on the page, carrying the
- * posture, the caveat and the definitions the gate gave it; a conflicted measure is still
- * conflicted, a blocked one still blocked. Selection is by the name the registry gives a
- * measure, never by a metric id, and a measure this page does not name explicitly still appears
- * -- it falls through to supporting analysis rather than disappearing.
+ * WHAT IS ON THE PAGE is decided by the engine, not here. The workspace payload carries only the
+ * measures this lens is about -- scoped from links the registry records -- and this page arranges
+ * every one of them, carrying the posture, the caveat and the definitions the gate gave it; a
+ * conflicted measure is still conflicted, a blocked one still blocked. What leads is selected by
+ * id from the engine's `foreground`, and a measure the page does not place explicitly still
+ * appears -- it falls through to supporting analysis rather than disappearing.
  */
 
-// The measures a business is read by first, in the order an executive asks for them.
-const EXECUTIVE_KPIS = [
-  'Revenue (total', 'Collections (application', 'Expenses (total',
-  'Deposit held', 'Owner payments', 'Cash balance',
-];
+// What a workspace leads with is the engine's decision, carried as `foreground`. This page
+// holds no list of its own: a hardcoded set of "headline" titles was a second, client-side
+// answer to which measures matter, and it was a financial answer applied to every lens.
 
 // Occupancy is not four headline numbers. It is one question the records answer several ways,
 // so it is shown as one measure carrying its competing readings.
@@ -150,6 +152,20 @@ function takeByTitles(pool, prefixes) {
   const taken = [];
   prefixes.forEach(function (prefix) {
     const index = pool.findIndex(function (t) { return matches(t, prefix); });
+    if (index !== -1) taken.push(pool.splice(index, 1)[0]);
+  });
+  return taken;
+}
+
+/* The measures the engine says this lens leads with, in the order it gave them.
+ *
+ * By id, not by title: the engine chose them, and matching its choice by name would be this page
+ * guessing at it again. A id the payload does not carry a tile for is simply skipped -- it cannot
+ * add a measure the role was not authorized to see, because it only ever removes from `pool`. */
+function takeLeading(pool, ids) {
+  const taken = [];
+  (ids || []).forEach(function (id) {
+    const index = pool.findIndex(function (t) { return t && t.metric_id === id; });
     if (index !== -1) taken.push(pool.splice(index, 1)[0]);
   });
   return taken;
@@ -217,8 +233,18 @@ function buildWorkspaceBody(page, ws, ctx) {
   // rendered twice and nothing is silently dropped.
   const pool = (ws.tiles || []).slice();
 
-  const headline = takeByTitles(pool, EXECUTIVE_KPIS);
-  const occupancy = takeByTitles(pool, [OCCUPANCY_TITLE]);
+  // What this lens leads with, decided by the engine. Nothing is chosen here: a lens the engine
+  // could not narrow sends no `foreground`, and then nothing leads.
+  const leads = ws.foreground || [];
+  // Occupancy is one question the records answer several ways, and the panel below says so. It
+  // is used only when the engine leads with occupancy -- the page does not promote a measure the
+  // engine did not.
+  const occupancy = [];
+  const occIndex = pool.findIndex(function (t) { return matches(t, OCCUPANCY_TITLE); });
+  if (occIndex !== -1 && leads.indexOf(pool[occIndex].metric_id) !== -1) {
+    occupancy.push(pool.splice(occIndex, 1)[0]);
+  }
+  const headline = takeLeading(pool, leads);
   const capabilities = takeByTitles(pool, CAPABILITY_TITLES);
   // Whatever is left that carries a month series belongs in a chart, not in a tile: rendered as
   // a tile, eighty months arrive as an eighty-part "2019-11: ... ; 2019-12: ..." run-on.
@@ -228,7 +254,10 @@ function buildWorkspaceBody(page, ws, ctx) {
   }
 
   if (headline.length || occupancy.length) {
-    page.appendChild(section('Executive KPIs', headline.length + occupancy.length));
+    // Not "Executive KPIs": what leads is now this lens's own, and an Operations workspace
+    // leading with occupancy is not reporting executive KPIs.
+    page.appendChild(section('What this lens leads with',
+                             headline.length + occupancy.length));
     // metricTile renders the gate's posture, not a chosen figure: a permitted headline shows its
     // number and its caveat, a conflicted measure shows every competing definition and no
     // headline, a blocked one shows the unavailable statement. Ordering these tiles changes

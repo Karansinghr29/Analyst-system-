@@ -11,9 +11,19 @@ machine state, because every downstream check -- the validator, the tests, the r
 
 Nothing here decides trust. It only renders a verdict `engine/gate.py` already issued.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 NOT_DETERMINABLE_TEXT = "Not determinable from exported evidence."
+
+# What an owner is told about validation. "Checked" is said only for a comparison the Validator
+# actually made on the live value (status MATCH). Every other status -- and no status at all --
+# gets the plain statement that the figure is calculated but not independently checked.
+CHECKED_TEXT = "Checked against the source records."
+NOT_CHECKED_TEXT = "Calculated from the records; not independently checked."
+
+
+def validation_sentence(validation_status):
+    return CHECKED_TEXT if validation_status == "MATCH" else NOT_CHECKED_TEXT
 
 # Severity ordering for visual prominence. Higher = more prominent, because a conflict the owner
 # cannot see is a conflict that does not exist for them.
@@ -71,8 +81,9 @@ _PRESENTATIONS = {
     "SAFE": TrustPresentation(
         trust_level="SAFE",
         owner_label="Reliable",
-        owner_explanation="This figure has one agreed definition and was checked against the "
-                          "source records.",
+        # Says nothing about validation on its own; `present(..., validation_status)` adds
+        # whether this figure was actually checked.
+        owner_explanation="This figure has one agreed definition.",
         tone="neutral", icon="check",
         headline_permitted=True, prominence=PROMINENCE["SAFE"]),
 
@@ -112,8 +123,12 @@ _PRESENTATIONS = {
 }
 
 
-def present(trust_level):
-    """The owner-facing presentation of a trust verdict. Unknown levels are not guessed at."""
+def present(trust_level, validation_status=None):
+    """The owner-facing presentation of a trust verdict. Unknown levels are not guessed at.
+
+    For a SAFE figure whose validation result is known, the explanation also says whether it was
+    checked: only a live MATCH may say so. Without a validation result nothing is claimed.
+    """
     p = _PRESENTATIONS.get(trust_level)
     if p is None:
         return TrustPresentation(
@@ -122,6 +137,9 @@ def present(trust_level):
             owner_explanation=NOT_DETERMINABLE_TEXT,
             tone="unavailable", icon="minus",
             headline_permitted=False, prominence=PROMINENCE["NOT_DETERMINABLE"])
+    if validation_status is not None and p.trust_level == "SAFE":
+        return replace(p, owner_explanation=(
+            f"{p.owner_explanation} {validation_sentence(validation_status)}"))
     return p
 
 

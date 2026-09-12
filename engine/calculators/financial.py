@@ -38,12 +38,20 @@ def calc_revenue_by_month(spec):
     m = L.ledger_excl_reversals()
     income = m[m["account_type"] == "INCOME"].copy()
     income["month"] = pd.to_datetime(income["entry_date"]).dt.to_period("M").dt.to_timestamp()
-    grouped = income.groupby(["property_id", "month"], as_index=False, dropna=False)["signed_amount"].sum()
-    series = {str(r["month"].date()): round(float(r["signed_amount"]), 2) for _, r in grouped.iterrows()}
+    grouped = income.groupby(["property_id", "month"], dropna=False)["signed_amount"].sum()
+    # The grain is (property_id, month): a month with a real-property posting and a NULL-property
+    # ('manual') posting has two rows. The series is keyed by month, so each month's value is the
+    # sum of its rows. Keying the rows by month alone let the last row overwrite the others --
+    # 2023-08 kept only its NULL-property 20,400 and lost the property's 427,741.
+    by_month = {}
+    for (_property, month), value in grouped.items():
+        key = str(month.date())
+        by_month[key] = by_month.get(key, 0.0) + float(value)
+    series = {key: round(by_month[key], 2) for key in sorted(by_month)}
     return CalcOutput(
         value=series, unit="INR/month",
         evidence_sources=("T.journal_lines", "T.journal_entries", "T.coa_accounts", "F.001"),
-        provenance="GROUP BY (property_id, month) of revenue-total logic. property_id is a required grouping key.",
+        provenance="GROUP BY (property_id, month) of revenue-total logic; each month is the sum of its (property_id, month) rows. property_id is a required grouping key.",
         limitations="53 distinct calendar months of INCOME activity within a 54-month ledger span; grouping by month alone (dropping property_id) undercounts rows relative to F.001.",
     )
 
@@ -208,12 +216,21 @@ def calc_pnl_by_month(spec):
     m["month"] = pd.to_datetime(m["entry_date"]).dt.to_period("M").dt.to_timestamp()
     rev = m[m["account_type"] == "INCOME"].groupby(["property_id", "month"], dropna=False)["signed_amount"].sum()
     exp = m[m["account_type"] == "EXPENSE"].groupby(["property_id", "month"], dropna=False)["signed_amount"].sum()
-    idx = rev.index.union(exp.index)
+    # The grain is (property_id, month): a month with a real-property posting and a NULL-property
+    # ('manual') posting has two rows, and the series is keyed by month, so each month's figures
+    # are the sum of its rows -- the same pattern as calc_revenue_by_month. Iterating the grouped
+    # rows directly keeps the NULL-property ones: looking them up by (NaN, month) never matches,
+    # and keying rows by month alone let the last row overwrite the others, which zeroed
+    # 2022-02, 2023-08 and 2026-03.
+    by_month = {}
+    for component, grouped in (("revenue", rev), ("expenses", exp)):
+        for (_property, month), value in grouped.items():
+            totals = by_month.setdefault(str(month.date()), {"revenue": 0.0, "expenses": 0.0})
+            totals[component] += float(value)
     series = {}
-    for (prop, month) in idx:
-        r = float(rev.get((prop, month), 0.0))
-        e = float(exp.get((prop, month), 0.0))
-        series[str(month.date())] = {"revenue": round(r, 2), "expenses": round(e, 2), "net_profit": round(r - e, 2)}
+    for key in sorted(by_month):
+        r, e = by_month[key]["revenue"], by_month[key]["expenses"]
+        series[key] = {"revenue": round(r, 2), "expenses": round(e, 2), "net_profit": round(r - e, 2)}
     return CalcOutput(
         value=series, unit="INR/month",
         evidence_sources=("F.001", "T.journal_lines", "T.journal_entries", "T.coa_accounts"),

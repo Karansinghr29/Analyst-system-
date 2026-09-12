@@ -269,9 +269,10 @@ event date.
 - **Known data-quality issues:** 11 of 23 flagged-duplicate receipt ids (per
   `receipts_dedup_audit`, a one-time 2026-04-22 detection pass) are still live and
   undeduplicated; the other 12 were **hard-deleted**, outside the system's own soft-delete
-  convention, confirmed by direct cross-check (`DQ.014`). Source-vs-ledger drift of
-  Rs.5,340,795.62 (6.5%) at the aggregate diagnostic level, with a suspected (not proven)
-  repost-accumulation mechanism (`DQ.006`/`C.014`). 200 of 6085 ledger entries reference a
+  convention, confirmed by direct cross-check (`DQ.014`). Source-vs-ledger residual of
+  Rs.16,282.45 (0.02%) across 4 receipts, one of which has no ledger posting at all; the
+  Rs.5,340,795.62 reported by `H.001` is a formula artifact of that view, not a residual
+  (`DQ.006`/`C.014`). 200 of 6085 ledger entries reference a
   currently-soft-deleted receipt — confirmed to be **consistent with the documented reversal
   design**, not a defect (`DQ.010`).
 - **Metrics that may safely use this dimension:** `M.COL.001`–`003`, `M.RISK.006`.

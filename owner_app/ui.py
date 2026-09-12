@@ -189,11 +189,27 @@ def movement_card(change: dict) -> None:
 
 # --- findings -----------------------------------------------------------------------------------
 
+GUIDANCE_PARTS = (("what", "What is happening"), ("why", "Why this is flagged"),
+                  ("do", "What you should do"), ("decision", "Decision needed"),
+                  ("until", "Until resolved"))
+
+
+def guidance_block(guidance: dict) -> None:
+    """The engine's five-part guidance, one labelled line per part. The decision line is left
+    out when no business decision is needed."""
+    for key, label in GUIDANCE_PARTS:
+        if guidance.get(key):
+            st.markdown(f"**{label}:** {guidance[key]}")
+
+
 def insight_card(card: dict) -> None:
     """A finding, in the order an owner reads one: what, why, what to do."""
     with st.container(border=True):
         heading = card.get("action_category_label") or card.get("category_label") or ""
         st.caption(f"{heading} · {trust_chip(card.get('trust'))}")
+        if card.get("guidance"):
+            guidance_block(card["guidance"])
+            return
         if card.get("what_happened"):
             st.markdown(f"**{card['what_happened']}**")
         if card.get("why_it_matters"):
@@ -213,6 +229,10 @@ def subject_card(group: dict) -> None:
         top.markdown(f"**{group.get('subject', '')}**")
         right.caption(group.get("action_category_label", ""))
         for item in group.get("items", []):
+            if item.get("guidance"):
+                guidance_block(item["guidance"])
+                st.divider()
+                continue
             if item.get("what_happened"):
                 st.write(f"• {item['what_happened']}")
             if item.get("recommended_action"):

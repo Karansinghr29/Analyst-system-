@@ -118,6 +118,9 @@ def _worth_knowing(home: dict) -> None:
         ui.section_heading("Suggested next steps", count=len(actions))
         for action in actions:
             with st.container(border=True):
-                st.write(action.get("recommendation", ""))
+                if action.get("guidance"):
+                    ui.guidance_block(action["guidance"])
+                else:
+                    st.write(action.get("recommendation", ""))
                 if action.get("confidence"):
                     st.caption(f"Confidence: {action['confidence']}")

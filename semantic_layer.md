@@ -142,19 +142,26 @@ exactly against `F.001`'s 57 monthly rows (0 value mismatches). See `M.REV.002` 
 - **Source columns:** `journal_lines.debit`, `account_id`; `journal_entries.source_table`,
   `entry_date`, `is_reversal_of`; `coa_accounts.code`.
 - **Filters:** `source_table='receipts' AND code IN ('1110','1120')`.
-- **Aggregation:** `SUM(CASE WHEN is_reversal_of IS NULL THEN debit ELSE -debit END)` — a THIRD
-  reversal convention (sign-inversion netting), distinct from both `v_account_balances` and
-  `v_tenant_current_dues`'s conventions (`business_logic.md` §1.3, definition C).
-- **Reversal treatment:** INCLUDED via sign-inversion netting.
-- **Known limitations:** `H.001` (`v_je_amount_reconciliation`) flags an `INVESTIGATE` gap of
-  Rs.5,340,795.62 against `M.COL.001` at the aggregate diagnostic level — a suspected (not
-  proven) repost-accumulation artifact concentrated in edited receipts, not shown to affect
-  `v_pnl`'s own revenue total (which uses the reversal-excluded convention and is proven exact).
-- **Conflict IDs:** `C.014`. **DQ IDs:** `DQ.006`, `DQ.030` (this reconstruction pattern is also
-  what proves `get_universal_metrics_series`'s `account_code='1000'` bug returns exactly Rs.0.00).
+- **Aggregation:** `SUM(debit)` over reversal-excluded lines — reversal entries and the
+  forward entries they reverse are both dropped.
+- **Reversal treatment:** EXCLUDED (the `v_account_balances` convention), the same convention
+  `get_universal_metrics_v2`'s own `v_collections` SQL applies. Equivalent to
+  debit-minus-credit netting over the same rows: 112 reversal credits totalling
+  Rs.5,357,078.07 exactly offset the 112 reversed forward debits.
+- **Known limitations:** Rs.16,282.45 residual against `M.COL.001` (Rs.81,839,404.52 vs
+  Rs.81,855,686.97), traced to 4 receipts — `VISTA/26-27/04/R00250` (Rs.16,627.45, no journal
+  entry exists), `VISTA/26-27/08/R00062` (-Rs.400.00), `VISTA/26-27/08/R00156` (+Rs.53.00),
+  `VISTA/26-27/08/R00136` (+Rs.2.00). Why each differs is not determinable from exported
+  evidence. `H.001`'s Rs.5,340,795.62 figure is a formula artifact of that view (its `-debit`
+  branch never fires), not a residual of this metric.
+- **Conflict IDs:** `C.014` — conflicting definitions exist vs `M.COL.001`, business decision
+  required; neither has been selected as canonical. **DQ IDs:** `DQ.006`, `DQ.030` (this
+  reconstruction pattern is also what proves `get_universal_metrics_series`'s
+  `account_code='1000'` bug returns exactly Rs.0.00).
 - **Trust classification:** **DISCLOSE.**
 - **AI handling rule:** Only surface this figure when specifically asked about ledger-side
-  collections or reconciliation; always disclose the gap vs. `M.COL.001`.
+  collections or reconciliation; always disclose the Rs.16,282.45 residual vs. `M.COL.001` and
+  name which definition the figure is.
 
 **Collections by month** (`M.COL.002`) — same as `M.COL.001` at monthly grain. **DISCLOSE.**
 

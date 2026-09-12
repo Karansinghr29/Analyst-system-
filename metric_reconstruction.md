@@ -158,19 +158,19 @@ Relevant columns: journal_lines.debit, account_id; journal_entries.source_table,
 Filters: source_table='receipts' AND code IN ('1110','1120')
 Joins: journal_lines JOIN journal_entries JOIN coa_accounts
 Date field: journal_entries.entry_date
-Aggregation: SUM(CASE WHEN is_reversal_of IS NULL THEN debit ELSE -debit END)
+Aggregation: SUM(debit) over reversal-excluded lines -- reversal entries and the forward entries they reverse are both dropped.
 Organization grain: organization_id
 Property grain: Not directly carried on cash-account lines
 Tenant/allotment grain: Not applicable at this aggregate
-Reversal treatment: INCLUDED via sign-inversion netting (forward +debit, reversal -debit) -- a third reversal convention distinct from both v_account_balances and v_tenant_current_dues (business_logic.md 1.3, definition C).
+Reversal treatment: EXCLUDED -- the v_account_balances convention: reversal entries and the forward entries they reverse are both dropped. This is the convention get_universal_metrics_v2's own v_collections SQL applies. Equivalent to debit-minus-credit netting over the same rows: 112 reversal credits totalling Rs.5,357,078.07 exactly offset the 112 reversed forward debits.
 Soft-delete treatment: Not directly filtered -- inherited via the reversal mechanism (a soft-deleted receipt's forward entry is offset by its reversal).
 Duplicate treatment: Not applied at the ledger layer.
 Historical coverage: Same ledger window as receipts-sourced postings (46 months of receipts activity within the ledger's 2019-2026 span).
 Snapshot/current-state behavior: Not snapshot-dependent.
-Known conflicts: Conflicting definitions exist vs M.COL.001 -- DQ.006/C.014 document an Rs.5,340,795.62 aggregate gap in H.001's diagnostic (INVESTIGATE verdict), with a suspected (not proven) repost-accumulation mechanism concentrated in edited receipts.
-Known limitations: H.001's own reconciliation query (not among the 54 exported view definitions) shows a materially different number than this direct reconstruction's own components would suggest for cleanly-posted receipts; treat per-receipt ledger totals with caution when entry_count>1.
+Known conflicts: Conflicting definitions exist vs M.COL.001. Business decision required -- M.COL.001 is Rs.81,855,686.97 and this metric is Rs.81,839,404.52, Rs.16,282.45 apart (C.014/DQ.006), and no exported view, function or document names either as the official collections figure.
+Known limitations: The Rs.16,282.45 residual is 4 receipts: VISTA/26-27/04/R00250 (Rs.16,627.45, no journal entry exists), VISTA/26-27/08/R00062 (-Rs.400.00), VISTA/26-27/08/R00156 (+Rs.53.00), VISTA/26-27/08/R00136 (+Rs.2.00). Why each differs is not determinable from exported evidence (build_receipt_lines is not exported; receipts carries no updated_at column). H.001's own Rs.5,340,795.62 figure is a formula artifact of that view, not a residual of this metric.
 AI trust status: DISCLOSE
-Validation target: H.001 v_je_amount_reconciliation je_net_amount for receipts (validated: COLL.02, exact match Rs.87,196,482.59, reproducing the known Rs.5.34M gap vs M.COL.001 exactly).
+Validation target: No same-definition comparable reference is wired, so this metric is UNVERIFIED. COLL.02 (H.001 je_net_amount, Rs.87,196,482.59) is supporting evidence only and is NOT this metric's reference: H.001's formula, CASE WHEN is_reversal_of IS NULL THEN debit ELSE -debit END, never subtracts anything because reversal lines carry credit and not debit. COLL.03 is a code-defect proof for DQ.030, also supporting evidence only.
 ```
 **Cross-references:** conflicts.md: [C.014](conflicts.md#c014) | data_quality_report.md: [DQ.006](data_quality_report.md#dq006), [DQ.030](data_quality_report.md#dq030)
 

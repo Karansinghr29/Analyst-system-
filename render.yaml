@@ -1,9 +1,8 @@
 # Render blueprint for the Owner Intelligence service.
 #
 # One web service, built from the Dockerfile, carrying the application and the trusted evidence
-# export. No database is declared here on purpose: Render's own free Postgres expires after 30
-# days, which is not persistence. Owner decisions go to a managed database whose connection
-# string is supplied as a secret (see DATABASE_URL below).
+# export. CSV-ONLY: no database is declared and none is required. The evidence export inside the
+# image is the sole source every figure is reconstructed from.
 #
 # Every value marked `sync: false` is a SECRET or a deployment-specific address. Render prompts
 # for it once, stores it, and never writes it into this file or the repository.
@@ -45,28 +44,33 @@ services:
         value: /app
 
       # --- persistence ----------------------------------------------------------------------
-      # Postgres connection string for the owner's recorded decisions. Supplied as a secret.
-      # Without it the service falls back to a SQLite file, which on this platform does not
-      # survive a deploy -- so set it before recording any decision you intend to keep.
-      - key: DATABASE_URL
-        sync: false
+      # This deployment is CSV-only. No database is declared and none is required: every figure
+      # the owner sees is reconstructed from the trusted export inside the image.
+      #
+      # No DATABASE_URL, no Postgres, no Supabase, no persistent disk. The owner-decision and
+      # conversation stores fall back to a SQLite file inside the container, which does NOT
+      # survive a deploy or a restart -- that is accepted here, not overlooked. Supply
+      # DATABASE_URL later if recorded decisions ever need to outlive a deploy.
 
       # --- the AI Business Analyst ------------------------------------------------------------
-      # The language layer only: it re-words a finished deterministic answer and never computes
-      # a figure, selects a definition, or overrides a posture. All four variables must be set
-      # together; any of them missing leaves the analyst on its deterministic wording.
+      # DISABLED. The analyst stays on its deterministic wording: no external service is called,
+      # no credential is read, and no business text leaves the machine.
+      #
+      # The language layer, when enabled, only re-words a finished deterministic answer -- it
+      # never computes a figure, selects a definition, or overrides a posture. Enabling it needs
+      # ALL of the variables below set together; any one missing leaves the analyst deterministic.
       - key: AI_ANALYTICS_LLM_ENABLE
-        value: "true"
-      - key: AI_ANALYTICS_LLM_MODE
-        value: http
-      - key: AI_ANALYTICS_LLM_ADAPTER
-        value: groq
-      - key: GROQ_BASE_URL
-        value: https://api.groq.com/openai/v1
-      - key: GROQ_MODEL
-        sync: false
-      - key: GROQ_API_KEY
-        sync: false
+        value: "false"
+      # - key: AI_ANALYTICS_LLM_MODE
+      #   value: http
+      # - key: AI_ANALYTICS_LLM_ADAPTER
+      #   value: groq
+      # - key: GROQ_BASE_URL
+      #   value: https://api.groq.com/openai/v1
+      # - key: GROQ_MODEL
+      #   sync: false
+      # - key: GROQ_API_KEY
+      #   sync: false
 
       # --- browser boundary -------------------------------------------------------------------
       # The frontend is served by this same service from the same origin, so no cross-origin

@@ -413,8 +413,8 @@ def owner_limitations(limitations):
     return tuple(unique)
 
 
-def _trust_line(trust_level):
-    p = tp.present(trust_level)
+def _trust_line(trust_level, validation_status=None):
+    p = tp.present(trust_level, validation_status=validation_status)
     return p.owner_label, p.owner_explanation
 
 
@@ -566,7 +566,10 @@ def present_metric_answer(plan, answers, reasoning=None):
 
     trust = (plan.trust_level if plan is not None else "") or (
         answers[0].trust_level if answers else "")
-    label, explanation = _trust_line(trust)
+    # "Checked" only when every figure in the answer was compared live and matched.
+    statuses = {getattr(r, "validation_status", "") for a in (answers or ())
+                for r in (getattr(a, "results", None) or ())}
+    label, explanation = _trust_line(trust, "MATCH" if statuses == {"MATCH"} else "UNVERIFIED")
     lines = []
 
     forecast_note = sanitize_owner_text(getattr(plan, "forecast_note", "") or "")
@@ -1878,6 +1881,44 @@ def owner_measure_name(name):
     return _MEASURE_RENAMES.get(cleaned.lower(), cleaned)
 
 
+def owner_measure_qualifier(name):
+    """What sets one measure apart from another that shares its owner name.
+
+    Read from the registry name itself, never invented. A family member's own definition
+    ("Tenant dues -- Def A: ... (reversals excluded)" -> "Reversals excluded", the same label that
+    definition carries in the list beneath the heading), or the parenthetical `owner_measure_name`
+    drops ("Collections (ledger-derived)" -> "Ledger-derived"). Empty when the name holds neither.
+    """
+    text = (name or "").strip()
+    if re.search(r"\s(?:--|—)\s+Def\b", text, re.I):
+        return owner_definition_label(text)
+    match = re.search(r"\(([^()]*)\)\s*$", owner_family_name(text))
+    if match:
+        inner = match.group(1).strip()
+        return inner[:1].upper() + inner[1:]
+    return ""
+
+
+def distinct_measure_names(names):
+    """Owner names for measures shown side by side: one per measure, never two alike.
+
+    `owner_measure_name` names each measure on its own, and deliberately names the members of a
+    family by the family ("Tenant dues outstanding"). Shown together on one page, four measures
+    under one heading read as one card repeated four times. Where names collide within this set,
+    each colliding name carries its own qualifier; a name that does not collide is unchanged, and
+    one the registry gives no qualifier for keeps its plain name -- no distinction is invented.
+    """
+    plain = [owner_measure_name(n) for n in names]
+    counts = {}
+    for base in plain:
+        counts[base.lower()] = counts.get(base.lower(), 0) + 1
+    out = []
+    for name, base in zip(names, plain):
+        qualifier = owner_measure_qualifier(name) if counts[base.lower()] > 1 else ""
+        out.append(f"{base} — {qualifier}" if qualifier else base)
+    return tuple(out)
+
+
 def owner_subject_names(metric_ids, registry):
     """The measures an insight affects, named the way the owner sees them elsewhere."""
     names = []
@@ -2026,6 +2067,570 @@ def owner_insight_view(insight, category, subject_names):
             sanitize_owner_text(decide), sanitize_owner_text(limitation))
 
 
+# --------------------------------------------------------------------------------------------
+# Decision guidance
+# --------------------------------------------------------------------------------------------
+#
+# Every item that asks something of the owner -- "Decision needed" or "Review needed" -- is said
+# in one structure: what is happening, why it is flagged (the evidence), what to do, the decision
+# needed (only where the business genuinely has to choose), and how the figures are treated until
+# it is resolved.
+#
+# The figures quoted come from `facts`: the engine's own calculator outputs and the data-quality
+# register's own recorded fields, gathered by the view model. Nothing here computes a business
+# value. Where the register records a cause as suspected, the sentence says it is not proven;
+# where the export cannot establish a cause, the sentence says so. The "until resolved" line
+# restates the trust rule the measure already carries -- it does not change it.
+#
+# A builder that cannot find the evidence it quotes raises, and the item falls back to its
+# existing wording rather than printing a sentence with a gap in it.
+
+GUIDANCE_KEYS = ("what", "why", "do", "decision", "until")
+_GUIDANCE_LABELS = {"what": "What is happening", "why": "Why this is flagged",
+                    "do": "What you should do", "decision": "Decision needed",
+                    "until": "Until resolved"}
+
+_INTS = re.compile(r"\d[\d,]*")
+_PAIR = re.compile(r"(\d[\d,]*)\s+of\s+(\d[\d,]*)")
+_RUPEES = re.compile(r"₹\s?([\d,]+(?:\.\d+)?)")
+
+
+def _inr(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError("no amount")
+    return format_owner_quantity(value, "INR")
+
+
+def _num(value):
+    return f"{int(round(float(value))):,}"
+
+
+def _ints(text):
+    return [int(m.replace(",", "")) for m in _INTS.findall(str(text or ""))]
+
+
+def _pairs(text):
+    return [(int(a.replace(",", "")), int(b.replace(",", "")))
+            for a, b in _PAIR.findall(str(text or ""))]
+
+
+def _rupees(text):
+    return [float(m.replace(",", "")) for m in _RUPEES.findall(str(text or ""))]
+
+
+def _primary_amount(value):
+    """The single amount a definition states, where it states one."""
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return float(value)
+    if isinstance(value, dict):
+        for key in ("ar_balance", "unclipped"):
+            if isinstance(value.get(key), (int, float)):
+                return float(value[key])
+    return None
+
+
+def _definition_display(value):
+    if value is None:
+        return "not computable from the exported evidence"
+    if isinstance(value, dict):
+        if "ar_balance" in value:
+            return (f"{_inr(value['ar_balance'])} outstanding, with "
+                    f"{_inr(value.get('deposit_held', 0.0))} held as deposits")
+        if "unclipped" in value:
+            return (f"{_inr(value['unclipped'])} as recorded "
+                    f"({_inr(value['floored_at_zero'])} with negatives treated as zero)")
+        if "occupied" in value and "total" in value:
+            return (f"{_num(value['occupied'])} of {_num(value['total'])} beds "
+                    f"({value.get('occupancy_pct')}%)")
+        return ", ".join(f"{p['label']} {p['value']}" for p in owner_value_parts(value, _inr))
+    return _inr(value)
+
+
+def _definition_list(defs):
+    return "; ".join(f"{label}: {_definition_display(value)}" for label, value in defs)
+
+
+def _dq(facts, dq_id):
+    return (facts.get("dq") or {})[dq_id]
+
+
+def _until(trust_level, subject):
+    s = (subject or "the affected").lower()
+    return {
+        "BLOCK": (f"No single {s} figure is stated or acted on. Every definition stays shown with "
+                  f"its own value, and none of them is silently chosen."),
+        "SHOW_BOTH": (f"Every {s} definition stays shown side by side with its own value, and "
+                      f"none of them is presented as the official figure."),
+        "DISCLOSE": (f"{s.capitalize()} figures can still be used, but only with this limitation "
+                     f"shown beside them."),
+        "NOT_DETERMINABLE": (f"No {s} figure is stated for this, and nothing is estimated in its "
+                             f"place."),
+    }.get(trust_level, "The affected figures keep their current standing; read them with this "
+                       "finding in mind.")
+
+
+# -- occupancy --------------------------------------------------------------------------------
+
+def _occupancy_core(f):
+    defs = f["occupancy"]
+    computed = [(label, value) for label, value in defs if value is not None]
+    totals = sorted({int(value["total"]) for _, value in computed})
+    return defs, computed, totals[0], totals[-1]
+
+
+def _occupancy_decision(active, every):
+    return {
+        "do": (f"Compare the definitions and confirm two things with whoever owns occupancy "
+               f"reporting: whether tenants on notice count as occupying their bed, and whether "
+               f"the denominator is the {active} active beds or all {every} beds."),
+        "decision": (f"Choose the official occupancy definition: which tenants count as occupying "
+                     f"a bed (staying only, or staying plus on notice) and which beds form the "
+                     f"denominator ({active} active beds or all {every} beds)."),
+        "until": ("Do not present one occupancy percentage as the sole authoritative figure. "
+                  "Every definition stays shown with its own value, and historical occupancy "
+                  "keeps both of its readings."),
+    }
+
+
+def _g_occupancy(f, trust, subject):
+    defs, computed, active, every = _occupancy_core(f)
+    missing = len(defs) - len(computed)
+    hist = f.get("historical") or []
+    why = (f"The records show {_num(f['staying'])} staying tenants and {_num(f['on_notice'])} on "
+           f"notice, against {active} beds active in active apartments and {every} beds in total. "
+           f"The definitions differ in who counts as occupying a bed and which beds count: "
+           f"{_definition_list(computed)}.")
+    if missing:
+        why += (f" {missing} further definition cannot be computed from the exported evidence.")
+    if hist:
+        why += (f" Historical occupancy has {len(hist)} readings of its own "
+                f"({' and '.join(h.lower() for h in hist)}) and is rebuilt from stay dates, so it "
+                f"carries its own limitation.")
+    return {"what": f"Occupancy is recorded under {len(defs)} definitions that give different "
+                    f"percentages.",
+            "why": why, **_occupancy_decision(active, every)}
+
+
+_NUMBER_WORDS = {"two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8,
+                 "nine": 9, "ten": 10}
+
+
+def _count_in(text):
+    """The first count a register sentence states, whether written as digits or as a word."""
+    for token in re.findall(r"[A-Za-z]+|\d+", str(text or "")):
+        if token.isdigit():
+            return int(token)
+        if token.lower() in _NUMBER_WORDS:
+            return _NUMBER_WORDS[token.lower()]
+    raise ValueError("no count")
+
+
+def _g_occupancy_sources(f, trust, subject):
+    defs, computed, active, every = _occupancy_core(f)
+    count = _count_in(_dq(f, "DQ.004").get("issue"))
+    return {"what": f"The source system's own views and functions define occupancy in {count} "
+                    f"different ways.",
+            "why": ("They differ in which beds count (active beds only, or every bed), whether "
+                    "tenants on notice count as occupying, and whether occupancy is a snapshot or "
+                    "measured over time; this is proven from their definitions. The snapshot "
+                    f"definitions reproduced here give: {_definition_list(computed)}."),
+            **_occupancy_decision(active, every)}
+
+
+def _g_on_notice_beds(f, trust, subject):
+    beds, universe = _ints(_dq(f, "DQ.005").get("affected_rows"))[:2]
+    return {"what": f"The source system's occupancy view places {beds} on-notice beds in none of "
+                    f"its categories.",
+            "why": (f"Its on-notice count only counts a bed that is both staying and on notice, "
+                    f"which no bed in the records ever is, so that count is always zero and its "
+                    f"vacant count is short by {beds} of its {universe} beds. This is proven from "
+                    f"the view's own definition."),
+            "do": (f"Where occupancy is read from the source system's own occupancy view, add the "
+                   f"{beds} on-notice beds back in. This system counts them directly "
+                   f"({_num(f['on_notice'])} tenants on notice), and two of its occupancy "
+                   f"definitions include them."),
+            "decision": "",
+            "until": ("Treat the source system's occupancy view as undercounting on-notice beds, "
+                      "and use the occupancy definitions shown here, side by side.")}
+
+
+# -- tenant dues --------------------------------------------------------------------------------
+
+def _tenant_dues_amounts(f):
+    defs = f["tenant_dues"]
+    by = {label: _primary_amount(value) for label, value in defs}
+    ledger = next(v for label, v in by.items() if label.lower().startswith("reversals"))
+    app = next(v for label, v in by.items() if label.lower() == "application")
+    legacy = next(v for label, v in by.items() if label.lower().startswith("legacy"))
+    return defs, ledger, app, legacy
+
+
+def _tenant_dues_decision(ledger, app, legacy, count):
+    return {
+        "decision": (f"Choose the official tenant-dues definition: the ledger balance with "
+                     f"reversals excluded or included (both currently {_inr(ledger)}), the "
+                     f"application's stored balance ({_inr(app)}), or the legacy ledger "
+                     f"({_inr(legacy)})."),
+        "until": (f"No single tenant-dues figure is stated or acted on. All {count} definitions "
+                  f"stay shown with their own values, and none of them is silently chosen."),
+    }
+
+
+def _g_tenant_dues(f, trust, subject):
+    defs, ledger, app, legacy = _tenant_dues_amounts(f)
+    positive = [a for a in (ledger, app, legacy) if a and a > 0]
+    ratio = max(positive) / min(positive)
+    return {"what": f"Tenant dues is recorded under {len(defs)} definitions, and they disagree by "
+                    f"up to about {ratio:,.0f} times.",
+            "why": (f"Current figures: {_definition_list(defs)}. The two ledger definitions agree "
+                    f"with each other for every allotment. Why the application's stored balance "
+                    f"and the legacy ledger differ from the ledger is not determinable from the "
+                    f"exported evidence."),
+            "do": ("Compare the definitions for the allotments where they disagree and confirm "
+                   "which record the business uses to decide what a tenant owes: the accounting "
+                   "ledger, the application's stored balance, or the legacy ledger."),
+            **_tenant_dues_decision(ledger, app, legacy, len(defs))}
+
+
+def _g_tenant_dues_records(f, trust, subject):
+    defs, ledger, app, legacy = _tenant_dues_amounts(f)
+    disagree, allotments = _pairs(_dq(f, "DQ.002").get("affected_rows"))[0]
+    return {"what": (f"The application's stored balance and the legacy ledger disagree on "
+                     f"{disagree:,} of {allotments:,} allotments."),
+            "why": (f"Across all {allotments:,} allotments: {_definition_list(defs)}. The two "
+                    f"ledger conventions agree for every allotment (proven row by row); why the "
+                    f"other two diverge from the ledger is not determinable from the exported "
+                    f"evidence."),
+            "do": (f"Review the {disagree:,} allotments where the stored balance and the legacy "
+                   f"ledger disagree, allotment by allotment against the ledger balance, and "
+                   f"confirm which record reflects what each tenant actually owes."),
+            **_tenant_dues_decision(ledger, app, legacy, len(defs))}
+
+
+def _g_legacy_ledger(f, trust, subject):
+    defs, ledger, app, legacy = _tenant_dues_amounts(f)
+    owing, allotments = _pairs(_dq(f, "DQ.019").get("affected_rows"))[0]
+    return {"what": (f"The legacy tenant ledger holds balances totalling {_inr(legacy)}, against "
+                     f"{_inr(ledger)} in the live ledger: a gap of {_inr(legacy - ledger)}."),
+            "why": (f"It was loaded once and no live posting has updated it since (proven from "
+                    f"its creation dates and the posting triggers). {owing:,} of {allotments:,} "
+                    f"allotments show a legacy balance above zero. Why its balances are so much "
+                    f"larger than the ledger's is not determinable from the exported evidence."),
+            "do": (f"Check with whoever maintains the tenant records whether the legacy ledger is "
+                   f"still meant to be used for anything, and for the {owing:,} allotments it "
+                   f"shows as owing, compare its balance with the live ledger before any tenant is "
+                   f"contacted about dues."),
+            "decision": ("Confirm whether the legacy tenant ledger should be retired, or kept only "
+                         "as a clearly labelled historical record."),
+            "until": ("Do not use the legacy ledger's balances as tenant dues. They stay visible "
+                      "only as one of the competing tenant-dues definitions.")}
+
+
+# -- owner rent and profit -------------------------------------------------------------------------
+
+def _g_owner_rent(f, trust, subject):
+    defs = f["owner_rent"]
+    included = [a for a in (_primary_amount(v) for _, v in defs) if a]
+    months, of_months = _pairs(_dq(f, "DQ.017").get("affected_rows"))[0]
+    agree = (f"agree in total ({_inr(included[0])})" if len(set(included)) == 1
+             else f"differ in total by {_inr(max(included) - min(included))}")
+    return {"what": f"Owner rent is recorded under {len(defs)} definitions that treat it "
+                    f"differently.",
+            "why": (f"Current figures: {_definition_list(defs)}. The definitions that include owner "
+                    f"rent {agree} but place it in different months in {months} of {of_months} "
+                    f"months, because they use different dates for when a payment belongs. One "
+                    f"definition leaves owner rent out entirely."),
+            "do": (f"Confirm how owner rent should be recognised: as the amount posted to the "
+                   f"owner-rent account, or as scheduled owner payments by bill month. Check the "
+                   f"{months} months where the two place it differently."),
+            "decision": (f"Choose the owner-rent treatment used in reporting: included as posted to "
+                         f"the owner-rent account, included as scheduled payments by bill month, or "
+                         f"left out as the application's first profit formula does. The choice "
+                         f"moves profit by {_inr(max(included))}."),
+            "until": ("All owner-rent figures stay shown side by side, none of them as the official "
+                      "figure. Profit, which depends on this choice, stays without a single stated "
+                      "figure.")}
+
+
+def _g_owner_rent_omitted(f, trust, subject):
+    omitted, excluded, included = _rupees(_dq(f, "DQ.016").get("affected_amount"))[:3]
+    return {"what": (f"The application's first profit formula leaves owner rent out entirely, "
+                     f"omitting {_inr(omitted)}."),
+            "why": (f"That formula is invoices less expenses, with no owner-rent term; this is "
+                    f"proven from the formula itself, and the application's later formula adds "
+                    f"owner rent. Over the months it covers, profit reads {_inr(excluded)} with "
+                    f"owner rent left out, against {_inr(included)} from the ledger with it "
+                    f"included."),
+            "do": ("Make sure no report or decision uses the application's first profit formula "
+                   "without adding owner rent back."),
+            "decision": "",
+            "until": ("Treat any profit figure that leaves owner rent out as overstated by the rent "
+                      "it omits. Profit stays shown only as its competing definitions.")}
+
+
+def _g_profit(f, trust, subject):
+    defs = f["profit"]
+    by = {label: _primary_amount(value) for label, value in defs}
+    ledger = next(v for label, v in by.items() if label.lower().startswith("ledger"))
+    app = by["Application definition"]
+    return {"what": f"Profit is recorded under {len(defs)} definitions, and they disagree by up to "
+                    f"{_inr(f['profit_gap'])}.",
+            "why": (f"Current figures: {_definition_list(defs)}. The application definition is "
+                    f"invoices less expenses, with no owner-rent term; the ledger definition takes "
+                    f"all posted revenue less all posted expenses, owner rent included."),
+            "do": ("Confirm the accounting basis for profit: the accounting ledger (all posted "
+                   "revenue and expenses, owner rent included) or the application's "
+                   "invoice-and-expense formula, and how owner rent is treated within it."),
+            "decision": (f"Choose the official profit definition: the ledger basis ({_inr(ledger)}) "
+                         f"or the application's invoice-minus-expense basis ({_inr(app)}), "
+                         f"together with the owner-rent treatment that goes with it."),
+            "until": ("Do not state any one profit number as authoritative or use one for a "
+                      "decision. All definitions stay shown with their own values.")}
+
+
+# -- invoices, receipts, deposits -------------------------------------------------------------------
+
+def _repeated_invoice_parts(f):
+    v = f["repeated_invoices"]
+    row = _dq(f, "DQ.013")
+    regular, of_groups = _pairs(row.get("root_cause"))[0]
+    return v["duplicate_groups"], v["excess_rows"], regular, of_groups, _rupees(
+        row.get("affected_amount"))[0]
+
+
+def _repeated_invoice_guidance(f, what):
+    groups, extra, regular, of_groups, amount = _repeated_invoice_parts(f)
+    return {"what": what.format(groups=f"{groups:,}", extra=f"{extra:,}"),
+            "why": (f"{regular:,} of the {of_groups:,} groups are regular rent invoices, and the "
+                    f"invoices in these groups total {_inr(amount)} between them. The records alone "
+                    f"do not show whether the additional invoices are duplicates or legitimate "
+                    f"rebilling, such as a proration, a room change or a correction; which invoice "
+                    f"in each group is the intended one is not determinable from the exported "
+                    f"evidence."),
+            "do": (f"Open the repeated invoice groups and classify each additional invoice as a "
+                   f"duplicate to cancel or legitimate rebilling to keep, starting with the "
+                   f"{regular:,} regular-invoice groups."),
+            "decision": "",
+            "until": ("Do not assume these are duplicates and do not remove them from any total "
+                      "until each group is classified. The billed amount and invoice count still "
+                      "include every one of them.")}
+
+
+def _g_repeated_invoices(f, trust, subject):
+    return _repeated_invoice_guidance(
+        f, "{groups} allotment-month groups contain more than one invoice: {extra} additional "
+           "invoice rows beyond one per group.")
+
+
+def _g_billed_amount(f, trust, subject):
+    return _repeated_invoice_guidance(
+        f, "The invoice billed amount and invoice count include {extra} additional invoices in "
+           "{groups} allotment-month groups that hold more than one invoice.")
+
+
+def _g_invoice_drift(f, trust, subject):
+    drifting, invoices = _pairs(_dq(f, "DQ.001").get("affected_rows"))[0]
+    return {"what": (f"On {drifting:,} of {invoices:,} invoices, the amount paid plus the balance "
+                     f"does not equal the invoice total."),
+            "why": ("The paid and balance fields are kept by the application and are not "
+                    "recalculated when the ledger posts a payment. A payment changing without the "
+                    "invoice being updated is the suspected mechanism; it is not proven invoice by "
+                    "invoice."),
+            "do": (f"Take tenant dues from the ledger, not from these invoice fields, and have the "
+                   f"paid and balance fields on the {drifting:,} invoices checked against the "
+                   f"receipts recorded for them."),
+            "decision": "",
+            "until": ("Do not read an invoice's paid or balance field as what the tenant owes. The "
+                      "billed total itself is not affected.")}
+
+
+def _g_deposit_settlements(f, trust, subject):
+    rec = f["settlement_recon"]
+    row = _dq(f, "DQ.008")
+    drifting = _ints(row.get("affected_rows"))[0]
+    doubled, of_rows = _pairs(row.get("root_cause"))[0]
+    unposted = _inr(rec["unposted_source_amount"])
+    return {"what": f"Deposit settlement records and the ledger disagree by {_inr(rec['diff'])}.",
+            "why": (f"The settlement records total {_inr(rec['legacy_amount'])}; the ledger shows "
+                    f"{_inr(rec['je_net_amount'])}. {unposted} of settlements are recorded but "
+                    f"were never posted to the ledger. {drifting} settlements differ, and in "
+                    f"{doubled} of them the ledger shows exactly twice the settlement amount, each "
+                    f"after an edit and a repost. That pattern points to how the postings are "
+                    f"summed, but it is not proven."),
+            "do": (f"Reconcile the {drifting} settlements whose ledger amount differs, starting "
+                   f"with the {doubled} where the ledger shows exactly double, and confirm the "
+                   f"status of the settlements recorded but not posted ({unposted}): whether each "
+                   f"is still pending or should have been posted."),
+            "decision": "",
+            "until": (f"Use the settlement and refund totals only with this difference shown beside "
+                      f"them. Before the refund total "
+                      f"({_inr(f['settlement_totals']['refund_amount_total'])}) is used for a "
+                      f"decision, confirm the reconciliation is complete and the unposted "
+                      f"settlements are accounted for.")}
+
+
+def _phantom_guidance(f, what):
+    v = f["phantom_deposits"]
+    count, amount = v["allotment_count"], _inr(v["amount_at_risk"])
+    return {"what": what.format(count=f"{count:,}"),
+            "why": (f"The deposits recorded as paid on them total {amount}. None of these deposits "
+                    f"went through the settlement process, so whether each was refunded, "
+                    f"forfeited or is still held is not determinable from the exported evidence."),
+            "do": (f"Go through the {count:,} tenancies and confirm for each whether the deposit "
+                   f"was refunded, forfeited or is still held, and bring the settlement records up "
+                   f"to date for any handled outside the settlement process."),
+            "decision": "",
+            "until": (f"Treat {amount} as deposits recorded but not settled, not as a confirmed "
+                      f"amount owed back. The deposit figures keep their own limitation.")}
+
+
+def _g_phantom_deposits(f, trust, subject):
+    return _phantom_guidance(f, "{count} tenancies have ended (exited or cancelled) with a deposit "
+                                "recorded as paid and no deposit settlement on record.")
+
+
+def _g_deposit_held(f, trust, subject):
+    return _phantom_guidance(f, "{count} ended tenancies have a deposit recorded as paid but no "
+                                "settlement, which affects how deposit held and deposit risk should "
+                                "be read.")
+
+
+def _g_duplicate_receipts(f, trust, subject):
+    groups = f["duplicate_receipts"]["detection_groups"]
+    flagged, live, deleted = _ints(f["duplicate_receipts_note"])[:3]
+    return {"what": (f"A one-time duplicate check flagged {groups} groups of receipts, {flagged} "
+                     f"receipts in all, as possible duplicates."),
+            "why": (f"{live} of the flagged receipts are still recorded and {deleted} were deleted "
+                    f"outright rather than marked as deleted; nothing was done about the rest after "
+                    f"the check. Whether the remaining ones are duplicates or genuine repeat "
+                    f"payments is not determinable from the exported evidence."),
+            "do": (f"Check the {live} flagged receipts that are still recorded and confirm for "
+                   f"each whether it is a genuine second payment or a duplicate entry. Confirm "
+                   f"also why {deleted} flagged receipts were deleted outright."),
+            "decision": "",
+            "until": ("Collections totals still include the flagged receipts that remain recorded; "
+                      "read them with this limitation.")}
+
+
+# -- stays, expenses, collections, electricity -------------------------------------------------------
+
+def _g_overlaps(f, trust, subject):
+    pairs = f["overlaps"]
+    reference = _ints(_dq(f, "DQ.003").get("affected_rows"))[0]
+    return {"what": f"{_num(pairs)} pairs of stays overlap on the same bed.",
+            "why": (f"Two stays on one bed have overlapping dates, and nothing in the source system "
+                    f"prevents this when a stay is entered. The source system's own diagnostic "
+                    f"lists {reference:,} such pairs; why its count differs from this one is not "
+                    f"determinable from the exported evidence."),
+            "do": ("Review the overlapping stays bed by bed and confirm which stay actually held "
+                   "the bed on the overlapping dates, correcting the move-in or move-out date "
+                   "wherever one is wrong."),
+            "decision": "",
+            "until": ("Per-bed occupancy, stay timelines and revenue by bed carry this limitation "
+                      "until the overlaps are resolved.")}
+
+
+def _g_expense_categories(f, trust, subject):
+    months = _pairs(_dq(f, "DQ.015").get("affected_rows"))[0][0]
+    amount = _inr(f["electricity"])
+    return {"what": (f"The source system's P&L category report leaves electricity payments "
+                     f"({amount}) out of all nine of its named expense categories."),
+            "why": (f"The electricity account matches none of the category patterns, in all "
+                    f"{months} months, so the categories add up to less than total expenses by "
+                    f"exactly that amount. This is proven, and total expenses are not affected."),
+            "do": ("When using the source system's category report, add electricity as its own "
+                   "line. This system's expense breakdown already shows electricity as a separate "
+                   "category."),
+            "decision": "",
+            "until": ("Read category breakdowns from the source report as missing electricity. "
+                      "Total expenses are not in question.")}
+
+
+def _g_collections_series(f, trust, subject):
+    _dq(f, "DQ.030")
+    return {"what": ("The application's monthly collections trend reads an account that no "
+                     "receipt is posted to."),
+            "why": ("It filters on the header cash account, while receipts are posted to the "
+                    "cash-on-hand and bank accounts beneath it; this is proven from the chart of "
+                    "accounts and two correctly written functions. Whether it returns zero in the "
+                    "live application is not determinable from the exported evidence."),
+            "do": ("If any report outside this system uses the application's monthly collections "
+                   "trend, check its figures against receipts. This system's collections figures "
+                   "read the accounts receipts are actually posted to."),
+            "decision": "",
+            "until": "Do not rely on the application's monthly collections trend."}
+
+
+def _g_electricity_format(f, trust, subject):
+    counts = _pairs(_dq(f, "DQ.028").get("affected_rows"))
+    readings, shares = counts[0][0], counts[1][0]
+    return {"what": ("Electricity records store their billing month as text like 'Apr-25', while "
+                     "every other table uses '2025-04'."),
+            "why": (f"All {readings:,} meter readings and all {shares:,} tenant electricity shares "
+                    f"use the different format (proven), so they cannot be lined up by month with "
+                    f"invoices, expenses or owner payments without conversion."),
+            "do": ("Have the electricity billing month converted to the common format in the "
+                   "source records, or mapped before comparing electricity with other figures "
+                   "month by month."),
+            "decision": "",
+            "until": ("Electricity figures can be read as totals, but not matched month by month "
+                      "with invoices or expenses.")}
+
+
+_GUIDANCE_BUILDERS = {
+    "INS.CONFLICT.M.OCC.001": _g_occupancy,
+    "INS.DQ.DQ.004": _g_occupancy_sources,
+    "INS.DQ.DQ.005": _g_on_notice_beds,
+    "INS.CONFLICT.M.AR.001A": _g_tenant_dues,
+    "INS.DQ.DQ.002": _g_tenant_dues_records,
+    "INS.DQ.DQ.019": _g_legacy_ledger,
+    "INS.CONFLICT.M.OWN.002": _g_owner_rent,
+    "INS.DQ.DQ.016": _g_owner_rent_omitted,
+    "INS.CONFLICT.M.PROFIT.001": _g_profit,
+    "INS.RISK.M.RISK.005": _g_repeated_invoices,
+    "INS.DQ.DQ.013": _g_billed_amount,
+    "INS.DQ.DQ.001": _g_invoice_drift,
+    "INS.DQ.DQ.008": _g_deposit_settlements,
+    "INS.RISK.M.RISK.004": _g_phantom_deposits,
+    "INS.DQ.DQ.011": _g_deposit_held,
+    "INS.RISK.M.RISK.006": _g_duplicate_receipts,
+    "INS.RISK.M.RISK.007": _g_overlaps,
+    "INS.DQ.DQ.015": _g_expense_categories,
+    "INS.DQ.DQ.030": _g_collections_series,
+    "INS.DQ.DQ.028": _g_electricity_format,
+}
+
+
+def owner_guidance(insight_id, facts, trust_level, subject, fallback):
+    """The five-part guidance for one item that asks something of the owner.
+
+    `fallback` is the item's existing (what, why, action), used only where no evidence-specific
+    builder exists or the evidence a builder quotes is not available.
+    """
+    guidance = None
+    builder = _GUIDANCE_BUILDERS.get((insight_id or "").upper())
+    if builder is not None:
+        try:
+            guidance = builder(facts or {}, trust_level, subject)
+        except (KeyError, IndexError, TypeError, ValueError, StopIteration, ZeroDivisionError):
+            guidance = None
+    if guidance is None:
+        what, why, action = fallback
+        guidance = {"what": what, "why": why, "do": action, "decision": "",
+                    "until": _until(trust_level, subject)}
+    return {k: sanitize_owner_text(guidance.get(k) or "") for k in GUIDANCE_KEYS}
+
+
+def guidance_action_text(guidance):
+    """The guidance as one paragraph, for surfaces that show a single recommendation string."""
+    parts = [guidance.get("do", "")]
+    if guidance.get("decision"):
+        parts.append(f"{_GUIDANCE_LABELS['decision']}: {guidance['decision']}")
+    if guidance.get("until"):
+        parts.append(f"{_GUIDANCE_LABELS['until']}: {guidance['until']}")
+    return " ".join(p for p in parts if p)
+
+
 # Two names read as a subject; five read as a dump. The rest are still affected and the
 # sentence says so, rather than listing every one of them.
 _SUBJECT_LIMIT = 2
@@ -2106,6 +2711,12 @@ def group_owner_decisions(rows, subjects_by_insight):
     `rows` are the attention-queue entries; `subjects_by_insight` maps an insight id to the
     owner-facing names of the measures it affects. Nothing is dropped: every row lands in
     exactly one group, and a group states every subject it covers.
+
+    Each group also carries the union of the metric ids its members are about. Owner Home shows
+    every group and ignores that field; a role workspace uses it to leave out a decision about
+    measures the lens cannot see. Carrying it here rather than re-deriving it downstream is what
+    lets the two surfaces stay in step -- the grouping happens once, and the scope travels with
+    the group it belongs to.
     """
     decisions, reviews = {}, []
     for row in rows or ():
@@ -2113,41 +2724,59 @@ def group_owner_decisions(rows, subjects_by_insight):
         subject = _queue_subject(subjects_by_insight.get(row.get("insight_id"), ()))
         if insight_id.startswith("INS.CONFLICT"):
             key = subject or "This measure"
-            entry = decisions.setdefault(key, {"trusts": [], "ids": []})
+            entry = decisions.setdefault(key, {"trusts": [], "ids": [], "metric_ids": [],
+                                               "guidance": {}})
             entry["trusts"].append(row.get("trust", ""))
             entry["ids"].append(row.get("insight_id"))
+            entry["metric_ids"].extend(row.get("metric_ids") or ())
+            if not entry["guidance"] and (row.get("guidance") or {}).get("decision"):
+                entry["guidance"] = row["guidance"]
         else:
             reviews.append((subject, row))
 
     out = []
     for subject, entry in decisions.items():
+        guidance = entry["guidance"]
         out.append({
             "insight_id": entry["ids"][0],
             "trust": _worst_posture(entry["trusts"]),
             "title": f"{subject} — decision needed",
+            # The exact choice and how the figures are treated meanwhile, from the item's own
+            # guidance. The standing sentence is kept only where no guidance was built.
             "decision": (
+                f"{guidance['decision']} {_GUIDANCE_LABELS['until']}: {guidance['until']}"
+                if guidance.get("decision") else
                 f"Several evidence-backed definitions exist and they give different answers. "
                 f"Decide which one the business treats as authoritative before "
                 f"{subject.lower()} figures are used for decisions."),
+            "guidance": guidance,
             "conflict_ids": [],
+            "metric_ids": tuple(dict.fromkeys(entry["metric_ids"])),
             "kind": "decision",
         })
 
     if reviews:
-        named = []
-        for subject, _row in reviews:
-            if subject and subject not in named:
-                named.append(subject)
-        listed = (", ".join(named[:-1]) + " and " + named[-1]) if len(named) > 1 else (
-            named[0] if named else "several measures")
+        # What each review actually asks for, subject by subject, rather than one sentence that
+        # called every item a source-versus-ledger difference.
+        steps, seen = [], set()
+        for subject, row in reviews:
+            action = (row.get("guidance") or {}).get("do") or row.get("decision") or ""
+            first = action.split(". ")[0].rstrip(".")
+            label = subject or "Several measures"
+            if first and (label, first) not in seen:
+                seen.add((label, first))
+                steps.append(f"{label}: {first}.")
+        covered = []
+        for _subject, row in reviews:
+            covered.extend(row.get("metric_ids") or ())
         out.append({
             "insight_id": reviews[0][1].get("insight_id"),
             "trust": _worst_posture([r.get("trust", "") for _s, r in reviews]),
-            "title": "Recording differences — review needed",
-            "decision": (
-                f"Source and ledger records differ for {listed.lower()}. Review the affected "
-                f"records before relying on those figures."),
+            "title": "Records to check — review needed",
+            "decision": ("Each of these needs a specific check before its figures are relied on. "
+                         + " ".join(steps)),
             "conflict_ids": [],
+            "metric_ids": tuple(dict.fromkeys(covered)),
             # A recording problem is not a definition conflict, and the trust posture's own
             # label says "definitions conflict". Shown on this card it would tell the owner
             # the wrong thing about what is wrong.

@@ -21,7 +21,22 @@ import { api } from '../api.js';
 import { el, metricTile, insightCard, changeCard, section, loading, errorState, emptyState }
   from '../render.js';
 import { badge } from '../trust.js';
-import { ownerInsight, ownerAction, ownerProse } from '../owner_view.js';
+import { ownerInsight, ownerAction, ownerProse, GUIDANCE_PARTS } from '../owner_view.js';
+
+/*
+ * The five-part guidance, one labelled line per part. The decision line is absent when no
+ * business decision is needed -- the engine leaves it empty rather than inventing one.
+ */
+function guidanceLines(guidance, className) {
+  return GUIDANCE_PARTS.filter(function (part) { return guidance[part[0]]; })
+    .map(function (part) {
+      const line = el('p', className);
+      line.setAttribute('data-guidance', part[0]);
+      line.appendChild(el('strong', 'guidance-label', part[1] + ': '));
+      line.appendChild(document.createTextNode(guidance[part[0]]));
+      return line;
+    });
+}
 
 // Insight categories that represent something the owner may need to act on, and those that
 // report a state worth knowing. The split is presentational: both lists are rendered in full,
@@ -123,8 +138,13 @@ function subjectCard(group) {
   (group.items || []).forEach(function (item) {
     const view = ownerInsight(item);
     const li = el('li', 'subject-finding');
-    if (view.finding) li.appendChild(el('p', 'subject-finding-what', view.finding));
-    if (view.action) li.appendChild(el('p', 'subject-finding-action', view.action));
+    if (view.guidance) {
+      guidanceLines(view.guidance, 'subject-finding-guidance')
+        .forEach(function (line) { li.appendChild(line); });
+    } else {
+      if (view.finding) li.appendChild(el('p', 'subject-finding-what', view.finding));
+      if (view.action) li.appendChild(el('p', 'subject-finding-action', view.action));
+    }
     list.appendChild(li);
   });
   card.appendChild(list);
@@ -290,7 +310,12 @@ export async function renderDashboard(root, ctx) {
     const view = ownerAction(a);
     const item = el('article', 'action');
     item.setAttribute('data-trust', a.trust);
-    if (view.recommendation) item.appendChild(el('p', 'action-text', view.recommendation));
+    if (view.guidance) {
+      guidanceLines(view.guidance, 'action-guidance')
+        .forEach(function (line) { item.appendChild(line); });
+    } else if (view.recommendation) {
+      item.appendChild(el('p', 'action-text', view.recommendation));
+    }
     if (view.confidence) {
       item.appendChild(el('p', 'action-confidence', 'Confidence: ' + view.confidence));
     }
