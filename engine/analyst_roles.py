@@ -63,6 +63,10 @@ class AnalystRole:
     domains: tuple = ()         # registry `domain` values this lens owns
     intents: tuple = ()         # intents that summon this lens regardless of domain
     never_does: str = ""
+    # What the owner reads as the workspace heading, where the specification's scope sentence
+    # would promise more than the workspace page shows. Empty means the scope sentence is used.
+    owner_focus: str = ""
+    owner_focus_note: str = ""
 
 
 # `domains` values are the registry's OWN `domain` column values, so a lens can never claim a
@@ -72,6 +76,9 @@ ROLES = (
         role_id=DATA_ANALYST, display_name="Data Analyst",
         source="ai_agent_roles.md 1",
         semantic_scope="Any metric -- raw lookups, filters, groupings.",
+        owner_focus="Looks up any catalogued measure on request.",
+        owner_focus_note=("This workspace leads with monthly revenue, collections, P&L and record "
+                          "checks."),
         capabilities=("kpi_lookup", "trend", "period_comparison", "segmentation",
                       "dimensional_analysis", "anomaly_surface", "data_quality_check",
                       "metric_reconciliation", "drill_down", "root_cause_exploration"),

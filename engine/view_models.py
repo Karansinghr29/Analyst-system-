@@ -417,6 +417,11 @@ def _clean_filters(filters):
     return out
 
 
+# The owner's status for a SAFE measure whose calculation was checked against the source view but
+# whose source records carry a proven completeness finding.
+SOURCE_LIMITATION_STATUS = "Calculation verified \u00b7 Source-data limitation"
+
+
 def format_value(value, unit=""):
     if value is None:
         return ""
@@ -467,6 +472,23 @@ class ViewModelBuilder:
 
     # -- tiles -----------------------------------------------------------------------------------
 
+    def _source_completeness_findings(self, dq_ids):
+        """Findings, by id, that prove the source records behind a measure are incomplete.
+
+        Read off the data-quality register's own fields: severity HIGH, status MEASURED, a root
+        cause recorded as PROVEN, and a business area the register itself describes as a
+        completeness problem. Nothing is inferred from the finding's prose.
+        """
+        out = []
+        for dq_id in dq_ids or ():
+            row = self._dq_rows.get(dq_id) or {}
+            if (str(row.get("severity", "")).upper() == "HIGH"
+                    and str(row.get("status", "")).upper() == "MEASURED"
+                    and str(row.get("root_cause_confidence", "")).upper().startswith("PROVEN")
+                    and "completeness" in str(row.get("business_area", "")).lower()):
+                out.append(dq_id)
+        return tuple(out)
+
     def tile(self, metric_id, section="", **calc_kwargs):
         if metric_id not in self.registry:
             pres = tp.present("NOT_DETERMINABLE")
@@ -491,6 +513,14 @@ class ViewModelBuilder:
         # The validation result decides whether a SAFE tile may say "checked"; the gate's level
         # is unchanged.
         pres = tp.present(effective_level, validation_status=card.validation_status)
+        trust = pres.as_dict()
+        # "Verified" alone says the figure is right. Where the calculation was checked but the
+        # records it reads are proven incomplete, the owner is told both halves. The SAFE posture
+        # itself is unchanged; only the owner's short status says what was verified.
+        incomplete = self._source_completeness_findings(card.dq_issues)
+        if effective_level == "SAFE" and card.validation_status == "MATCH" and incomplete:
+            trust = dict(trust, owner_status=SOURCE_LIMITATION_STATUS,
+                         badge=SOURCE_LIMITATION_STATUS, source_data_limitations=incomplete)
 
         # The owner-safe half of the semantic contract, attached to the tile so no surface has to
         # derive a business name, a business question or a usability answer for itself. The
@@ -514,7 +544,7 @@ class ViewModelBuilder:
             widget=WIDGET_BY_TRUST[effective_level],
             headline_permitted=card.headline_permitted and not answer_degraded,
             unit=card.unit,
-            trust=pres.as_dict(),
+            trust=trust,
             caveat=card.caveat,
             conflict_ids=card.conflicts,
             dq_ids=card.dq_issues,
@@ -986,6 +1016,7 @@ class ViewModelBuilder:
         facts["settlement_totals"] = getattr(first(answer("M.DEP.002")), "value", None)
         categories = getattr(first(answer("M.EXP.002")), "value", None) or {}
         facts["electricity"] = categories.get("electricity")
+        facts["expenses_total"] = getattr(first(answer("M.EXP.001")), "value", None)
         return facts
 
     def _insight_card(self, insight, facts=None):
@@ -1740,7 +1771,8 @@ class ViewModelBuilder:
             "role_id": role_id,
             "available": True,
             "display_name": role.display_name,
-            "focus": role.semantic_scope,
+            "focus": role.owner_focus or role.semantic_scope,
+            "focus_note": role.owner_focus_note,
             "capabilities": role.capabilities,
             "never_does": role.never_does,
             "tiles": tuple(self.tile(m, role.display_name).as_dict()

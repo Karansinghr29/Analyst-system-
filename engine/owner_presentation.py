@@ -1785,6 +1785,9 @@ def owner_confidence(grade):
 # the measure, its figures and its records are untouched -- this is the name, not the finding.
 _MEASURE_RENAMES = {
     "duplicate invoices": "Repeated invoice groups",
+    # "Phantom" says the money does not exist. What the records show is ended tenancies with a
+    # deposit recorded as paid and no settlement record; what became of each deposit is open.
+    "phantom deposits": "Deposits with no settlement record",
     # Read under an apartment heading, "for one apartment" is the registry explaining its own
     # grain. The owner already chose the apartment.
     "revenue by month for one apartment": "Apartment revenue",
@@ -2552,6 +2555,27 @@ def _g_expense_categories(f, trust, subject):
                       "Total expenses are not in question.")}
 
 
+def _g_unposted_payroll(f, trust, subject):
+    row = _dq(f, "DQ.033")
+    amounts = re.search(r"\u20b9([\d,]+(?:\.\d+)?) proven absent", row.get("affected_amount", ""))
+    month = re.search(r"payment_month (\d{4}-\d{2})", row.get("affected_amount", ""))
+    absent = float(amounts.group(1).replace(",", ""))
+    total = float(f["expenses_total"])
+    period = owner_period_label(month.group(1))
+    month_name = period.split(" ")[0]
+    share = absent / total * 100
+    return {"what": (f"{_inr(absent).split('.')[0]} of {period} payroll was never posted to the "
+                     f"ledger, so {month_name} expenses and P&L are understated by that amount "
+                     f"({share:.2f}% of total expenses)."),
+            "why": ("The calculation of expenses and P&L by month is correct for what the ledger "
+                    "holds; the ledger itself is missing these payroll payments."),
+            "do": ("Post the missing payroll payments to the ledger, or record why they were paid "
+                   "outside it."),
+            "decision": "",
+            "until": (f"Read {period} expenses and P&L as understated by "
+                      f"{_inr(absent).split('.')[0]}.")}
+
+
 def _g_collections_series(f, trust, subject):
     _dq(f, "DQ.030")
     return {"what": ("The application's monthly collections trend reads an account that no "
@@ -2602,6 +2626,7 @@ _GUIDANCE_BUILDERS = {
     "INS.RISK.M.RISK.006": _g_duplicate_receipts,
     "INS.RISK.M.RISK.007": _g_overlaps,
     "INS.DQ.DQ.015": _g_expense_categories,
+    "INS.DQ.DQ.033": _g_unposted_payroll,
     "INS.DQ.DQ.030": _g_collections_series,
     "INS.DQ.DQ.028": _g_electricity_format,
 }

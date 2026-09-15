@@ -82,6 +82,7 @@ export async function renderWorkspace(root, roleId, ctx) {
   const head = el('header', 'workspace-head');
   head.appendChild(el('h1', 'dashboard-title', ws.display_name));
   head.appendChild(el('p', 'dashboard-asof', ws.focus));
+  if (ws.focus_note) head.appendChild(el('p', 'workspace-note', ws.focus_note));
   page.appendChild(head);
 
   // The lens's own boundary, written for the people who maintain it -- it names the gate's

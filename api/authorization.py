@@ -116,7 +116,7 @@ class Authorizer:
             "role_id": role_id,
             "analyst_role": role.role_id,
             "display_name": role.display_name,
-            "focus": role.semantic_scope,
+            "focus": role.owner_focus or role.semantic_scope,
             "domains": list(role.domains),
             "visible_metric_count": len(visible),
             "workspace_metric_count": len(scope.scope_ids),

@@ -204,6 +204,8 @@ export function ownerTitle(title) {
   // readily as a double-billing. The heading says what was found; the finding's own text says
   // what the evidence does and does not establish about it.
   if (/^duplicate invoices$/i.test(text)) return 'Repeated invoice groups';
+  // "Phantom" asserts the money does not exist; the records show only that no settlement exists.
+  if (/^phantom deposits$/i.test(text)) return 'Deposits with no settlement record';
   return text || ownerText(title);
 }
 
