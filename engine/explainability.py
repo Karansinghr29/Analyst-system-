@@ -374,8 +374,9 @@ def _forecast_reason(result):
                  f"{op._month_name(points[0].period + '-01')} to "
                  f"{op._month_name(points[-1].period + '-01')}")
 
-    out = [f"This is a projection {scope}, not a recorded figure. It continues the trend in "
-           f"your own revenue history; no month there has happened yet."]
+    out = [f"This is a projection {scope}, not a recorded figure. It is projected from your own "
+           f"invoiced revenue history, the previous month's occupancy and its recorded tenant "
+           f"and booking activity; no month there has happened yet."]
 
     mape = (getattr(forecast, "backtest", None) or {}).get("mape_pct")
     if mape is not None:

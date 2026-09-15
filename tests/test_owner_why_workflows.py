@@ -159,7 +159,10 @@ def test_a_successful_forecast_explains_that_it_is_a_projection(ask):
 def test_the_forecast_panel_does_not_repeat_the_projection_or_its_range(ask):
     payload = ask("What revenue do you expect next month?")
     text = why_text(payload)
-    for figure in ("3,429,771.16", "3,268,690.53", "3,627,307.21"):
+    from engine.forecasting import forecast_revenue
+    point = forecast_revenue(1).points[0]
+    for figure in (f"{point.value:,.2f}", f"{point.lower:,.2f}", f"{point.upper:,.2f}"):
+        assert figure in payload["answer"], f"{figure} is not the canonical forecast shown"
         assert figure not in text, f"{figure} was repeated in the explanation"
 
 
@@ -298,7 +301,7 @@ def test_the_block_panel_is_unchanged(ask):
     ("What is current occupancy?", "SHOW_BOTH"),
     ("What was profit last month?", "BLOCK"),
     ("What is our typical rent?", "DISCLOSE"),
-    ("What revenue do you expect next month?", "SAFE"),
+    ("What revenue do you expect next month?", "DISCLOSE"),
 ])
 def test_no_trust_posture_changed(ask, question, expected):
     assert ask(question)["trust_level"] == expected, question
@@ -308,7 +311,9 @@ def test_the_answers_themselves_are_untouched(ask):
     """This is a presentation change. Every figure the engine produced must still be there."""
     assert "72,705,593" in ask("What is our revenue?")["answer"]
     assert "14,500" in ask("What is our typical rent?")["answer"]
-    assert "3,429,771.16" in ask("What revenue do you expect next month?")["answer"]
+    from engine.forecasting import forecast_revenue
+    canonical = f"{forecast_revenue(1).points[0].value:,.2f}"
+    assert canonical in ask("What revenue do you expect next month?")["answer"]
     assert "35,384.03" in ask("What changed this month?")["answer"]
     assert "195" in ask("next month occupancy")["answer"]
 

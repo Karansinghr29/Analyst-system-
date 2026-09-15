@@ -11,6 +11,7 @@ import re
 
 import pytest
 
+from engine import evidence_loader as ev
 from engine import forecasting as fc
 from engine import owner_presentation as op
 from engine.result import NOT_DETERMINABLE_TEXT
@@ -122,11 +123,57 @@ def test_the_owner_answer_never_calls_it_a_confidence_interval():
 
 # --- occupancy and causal language ------------------------------------------------------------------
 
-def test_occupancy_is_recorded_as_tested_and_rejected():
+def test_occupancy_is_used_with_the_production_contract_definition():
+    """Physical bed = apartment_code|bed_code; occupied in M when onboarding_date <= M end and
+    actual_exit_date is empty or >= M start, with no status filter; denominator 192 before
+    2026-08 and 203 from it. Checked against an independent computation from the evidence."""
+    import pandas as pd
+
     drivers = {d["driver"]: d for d in fc.evaluate_drivers()}
-    assert drivers["occupied beds"]["verdict"] == "REJECTED"
-    assert drivers["occupancy rate"]["verdict"] == "NOT_DERIVABLE"
-    assert not any(d["verdict"] == "USED" for d in fc.evaluate_drivers())
+    assert drivers["occupancy rate"]["verdict"] == "USED"
+    assert "occupancy_pct_lag1" in fc.RIDGE_FEATURES
+
+    apartments = ev.load_table("apartments")
+    beds = ev.load_table("beds")
+    allotments = ev.load_table("tenant_allotments")
+    code = dict(zip(apartments["id"], apartments["apartment_code"]))
+    physical = dict(zip(beds["id"], [f"{code[a]}|{b}" for a, b in zip(beds["apartment_id"], beds["bed_code"])]))
+    on = pd.to_datetime(allotments["onboarding_date"], errors="coerce", utc=True).dt.tz_localize(None)
+    off = pd.to_datetime(allotments["actual_exit_date"], errors="coerce", utc=True).dt.tz_localize(None)
+
+    periods = [p for p, _ in fc.monthly_revenue_series()] + ["2026-08"]
+    pct, detail = fc.monthly_occupancy(periods)
+    overlap_differs_from_month_end = False
+    for p in periods:
+        first = pd.Timestamp(f"{p}-01")
+        last = pd.Timestamp(fc._month_end(int(p[:4]), int(p[5:7])))
+        held = {physical[b] for b in allotments.loc[(on <= last) & (off.isna() | (off >= first)), "bed_id"]}
+        at_end = {physical[b] for b in allotments.loc[(on <= last) & (off.isna() | (off >= last)), "bed_id"]}
+        overlap_differs_from_month_end |= len(held) != len(at_end)
+        denominator = 192 if p < "2026-08" else 203
+        assert detail[p] == (len(held), denominator), f"{p}: occupancy differs from the contract"
+        assert pct[p] == pytest.approx(100.0 * len(held) / denominator)
+        assert pct[p] <= 100.0
+    assert overlap_differs_from_month_end, "the check cannot tell any-day overlap from month-end"
+    assert detail["2026-07"][1] == 192 and detail["2026-08"][1] == 203
+
+    # No status filter: some Cancelled allotments carry dates that fall inside a scored month, so a
+    # status filter in the implementation would have broken the comparison above.
+    cancelled = (allotments["staying_status"].astype(str) == "Cancelled") & on.notna()
+    assert cancelled.any() and (on[cancelled] <= pd.Timestamp("2026-07-31")).any()
+
+    # Forecast months never read occupancy actuals: after the last complete month it is held.
+    table = fc.build_feature_table()
+    origin = table.periods[-1]
+    assert origin < "2026-08" and "2026-08" not in table.drivers
+    _predicted, provenance, alpha = fc._ridge_path(table, origin, 3)
+    assert alpha == 5.0
+    assert "occupancy_pct_lag1" in provenance[0]["observed"]
+    assert "occupancy_pct_lag1" in provenance[1]["generated"]
+
+    check = fc.occupancy_validation()
+    assert check["above_100"] == 0
+    assert (check["physical_beds_before_added"], check["physical_beds"]) == (192, 203)
 
 
 def test_no_causal_claim_appears_in_the_module_or_the_owner_answer():

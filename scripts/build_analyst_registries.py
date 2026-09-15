@@ -86,10 +86,11 @@ CAP_IMPL = {
                           "IMPLEMENTED"),
     "statistical_summary": ("analytics_execution_spec.md 2.5", "engine/change_detection.py",
                             "NOT_IMPLEMENTED"),
-    # Method chosen by rolling-origin backtest over the operating era, not by
-    # sophistication: damped Holt beat naive at every horizon tested.
-    "revenue_forecast": ("analytics_execution_spec.md 2.5 (method selected by "
-                         "out-of-sample backtest)", "engine/forecasting.py",
+    # Mandated production model (StandardScaler -> Ridge, alpha 5.0); benchmarks are reported
+    # alongside it by engine/forecasting.py and never replace it.
+    "revenue_forecast": ("analytics_execution_spec.md 2.5 (multivariate Ridge on lagged invoiced "
+                         "revenue and activity drivers, validated by expanding-window "
+                         "walk-forward)", "engine/forecasting.py",
                          "IMPLEMENTED"),
     "forecast_scenario": ("analytics_execution_spec.md 2.5", "engine/forecasting.py",
                           "NOT_IMPLEMENTED"),
@@ -146,12 +147,11 @@ CAP_NOTES = {
                              "month-to-month changes, because the level figure alone mostly "
                              "records that both measures grew."),
     "forecast_scenario": ("A driver-conditioned forecast ('revenue if occupancy were 80%') "
-                          "needs a validated relationship between the driver and revenue. "
-                          "Occupancy was tested and rejected: it tracks revenue only because "
-                          "both trend upward, and as a predictor it produced roughly seven "
-                          "times the error of the univariate model. A monthly occupancy rate "
-                          "is not derivable either, because bed records carry no dates. "
-                          + NOT_DET),
+                          "is not produced. The revenue forecast uses the previous month's bed "
+                          "occupancy alongside lagged tenant, rent, booking, move-in, move-out "
+                          "and notice activity; those measures move together, and the model is "
+                          "not validated for setting occupancy to a chosen level while holding "
+                          "the others fixed. " + NOT_DET),
     "bed_utilization": ("Bed- and apartment-grain occupancy (M.OCC.003/M.OCC.004) carry no "
                         "exported reference and are NOT_DETERMINABLE in the registry. "
                         + NOT_DET),

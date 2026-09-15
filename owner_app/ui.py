@@ -325,7 +325,7 @@ def forecast_panel(forecast: dict | None) -> None:
         return
     with st.container(border=True):
         st.markdown("**Projected — not recorded**")
-        st.caption("A projection of the recorded trend. Nothing below has happened yet, and "
+        st.caption("A projection from the recorded history. Nothing below has happened yet, and "
                    "none of it is a recorded figure.")
         for line in str(forecast.get("answer", "")).split("\n"):
             if line.strip():

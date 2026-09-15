@@ -248,12 +248,15 @@ class LLMInterface:
 
                 if forecast is not None:
                     result.status = READY if forecast.available else NOT_DETERMINABLE
-                    result.metric_ids = ("M.REV.002",)
+                    # The forecast's target is invoiced revenue (SUM of invoice totals by billing
+                    # month), so it is attributed to the invoice billed-amount metric and carries
+                    # that metric's trust posture -- not ledger revenue's.
+                    result.metric_ids = ("M.INV.001",)
                     # The gate authorizes the metric; it does not authorize a projection that
-                    # was never produced. A refused horizon carrying a SAFE badge would present
+                    # was never produced. A refused horizon carrying a trust badge would present
                     # a refusal as a trustworthy answer.
                     result.trust_level = (
-                        self.gate.authorize("M.REV.002").effective_level if forecast.available
+                        self.gate.authorize("M.INV.001").effective_level if forecast.available
                         else NOT_DETERMINABLE)
                     result.text = owner_presentation.present_forecast(forecast, working)
                     result.forecast = forecast

@@ -1329,7 +1329,7 @@ def present_forecast(forecast, question=""):
     if len(points) == 1:
         p = points[0]
         lines.append(
-            f"Projected revenue for {_month_name(p.period + '-01')} is "
+            f"Projected invoiced revenue for {_month_name(p.period + '-01')} is "
             f"{format_owner_quantity(p.value, 'INR')}.")
         if p.lower is not None and p.upper is not None:
             lines.append(
@@ -1337,7 +1337,7 @@ def present_forecast(forecast, question=""):
                 f"{format_owner_quantity(p.lower, 'INR')} and "
                 f"{format_owner_quantity(p.upper, 'INR')}.")
     else:
-        lines.append(f"Projected revenue for the next {len(points)} months:")
+        lines.append(f"Projected invoiced revenue for the next {len(points)} months:")
         for p in points:
             band = ""
             if p.lower is not None and p.upper is not None:
@@ -1357,22 +1357,23 @@ def present_forecast(forecast, question=""):
     mape = (forecast.backtest or {}).get("mape_pct")
     if mape is not None:
         lines.append(
-            f"This projection continues the trend in your recorded revenue. Tested against "
-            f"months the model had not seen, it was off by about {mape}% on average at this "
-            f"range.")
+            f"This projection comes from your invoiced revenue history, the previous month's "
+            f"bed occupancy and its recorded tenant, rent, booking, move-in, move-out and "
+            f"notice activity. Tested "
+            f"month by month on months the model had not seen, it was off by about {mape}% on "
+            f"average at this range.")
 
     for limitation in (forecast.limitations or ()):
         lines.append(limitation)
 
-    # A driver that was tested and rejected is a finding, not an absence.
-    rejected = [d for d in (forecast.drivers or ())
-                if d.get("verdict") in ("REJECTED", "NOT_DERIVABLE")
-                and "occup" in d.get("driver", "").lower()]
-    if rejected:
+    # A driver that could not be derived is a finding, not an absence.
+    underivable = [d for d in (forecast.drivers or ())
+                   if d.get("verdict") == "NOT_DERIVABLE"
+                   and "occup" in d.get("driver", "").lower()]
+    if underivable:
         lines.append(
-            "Occupancy was tested as a predictor and is not used: it tracks revenue only "
-            "because both have been rising, and adding it made the projection materially less "
-            "accurate.")
+            "Occupancy rate is not used: a monthly occupancy rate cannot be reconstructed from "
+            "these records, because past bed availability has no dates.")
 
     return sanitize_owner_text("\n".join(ln for ln in lines if ln).strip())
 

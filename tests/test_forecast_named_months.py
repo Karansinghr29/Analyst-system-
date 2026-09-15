@@ -95,8 +95,8 @@ def test_each_supported_month_returns_its_own_projection(analyst, period):
     """September through January, not just October. Each must answer for the month asked."""
     label = MONTH_NAMES[period]
     a = answer(analyst, f"Forecast revenue for {label}")
-    assert a.trust_level == "SAFE", f"{label}: {a.trust_level}"
-    assert f"Projected revenue for {label}" in a.text, a.text[:160]
+    assert a.trust_level == "DISCLOSE", f"{label}: {a.trust_level}"
+    assert f"Projected invoiced revenue for {label}" in a.text, a.text[:160]
 
 
 @pytest.mark.parametrize("period", SUPPORTED[1:])
@@ -147,7 +147,7 @@ def test_a_month_beyond_six_gets_the_existing_honest_limitation(analyst, questio
     a = answer(analyst, question)
     assert a.trust_level == "NOT_DETERMINABLE", f"{question}: {a.trust_level}"
     assert f"{fc.MAX_HORIZON} months" in a.text
-    assert "Projected revenue for" not in a.text, "a refused horizon still produced a figure"
+    assert "Projected invoiced revenue for" not in a.text, "a refused horizon still produced a figure"
     assert "August 2026" not in a.text, "the first forecast month was substituted"
 
 
@@ -160,13 +160,13 @@ def test_a_month_beyond_six_gets_the_existing_honest_limitation(analyst, questio
 ])
 def test_relative_periods_keep_their_existing_semantics(analyst, question):
     a = answer(analyst, question)
-    assert a.trust_level == "SAFE"
-    assert "Projected revenue for August 2026" in a.text, question
+    assert a.trust_level == "DISCLOSE"
+    assert "Projected invoiced revenue for August 2026" in a.text, question
 
 
 def test_a_multi_month_request_still_lists_every_month(analyst):
     a = answer(analyst, "Forecast revenue for the next 3 months")
-    assert a.trust_level == "SAFE"
+    assert a.trust_level == "DISCLOSE"
     for label in ("August 2026", "September 2026", "October 2026"):
         assert label in a.text
 
@@ -188,7 +188,7 @@ def test_a_future_month_asked_in_the_past_tense_is_not_a_forecast(analyst):
     """"What was revenue in October 2026?" asks what the records hold. They hold nothing for
     October, and that is a coverage answer, not a projection."""
     a = answer(analyst, "What was revenue in October 2026?")
-    assert "Projected revenue" not in a.text
+    assert "Projected invoiced revenue" not in a.text
 
 
 def test_unsupported_forecasts_keep_their_capability_gap(analyst):
@@ -295,8 +295,8 @@ def test_a_future_month_is_forecast_even_without_forecast_wording(analyst, quest
     a = answer(analyst, question)
     assert COVERAGE_SENTENCE not in a.text, (
         f"{question!r} was refused for historical coverage, not answered as a forecast")
-    assert a.trust_level == "SAFE", f"{question}: {a.trust_level}"
-    assert f"Projected revenue for {label}" in a.text, a.text[:160]
+    assert a.trust_level == "DISCLOSE", f"{question}: {a.trust_level}"
+    assert f"Projected invoiced revenue for {label}" in a.text, a.text[:160]
 
 
 @pytest.mark.parametrize("question", [
@@ -310,7 +310,7 @@ def test_a_month_past_the_horizon_is_refused_by_the_method_not_by_coverage(analy
         f"{question!r} blamed historical coverage for a forecast limit")
     assert a.trust_level == "NOT_DETERMINABLE"
     assert f"{fc.MAX_HORIZON} months" in a.text
-    assert "Projected revenue for" not in a.text
+    assert "Projected invoiced revenue for" not in a.text
     for label in MONTH_NAMES.values():
         assert label not in a.text, f"{question}: {label} was substituted"
 
@@ -342,14 +342,14 @@ def test_the_past_tense_still_asks_what_the_records_hold(analyst):
     """"What WAS revenue in October 2026?" asks for a fact. The records hold none, and saying so
     is the honest answer -- a projection would replace the question with a different one."""
     a = answer(analyst, "What was revenue in October 2026?")
-    assert "Projected revenue" not in a.text
+    assert "Projected invoiced revenue" not in a.text
 
 
 @pytest.mark.parametrize("question", ["next month revenue", "What will revenue be next month?"])
 def test_relative_periods_are_unaffected(analyst, question):
     a = answer(analyst, question)
-    assert a.trust_level == "SAFE"
-    assert "Projected revenue for August 2026" in a.text
+    assert a.trust_level == "DISCLOSE"
+    assert "Projected invoiced revenue for August 2026" in a.text
 
 
 # --- 7. the refusal explains the method's limit, in owner language -----------------------------------

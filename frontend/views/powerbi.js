@@ -636,7 +636,7 @@ function financialPage(page, data) {
     const box = el('article', 'forecast');
     box.setAttribute('data-trust', data.forecast.trust_level || '');
     box.appendChild(el('p', 'forecast-flag',
-      'The figures below are a projection of the recorded trend. They are not recorded ' +
+      'The figures below are a projection from the recorded history. They are not recorded ' +
       'revenue, and no month in them has happened yet.'));
     (data.forecast.answer || '').split('\n').forEach(function (line) {
       if (line.trim()) box.appendChild(el('p', 'forecast-line', line.trim()));
@@ -1167,7 +1167,7 @@ function insightsPage(page, data) {
   // Estate-wide, exactly as on the Financial page: omitted under an apartment filter.
   if (data.forecast && !VIEW.filters.apartment) {
     const fc = block('What is projected',
-      'A projection of the recorded trend. Nothing below has happened yet, and none of it is ' +
+      'A projection from the recorded history. Nothing below has happened yet, and none of it is ' +
       'a recorded figure.');
     const box = el('article', 'forecast');
     box.setAttribute('data-trust', data.forecast.trust_level || '');
