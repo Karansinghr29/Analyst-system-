@@ -22,11 +22,17 @@ than a stale number.
 import json
 import os
 import sqlite3
+import tempfile
 import time
 from dataclasses import dataclass, field
 
-DEFAULT_DB = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                          "conversations.db")
+# Vercel serves the deployment from a read-only filesystem; only the temp directory is writable
+# there. Anywhere else (local, Docker/Render) the file stays beside the package, unchanged.
+if os.environ.get("VERCEL"):
+    DEFAULT_DB = os.path.join(tempfile.gettempdir(), "conversations.db")
+else:
+    DEFAULT_DB = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                              "conversations.db")
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS conversations (
