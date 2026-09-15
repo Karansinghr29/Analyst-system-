@@ -1715,7 +1715,28 @@ class ViewModelBuilder:
         metric_ids = scope.scope_ids
         home = home if home is not None else self.owner_home()
         in_scope = set(metric_ids)
-        return {
+        capabilities = set(role.capabilities or ())
+        # A lens whose declared capability is surfacing definition conflicts sees every conflict,
+        # whichever domain the conflicted measure lives in. Scoping them out by metric id left the
+        # Risk / Data-Quality lens without the conflicts it exists to surface. The findings and
+        # decisions are the dashboard's own objects; nothing is re-derived.
+        surfaces_conflicts = "conflict_surface" in capabilities
+
+        def _in_lens(insight):
+            return bool(in_scope & set(insight.metric_ids or ())) or (
+                surfaces_conflicts and insight.category == "definition_conflict")
+
+        # A decision raised by a conflict finding is identified by that finding's id.
+        conflict_insights = {i.insight_id for i in home.insights
+                             if i.category == "definition_conflict"}
+
+        def _decision_in_lens(decision):
+            return (not decision.get("metric_ids")
+                    or bool(in_scope & set(decision.get("metric_ids") or ()))
+                    or (surfaces_conflicts
+                        and decision.get("insight_id") in conflict_insights))
+
+        payload = {
             "role_id": role_id,
             "available": True,
             "display_name": role.display_name,
@@ -1740,25 +1761,174 @@ class ViewModelBuilder:
             # owner rent, profit and occupancy, measures outside its own scope. The decision
             # itself is untouched and still shows in full on Owner Home; this only leaves out
             # the ones this lens cannot see the measures for.
-            "decision_queue": tuple(d for d in home.decision_queue
-                                    if not d.get("metric_ids")
-                                    or in_scope & set(d.get("metric_ids") or ())),
-            "insights": tuple(i.as_dict() for i in home.insights
-                              if in_scope & set(i.metric_ids or ())),
+            "decision_queue": tuple(d for d in home.decision_queue if _decision_in_lens(d)),
+            "insights": tuple(i.as_dict() for i in home.insights if _in_lens(i)),
             # The same three-way split Owner Home renders, narrowed to this lens. A workspace
             # that recomputed the grouping could disagree with the dashboard about whether a
             # movement is work; taking the engine's split means it cannot.
-            "needs_attention": tuple(i.as_dict() for i in home.needs_attention
-                                     if in_scope & set(i.metric_ids or ())),
-            "movements": tuple(i.as_dict() for i in home.movements
-                               if in_scope & set(i.metric_ids or ())),
-            "findings": tuple(i.as_dict() for i in home.findings
-                              if in_scope & set(i.metric_ids or ())),
-            "supporting": tuple(i.as_dict() for i in home.supporting
-                                if in_scope & set(i.metric_ids or ())),
+            # `needs_attention` keeps the ranker's order, which is the investigation priority.
+            "needs_attention": tuple(i.as_dict() for i in home.needs_attention if _in_lens(i)),
+            "movements": tuple(i.as_dict() for i in home.movements if _in_lens(i)),
+            "findings": tuple(i.as_dict() for i in home.findings if _in_lens(i)),
+            "supporting": tuple(i.as_dict() for i in home.supporting if _in_lens(i)),
             "limitations": tuple(home.limitations),
             "as_of": home.as_of,
         }
+        # The owner reads the revenue forecast in one workspace only. Other lenses that hold the
+        # capability (Data Scientist, for diagnostics) do not repeat it as an owner display.
+        if role_id == analyst_roles.FORECAST_OWNER_ROLE:
+            payload["revenue_forecast"] = self.revenue_forecast_panel()
+        # Recommended actions are the dashboard's own, attached to findings. A lens that
+        # recommends receives the ones whose finding is in its lens -- no action is written here.
+        if capabilities & {"recommendation", "attention_required", "pending_decision"}:
+            lens_insights = {i["insight_id"] for i in payload["insights"]}
+            payload["recommended_actions"] = tuple(
+                a for a in home.recommended_actions if a.get("insight_id") in lens_insights)
+        # The recorded data-quality register, for the lens that scans it. The same object the
+        # Data Quality page and the risk section render.
+        if "dq_scan" in capabilities:
+            payload["data_quality"] = self.data_quality_center()
+        # Model and validation diagnostics for a lens that holds the forecasting capability but is
+        # not where the owner reads the forecast. The forecast figures themselves are not repeated.
+        if ("revenue_forecast" in capabilities
+                and role_id != analyst_roles.FORECAST_OWNER_ROLE):
+            payload["forecast_diagnostics"] = self.forecast_diagnostics()
+        if "descriptive_analysis" in capabilities:
+            payload["descriptive"] = self.descriptive_panel()
+        return payload
+
+    # Horizons the diagnostics report, the three the forecaster's own validation documents.
+    DIAGNOSTIC_HORIZONS = (1, 3, 6)
+
+    def forecast_diagnostics(self):
+        """How the production forecast model was validated. Computes nothing new.
+
+        Every figure is read off `forecasting.forecast_revenue` -- its walk-forward model
+        comparison, its per-horizon backtest against the naive benchmark, its drivers and its
+        stated configuration. No projection value is carried: those belong to the forecast's
+        owner-facing workspace.
+        """
+        from engine import forecasting as fc
+
+        runs = {h: fc.forecast_revenue(h) for h in self.DIAGNOSTIC_HORIZONS}
+        first = runs[self.DIAGNOSTIC_HORIZONS[0]]
+        if not first.available:
+            return {"available": False,
+                    "unavailable_reason": first.not_determinable_reason or ""}
+        comparison = first.model_comparison or {}
+        models = comparison.get("models") or {}
+        return {
+            "available": True,
+            "owner_workspace": analyst_roles.FORECAST_OWNER_ROLE,
+            "metric_id": self.FORECAST_METRIC_ID,
+            "target": fc.REVENUE_TARGET,
+            "method": first.method,
+            "production_model": comparison.get("production_model", ""),
+            "ridge_alpha": (first.backtest or {}).get("ridge_alpha"),
+            "features": tuple(first.features),
+            "design": comparison.get("design", ""),
+            "validation_months": tuple(comparison.get("validation_months") or ()),
+            "most_accurate_by_mape": comparison.get("most_accurate_by_mape", ""),
+            "models": tuple(
+                {"model": name, "label": m.get("label", name),
+                 "production": name == comparison.get("production_model"),
+                 "mae": m.get("MAE"), "rmse": m.get("RMSE"),
+                 "mape_pct": m.get("MAPE_pct"), "r2": m.get("R2")}
+                for name, m in models.items()),
+            "horizons": tuple(
+                {"horizon": h, "available": runs[h].available,
+                 "mape_pct": (runs[h].backtest or {}).get("mape_pct"),
+                 "naive_mape_pct": ((runs[h].backtest or {}).get("compared_against") or {})
+                 .get("naive_last_value_mape_pct"),
+                 "folds": (runs[h].backtest or {}).get("folds")}
+                for h in self.DIAGNOSTIC_HORIZONS),
+            "drivers": tuple(first.drivers or ()),
+            "interval_basis": first.interval_basis,
+            "note": ("The production model stays in use even where a benchmark was more "
+                     "accurate on these months; the comparison is reported, not acted on. The "
+                     "forecast figures are presented in the Financial Analyst workspace."),
+        }
+
+    def descriptive_panel(self):
+        """The descriptive summaries the descriptive module defines, in owner wording.
+
+        Only the series and the pairs `engine/descriptive.py` itself names. Each summary is that
+        module's output, worded by the same presenter a descriptive question uses.
+        """
+        from types import SimpleNamespace
+        from engine import descriptive
+
+        out = []
+        for name in sorted(descriptive.SERIES_METRICS):
+            summary = descriptive.series_summary(name)
+            out.append({"kind": "series", "name": name, "label": summary.label,
+                        "available": summary.available,
+                        "text": op.present_descriptive(summary, SimpleNamespace(kind="series"))})
+        for first, second in sorted(descriptive.RELATIONSHIPS):
+            summary = descriptive.relationship(first, second)
+            out.append({"kind": "relationship", "name": f"{first}|{second}",
+                        "label": summary.label, "available": summary.available,
+                        "text": op.present_descriptive(
+                            summary, SimpleNamespace(kind="relationship"))})
+        return tuple(out)
+
+    # The forecast's target metric: invoiced revenue, the same attribution the question pipeline
+    # gives a forecast answer.
+    FORECAST_METRIC_ID = "M.INV.001"
+
+    def revenue_forecast_panel(self):
+        """The production invoiced-revenue forecast, shaped for a chart. Computes nothing.
+
+        The projection, its band, its tested error and its limitations are the output of
+        `forecasting.forecast_revenue` -- the same call every forecast answer makes. The history
+        is `forecasting.monthly_revenue_series`, the exact series that forecast was fitted on, so
+        the recorded line and the projected line are one measure. Trust is the gate's posture for
+        the forecast's metric, as it is on a forecast answer.
+        """
+        from engine import forecasting as fc
+
+        forecast = fc.forecast_revenue(fc.MAX_HORIZON)
+        level = (self.gate.authorize(self.FORECAST_METRIC_ID).effective_level
+                 if forecast.available else "NOT_DETERMINABLE")
+        panel = {
+            "available": bool(forecast.available),
+            "metric_id": self.FORECAST_METRIC_ID,
+            "measure": "Invoiced revenue",
+            "target": fc.REVENUE_TARGET,
+            "trust": tp.present(level).as_dict(),
+            "basis_note": (
+                "This is a forecast of invoiced revenue: the total of invoices raised for each "
+                "billing month. It is not the revenue recorded in the accounts, which is a "
+                "different measure with different monthly figures."),
+            "unavailable_reason": forecast.not_determinable_reason or "",
+        }
+        if not forecast.available:
+            return panel
+
+        history = tuple((period, value) for period, value in fc.monthly_revenue_series()
+                        if forecast.training_start <= period <= forecast.training_end)
+        panel.update({
+            "method": forecast.method,
+            "horizon": forecast.horizon,
+            "last_actual_period": forecast.training_end,
+            "boundary_note": (
+                f"Months up to {op.owner_period_label(forecast.training_end)} are recorded "
+                f"invoiced revenue. Months after it are projections: none of them has happened "
+                f"yet."),
+            "history": tuple({"period": period, "value": value,
+                              "display": format_value(value, "INR")}
+                             for period, value in history),
+            "points": tuple({"period": p.period, "value": p.value,
+                             "lower": p.lower, "upper": p.upper,
+                             "display": format_value(p.value, "INR"),
+                             "lower_display": format_value(p.lower, "INR"),
+                             "upper_display": format_value(p.upper, "INR")}
+                            for p in forecast.points),
+            "interval_basis": forecast.interval_basis,
+            "backtest_mape_pct": (forecast.backtest or {}).get("mape_pct"),
+            "limitations": tuple(forecast.limitations),
+        })
+        return panel
 
     # -- analytics sections (Phase 14) -------------------------------------------------------------
 

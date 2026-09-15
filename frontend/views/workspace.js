@@ -15,7 +15,7 @@ import { badge } from '../trust.js';
 import {
   ownerText, ownerProse, ownerTitle, ownerDecision, ownerView, ownerDefinitionLabels,
 } from '../owner_view.js';
-import { lineChart } from '../charts.js';
+import { lineChart, forecastChart, monthLabel } from '../charts.js';
 
 export async function renderRoles(root, ctx) {
   root.replaceChildren(loading('the analyst workspaces'));
@@ -41,7 +41,11 @@ export async function renderRoles(root, ctx) {
     card.setAttribute('tabindex', '0');
     card.appendChild(el('h2', 'role-name', r.display_name));
     card.appendChild(el('p', 'role-focus', r.focus));
-    card.appendChild(el('p', 'role-count', r.visible_metric_count + ' measures visible'));
+    const scoped = (r.workspace_metric_count === undefined || r.workspace_metric_count === null)
+      ? r.visible_metric_count : r.workspace_metric_count;
+    card.appendChild(el('p', 'role-count', scoped === r.visible_metric_count
+      ? scoped + ' measures'
+      : scoped + ' measures in this workspace · ' + r.visible_metric_count + ' visible to this role'));
     card.appendChild(el('p', 'role-never', 'Never: ' + r.never_does));
     const open = function () { ctx.openWorkspace(r.analyst_role); };
     card.addEventListener('click', open);
@@ -180,6 +184,31 @@ function seriesOf(value) {
   return keys.sort().map(function (k) { return [k, value[k]]; });
 }
 
+/* A month series whose months each hold named parts (P&L by month: revenue, expenses, net
+ * profit) is drawn one line per part, each under the part's own name. A composite month has no
+ * single figure, so drawing it as one line would need a figure the engine never produced. */
+function componentSeriesOf(value, prefix) {
+  const months = seriesOf(value);
+  if (months.length === 0) return [];
+  if (months.every(function (p) { return isFinite(Number(p[1])) && p[1] !== null; })) {
+    return [{ label: prefix || '', points: months, numeric: true }];
+  }
+  const parts = [];
+  months.forEach(function (p) {
+    if (p[1] && typeof p[1] === 'object') {
+      Object.keys(p[1]).forEach(function (k) { if (parts.indexOf(k) === -1) parts.push(k); });
+    }
+  });
+  return parts.map(function (part) {
+    const points = months
+      .filter(function (p) { return p[1] && typeof p[1] === 'object' && isFinite(Number(p[1][part])) && p[1][part] !== null; })
+      .map(function (p) { return [p[0], p[1][part]]; });
+    const name = part.replace(/_/g, ' ');
+    return { label: (prefix ? prefix + ': ' : '') + name.charAt(0).toUpperCase() + name.slice(1),
+             points: points, numeric: false };
+  }).filter(function (sr) { return sr.points.length > 0; });
+}
+
 /*
  * Every recorded series a measure carries, with the name each one goes by.
  *
@@ -190,15 +219,14 @@ function seriesOf(value) {
  * deliberately left open.
  */
 function seriesSetOf(tile) {
-  const own = seriesOf(tile && tile.value);
-  if (own.length > 0) return [{ label: '', points: own }];
+  const own = componentSeriesOf(tile && tile.value, '');
+  if (own.length > 0) return own;
 
   const definitions = (tile && tile.definitions) || [];
   const labels = ownerDefinitionLabels(definitions);
   const out = [];
   definitions.forEach(function (definition, index) {
-    const points = seriesOf(definition.value);
-    if (points.length > 0) out.push({ label: labels[index], points: points });
+    componentSeriesOf(definition.value, labels[index]).forEach(function (sr) { out.push(sr); });
   });
   return out;
 }
@@ -244,13 +272,27 @@ function buildWorkspaceBody(page, ws, ctx) {
   if (occIndex !== -1 && leads.indexOf(pool[occIndex].metric_id) !== -1) {
     occupancy.push(pool.splice(occIndex, 1)[0]);
   }
-  const headline = takeLeading(pool, leads);
+  const leading = takeLeading(pool, leads);
+  // A leading measure that is a month series is still led with -- it opens "Over time" -- but it
+  // is drawn as a chart. As a tile its months arrive as a long run of "month: figure" parts.
+  const headline = leading.filter(function (t) { return seriesSetOf(t).length === 0; });
+  const leadingSeries = leading.filter(function (t) { return seriesSetOf(t).length > 0; });
   const capabilities = takeByTitles(pool, CAPABILITY_TITLES);
   // Whatever is left that carries a month series belongs in a chart, not in a tile: rendered as
   // a tile, eighty months arrive as an eighty-part "2019-11: ... ; 2019-12: ..." run-on.
   const trends = [];
   for (let i = pool.length - 1; i >= 0; i -= 1) {
     if (seriesSetOf(pool[i]).length > 0) trends.unshift(pool.splice(i, 1)[0]);
+  }
+  leadingSeries.slice().reverse().forEach(function (t) { trends.unshift(t); });
+
+  const caps = ws.capabilities || [];
+  const has = function (c) { return caps.indexOf(c) !== -1; };
+  // A decision-support lens is about what is waiting on a decision, so that leads its page.
+  const decisionsFirst = has('pending_decision');
+  if (decisionsFirst) {
+    renderAttention(page, ws, has('investigation_priority'));
+    renderActions(page, ws);
   }
 
   if (headline.length || occupancy.length) {
@@ -284,10 +326,22 @@ function buildWorkspaceBody(page, ws, ctx) {
     });
   }
 
+  // The production invoiced-revenue forecast, carried only by the workspace that owns it. It sits
+  // beside the recorded measures rather than replacing any: the ledger revenue tiles and charts
+  // stay where they are, because the two are different measures.
+  if (ws.revenue_forecast) {
+    page.appendChild(forecastSection(ws.revenue_forecast));
+  }
+
   // What moved, from the same comparison engine Owner Home uses -- so a movement stated here
-  // cannot disagree with the movement stated there. Only pairs the engine accepted appear;
-  // a part-month is never presented as a movement.
-  const movements = ws.changes || [];
+  // cannot disagree with the movement stated there. The engine's own split decides which
+  // comparisons are movements: a pair it could not compare (a composite month, a part-month) is
+  // not presented as business movement.
+  const moving = {};
+  (ws.movements || []).forEach(function (m) {
+    (m.metric_ids || []).forEach(function (id) { moving[id] = true; });
+  });
+  const movements = (ws.changes || []).filter(function (c) { return moving[c.metric_id]; });
   if (movements.length) {
     page.appendChild(section('Business movement', movements.length));
     const list = el('div', 'movement-grid');
@@ -296,68 +350,13 @@ function buildWorkspaceBody(page, ws, ctx) {
     page.appendChild(list);
   }
 
-  // What actually needs someone, from the engine's own split. The lump this replaced held the
-  // standing findings AND the period movements together, so a month in which revenue rose was
-  // reported as a month with one more thing needing attention. The movements are rendered above,
-  // where they belong; what is left here is work.
-  const decisions = ws.decision_queue || [];
-  const findings = (ws.needs_attention || []).filter(function (i) {
-    return i && i.what_happened;
-  });
-  if (decisions.length || findings.length) {
-    page.appendChild(section('Needs attention', decisions.length + findings.length));
-
-    if (decisions.length) {
-      const queue = el('div', 'decision-queue');
-      queue.setAttribute('data-section', 'workspace-decisions');
-      decisions.forEach(function (d) {
-        const view = ownerDecision(d);
-        const card = el('article', 'decision');
-        card.setAttribute('data-trust', d.trust || '');
-        if (view.title) card.appendChild(el('h4', 'decision-title', view.title));
-        if (view.posture) card.appendChild(el('p', 'decision-posture', view.posture));
-        if (view.decision) card.appendChild(el('p', 'decision-text', view.decision));
-        queue.appendChild(card);
-      });
-      page.appendChild(queue);
-    }
-
-    if (findings.length) {
-      const list = el('div', 'issue-list');
-      list.setAttribute('data-section', 'workspace-findings');
-      findings.forEach(function (i) {
-        const card = el('article', 'issue');
-        card.setAttribute('data-trust', (i.trust || {}).trust_level || '');
-        const head = el('div', 'issue-head');
-        // What it ASKS FOR, which is what this section is grouped by. The topical label
-        // ("Definition Conflict", "Data Quality") stays on the payload for the pages built
-        // around subject matter.
-        head.appendChild(el('h4', 'issue-title',
-          ownerText(i.action_category_label || i.category_label)));
-        if (i.trust) head.appendChild(badge(i.trust));
-        card.appendChild(head);
-        card.appendChild(el('p', 'issue-what', ownerProse(i.what_happened)));
-        if (i.why_it_matters) {
-          card.appendChild(el('p', 'issue-why', ownerProse(i.why_it_matters)));
-        }
-        if (i.recommended_action) {
-          card.appendChild(el('p', 'issue-action', ownerProse(i.recommended_action)));
-        }
-        list.appendChild(card);
-      });
-      page.appendChild(list);
-    }
-
-    // The finding register lives on its own page. Repeating all of it here would make this page
-    // a second copy of it -- one that can fall out of step with the register itself.
-    const more = el('p', 'workspace-note');
-    more.appendChild(document.createTextNode(
-      'Every recorded finding, with the evidence behind it: '));
-    const link = el('a', 'bi-link', 'open the data quality review');
-    link.href = '#/data-quality';
-    more.appendChild(link);
-    page.appendChild(more);
+  if (!decisionsFirst) {
+    renderAttention(page, ws, has('investigation_priority'));
+    renderActions(page, ws);
   }
+  renderMonitoring(page, ws);
+  if (ws.data_quality) renderDataQualityRegister(page, ws.data_quality);
+  if (has('executive_summary') || has('management_briefing')) renderReportLink(page);
 
   // Measures that answer once a period or an apartment is named. They are implemented and
   // available: presenting them as empty headline cards would say the records hold nothing,
@@ -399,6 +398,9 @@ function buildWorkspaceBody(page, ws, ctx) {
     page.appendChild(wrap);
   }
 
+  if (ws.forecast_diagnostics) renderForecastDiagnostics(page, ws.forecast_diagnostics);
+  if (ws.descriptive && ws.descriptive.length) renderDescriptive(page, ws.descriptive);
+
   // Everything else the lens may see, unchanged. A measure this page does not name explicitly
   // arrives here rather than disappearing, so the semantic layer stays whole.
   if (pool.length) {
@@ -408,6 +410,285 @@ function buildWorkspaceBody(page, ws, ctx) {
     pool.forEach(function (t) { grid.appendChild(metricTile(t, ctx.openMetric)); });
     page.appendChild(grid);
   }
+}
+
+/*
+ * The invoiced-revenue forecast. Every figure, band and sentence is the engine's; this draws the
+ * recorded months and the projected months on one chart and says, in words, which is which.
+ */
+function forecastSection(fc) {
+  const wrap = el('section', 'workspace-forecast');
+  wrap.setAttribute('data-section', 'workspace-forecast');
+  wrap.appendChild(section('Invoiced revenue forecast',
+    fc.available ? (fc.points || []).length : undefined));
+
+  const card = el('article', 'forecast');
+  card.setAttribute('data-trust', (fc.trust || {}).trust_level || '');
+  const head = el('div', 'trend-head');
+  head.appendChild(el('h4', 'trend-title', 'Invoiced revenue: recorded and projected'));
+  if (fc.trust) head.appendChild(badge(fc.trust));
+  card.appendChild(head);
+  if (fc.basis_note) card.appendChild(el('p', 'forecast-flag', fc.basis_note));
+
+  if (!fc.available) {
+    card.appendChild(el('p', 'tile-refusal', ownerProse(fc.unavailable_reason || '')));
+    wrap.appendChild(card);
+    return wrap;
+  }
+
+  if (fc.boundary_note) card.appendChild(el('p', 'forecast-line', fc.boundary_note));
+
+  const history = (fc.history || []).map(function (h) { return [h.period, h.value]; });
+  const displays = {};
+  (fc.history || []).forEach(function (h) { displays[h.period] = h.display; });
+  card.appendChild(forecastChart(history, fc.points || [], {
+    label: 'Invoiced revenue', recent: 24, displays: displays,
+  }));
+
+  const list = el('ul', 'forecast-points');
+  list.setAttribute('data-role', 'forecast-points');
+  (fc.points || []).forEach(function (p) {
+    const band = p.lower_display && p.upper_display
+      ? ' (usually between ' + p.lower_display + ' and ' + p.upper_display + ')' : '';
+    list.appendChild(el('li', 'forecast-line', monthLabel(p.period) + ': ' + p.display + band));
+  });
+  card.appendChild(list);
+
+  (fc.limitations || []).forEach(function (line) {
+    card.appendChild(el('p', 'forecast-line', ownerProse(line)));
+  });
+  wrap.appendChild(card);
+  return wrap;
+}
+
+/* What actually needs someone, from the engine's own split. The lump this replaced held the
+ * standing findings AND the period movements together, so a month in which revenue rose was
+ * reported as a month with one more thing needing attention. The movements are rendered in their
+ * own section; what is left here is work. Findings arrive in the ranker's order, so a lens that
+ * prioritises investigation numbers them in that order rather than re-ranking anything. */
+function renderAttention(page, ws, numbered) {
+  const decisions = ws.decision_queue || [];
+  const findings = (ws.needs_attention || []).filter(function (i) {
+    return i && i.what_happened;
+  });
+  if (!decisions.length && !findings.length) return;
+  page.appendChild(section('Needs attention', decisions.length + findings.length));
+
+  if (decisions.length) {
+    const queue = el('div', 'decision-queue');
+    queue.setAttribute('data-section', 'workspace-decisions');
+    decisions.forEach(function (d) {
+      const view = ownerDecision(d);
+      const card = el('article', 'decision');
+      card.setAttribute('data-trust', d.trust || '');
+      if (view.title) card.appendChild(el('h4', 'decision-title', view.title));
+      if (view.posture) card.appendChild(el('p', 'decision-posture', view.posture));
+      if (view.decision) card.appendChild(el('p', 'decision-text', view.decision));
+      queue.appendChild(card);
+    });
+    page.appendChild(queue);
+  }
+
+  if (findings.length) {
+    if (numbered) {
+      page.appendChild(el('p', 'workspace-note',
+        'In investigation priority order, as the findings are ranked across the business.'));
+    }
+    const list = el('div', 'issue-list');
+    list.setAttribute('data-section', 'workspace-findings');
+    findings.forEach(function (i, index) {
+      list.appendChild(findingCard(i, numbered ? index + 1 : 0));
+    });
+    page.appendChild(list);
+  }
+
+  // The finding register lives on its own page. Repeating all of it here would make this page
+  // a second copy of it -- one that can fall out of step with the register itself.
+  const more = el('p', 'workspace-note');
+  more.appendChild(document.createTextNode(
+    'Every recorded finding, with the evidence behind it: '));
+  const link = el('a', 'bi-link', 'open the data quality review');
+  link.href = '#/data-quality';
+  more.appendChild(link);
+  page.appendChild(more);
+}
+
+function findingCard(i, priority) {
+  const card = el('article', 'issue');
+  card.setAttribute('data-trust', (i.trust || {}).trust_level || '');
+  const head = el('div', 'issue-head');
+  // What it ASKS FOR, which is what this section is grouped by. The topical label
+  // ("Definition Conflict", "Data Quality") stays on the payload for the pages built
+  // around subject matter.
+  head.appendChild(el('h4', 'issue-title',
+    (priority ? 'Priority ' + priority + ' · ' : '') +
+    ownerText(i.action_category_label || i.category_label)));
+  if (i.trust) head.appendChild(badge(i.trust));
+  card.appendChild(head);
+  card.appendChild(el('p', 'issue-what', ownerProse(i.what_happened)));
+  if (i.why_it_matters) card.appendChild(el('p', 'issue-why', ownerProse(i.why_it_matters)));
+  if (i.recommended_action) {
+    card.appendChild(el('p', 'issue-action', ownerProse(i.recommended_action)));
+  }
+  return card;
+}
+
+/* The dashboard's recommended actions whose finding is in this lens. Rendered as written. */
+function renderActions(page, ws) {
+  const actions = ws.recommended_actions || [];
+  if (!actions.length) return;
+  page.appendChild(section('Recommended actions', actions.length));
+  const list = el('div', 'issue-list');
+  list.setAttribute('data-section', 'workspace-actions');
+  actions.forEach(function (a) {
+    const card = el('article', 'issue');
+    const level = typeof a.trust === 'string' ? a.trust : ((a.trust || {}).trust_level || '');
+    card.setAttribute('data-trust', level);
+    card.appendChild(el('p', 'issue-action', ownerProse(a.recommendation || '')));
+    list.appendChild(card);
+  });
+  page.appendChild(list);
+}
+
+/* Standing findings that ask to be watched rather than acted on, from the engine's own split. */
+function renderMonitoring(page, ws) {
+  const items = (ws.findings || []).concat(ws.supporting || []).filter(function (i) {
+    return i && i.what_happened;
+  });
+  if (!items.length) return;
+  page.appendChild(section('Worth monitoring', items.length));
+  const list = el('div', 'issue-list');
+  list.setAttribute('data-section', 'workspace-monitoring');
+  items.forEach(function (i) { list.appendChild(findingCard(i, 0)); });
+  page.appendChild(list);
+}
+
+/* The recorded data-quality register, summarised by severity and by what it asks for. The issues
+ * themselves are on the Data Quality page; this is the register's own counts and wording. */
+function renderDataQualityRegister(page, dq) {
+  const severities = dq.severities || [];
+  page.appendChild(section('Data-quality register', dq.total));
+  const wrap = el('section', 'workspace-dq');
+  wrap.setAttribute('data-section', 'workspace-dq-register');
+  const bySeverity = el('ul', 'forecast-points');
+  severities.forEach(function (sv) {
+    const li = el('li', 'forecast-line',
+      ownerText(String(sv.severity || '')) + ': ' + (sv.count || 0));
+    const titles = (sv.issues || []).map(function (i) { return i.owner_issue || ''; })
+      .filter(Boolean);
+    if (titles.length && (sv.severity === 'CRITICAL' || sv.severity === 'HIGH')) {
+      const inner = el('ul', null);
+      titles.forEach(function (t) { inner.appendChild(el('li', 'forecast-line', ownerProse(t))); });
+      li.appendChild(inner);
+    }
+    bySeverity.appendChild(li);
+  });
+  wrap.appendChild(bySeverity);
+  (dq.action_categories || []).forEach(function (c) {
+    wrap.appendChild(el('p', 'forecast-line',
+      ownerText(c.label || '') + ' (' + (c.count || 0) + '): ' + ownerProse(c.meaning || '')));
+  });
+  const more = el('p', 'workspace-note');
+  const link = el('a', 'bi-link', 'Open the full data quality review');
+  link.href = '#/data-quality';
+  more.appendChild(link);
+  wrap.appendChild(more);
+  page.appendChild(wrap);
+}
+
+function renderReportLink(page) {
+  page.appendChild(section('Management report'));
+  const p = el('p', 'workspace-note');
+  p.setAttribute('data-section', 'workspace-report-link');
+  p.appendChild(document.createTextNode(
+    'The executive summary assembled from every domain, with its caveats kept in full: '));
+  const link = el('a', 'bi-link', 'open the management report');
+  link.href = '#/report';
+  p.appendChild(link);
+  page.appendChild(p);
+}
+
+function fmtRupees(v) {
+  const n = Number(v);
+  return isFinite(n) && v !== null ? '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 }) : '';
+}
+
+function fmtPct(v) {
+  const n = Number(v);
+  return isFinite(n) && v !== null ? n.toFixed(2) + '%' : '';
+}
+
+/* How the production forecast model was validated. Every figure is the forecaster's own; the
+ * forecast figures themselves are shown in the Financial Analyst workspace, not here. */
+function renderForecastDiagnostics(page, d) {
+  page.appendChild(section('Forecast model validation'));
+  const wrap = el('section', 'workspace-diagnostics');
+  wrap.setAttribute('data-section', 'workspace-forecast-diagnostics');
+  if (!d.available) {
+    wrap.appendChild(el('p', 'tile-refusal', ownerProse(d.unavailable_reason || '')));
+    page.appendChild(wrap);
+    return;
+  }
+  wrap.appendChild(el('p', 'forecast-line',
+    'Production model: ' + (d.method || d.production_model) +
+    (d.ridge_alpha !== null && d.ridge_alpha !== undefined ? ' (alpha ' + d.ridge_alpha + ')' : '') +
+    ', ' + (d.features || []).length + ' lagged features. Target: invoiced revenue.'));
+  if (d.design) wrap.appendChild(el('p', 'forecast-line', 'Validation: ' + d.design + '.'));
+
+  const scroll = el('div', 'table-scroll');
+  const table = el('table', 'diagnostics-table');
+  const head = el('tr', null);
+  ['Model', 'MAE', 'RMSE', 'MAPE', 'R²'].forEach(function (h) { head.appendChild(el('th', null, h)); });
+  table.appendChild(head);
+  (d.models || []).forEach(function (m) {
+    const row = el('tr', m.production ? 'diagnostics-production' : null);
+    row.appendChild(el('td', null, m.label + (m.production ? ' — in production' : '')));
+    row.appendChild(el('td', null, fmtRupees(m.mae)));
+    row.appendChild(el('td', null, fmtRupees(m.rmse)));
+    row.appendChild(el('td', null, fmtPct(m.mape_pct)));
+    row.appendChild(el('td', null, m.r2 === null || m.r2 === undefined ? '' : Number(m.r2).toFixed(4)));
+    table.appendChild(row);
+  });
+  scroll.appendChild(table);
+  wrap.appendChild(scroll);
+
+  const horizons = el('ul', 'forecast-points');
+  (d.horizons || []).forEach(function (h) {
+    horizons.appendChild(el('li', 'forecast-line',
+      h.horizon + ' month' + (h.horizon === 1 ? '' : 's') + ' ahead: production model off by ' +
+      fmtPct(h.mape_pct) + ', repeating the last month off by ' + fmtPct(h.naive_mape_pct) +
+      ' (' + (h.folds || 0) + ' test origins).'));
+  });
+  wrap.appendChild(horizons);
+
+  (d.drivers || []).forEach(function (dr) {
+    wrap.appendChild(el('p', 'forecast-line',
+      ownerText(dr.driver || '') + ' — ' + ownerText(String(dr.verdict || '').toLowerCase()) +
+      (dr.evidence ? ': ' + ownerProse(dr.evidence) : '')));
+  });
+  if (d.note) wrap.appendChild(el('p', 'workspace-note', d.note));
+  const more = el('p', 'workspace-note');
+  const link = el('a', 'bi-link', 'Open the forecast in the Financial Analyst workspace');
+  link.href = '#/workspace/financial_analyst';
+  more.appendChild(link);
+  wrap.appendChild(more);
+  page.appendChild(wrap);
+}
+
+/* The descriptive summaries the descriptive module defines, in its presenter's own words. */
+function renderDescriptive(page, items) {
+  page.appendChild(section('How the monthly measures behave', items.length));
+  const wrap = el('section', 'workspace-descriptive');
+  wrap.setAttribute('data-section', 'workspace-descriptive');
+  items.forEach(function (item) {
+    const card = el('article', 'forecast');
+    card.appendChild(el('h4', 'trend-title', ownerText(item.label || item.name || '')));
+    String(item.text || '').split('\n').forEach(function (line) {
+      if (line.trim()) card.appendChild(el('p', 'forecast-line', line.trim()));
+    });
+    wrap.appendChild(card);
+  });
+  page.appendChild(wrap);
 }
 
 /* One movement, compact: direction, both periods, both figures and the change between them --
@@ -502,7 +783,7 @@ function trendCard(tile, ctx, asOf) {
         // coverage: 53 distinct calendar months..." -- written for an analyst, and reading it
         // into "Records stop on ..." put a column name in front of the owner.
         asOf: asOf || '',
-        displays: tile.series_display || {},
+        displays: s.numeric === false ? {} : (tile.series_display || {}),
       }));
     });
     body.replaceChildren.apply(body, drawn);

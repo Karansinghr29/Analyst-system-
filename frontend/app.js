@@ -51,7 +51,7 @@ function buildShell() {
   const header = el('header', 'app-header');
   const brand = el('div', 'brand');
   brand.appendChild(el('span', 'brand-mark', '◆'));
-  brand.appendChild(el('span', 'brand-name', 'Business Analytics'));
+  brand.appendChild(el('span', 'brand-name', 'Analyst System'));
   header.appendChild(brand);
 
   const nav = el('nav', 'app-nav');

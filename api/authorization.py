@@ -108,6 +108,10 @@ class Authorizer:
     def describe(self, role_id):
         role = self.resolve(role_id)
         visible = self.filter_metrics(role_id)
+        # What the workspace is about, by the same rule `role_workspace` applies. `visible` is
+        # what the role may open; the workspace count is what its page is scoped to.
+        from engine import role_scope
+        scope = role_scope.workspace_scope(role, tuple(visible))
         return {
             "role_id": role_id,
             "analyst_role": role.role_id,
@@ -115,6 +119,7 @@ class Authorizer:
             "focus": role.semantic_scope,
             "domains": list(role.domains),
             "visible_metric_count": len(visible),
+            "workspace_metric_count": len(scope.scope_ids),
             "capabilities": list(role.capabilities),
             "never_does": role.never_does,
             "trust_note": ("Authorization determines which metrics are visible. It never "

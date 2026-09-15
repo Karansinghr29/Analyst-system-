@@ -40,6 +40,11 @@ ALL_ROLES = (DATA_ANALYST, BUSINESS_ANALYST, FINANCIAL_ANALYST, OPERATIONS_ANALY
              DATA_SCIENTIST, BI_ANALYST, MANAGEMENT_REPORTING, DECISION_SUPPORT,
              RISK_DQ_ANALYST)
 
+# The workspace that presents the production revenue forecast to the owner. The forecast's target
+# is invoiced revenue, which the Financial Analyst owns. Data Scientist keeps `revenue_forecast`
+# for model and validation diagnostics; it is not where the owner reads the forecast.
+FORECAST_OWNER_ROLE = FINANCIAL_ANALYST
+
 # The six lenses ai_agent_roles.md 1 names directly. The other three are Phase 6 compositions of
 # machinery that already exists (insight ranking, decision support, the DQ register) rather than
 # new domain knowledge -- recorded here so the distinction stays visible.
@@ -92,7 +97,8 @@ ROLES = (
                        "profit, ledger, cash.",
         capabilities=("pnl", "revenue_analysis", "expense_analysis", "collections_analysis",
                       "ar_analysis", "deposit_analysis", "ledger_analysis", "cash_movement",
-                      "owner_payment_analysis", "reconciliation", "accounting_consistency"),
+                      "owner_payment_analysis", "reconciliation", "accounting_consistency",
+                      "revenue_forecast"),
         domains=("Financial",),
         never_does="State a single financial truth where the evidence carries competing "
                    "definitions. Every conflict is preserved, never resolved.",

@@ -179,6 +179,163 @@ export function lineChart(points, options) {
 }
 
 /*
+ * Recorded invoiced revenue followed by the engine's projection of it.
+ *
+ * `history` is [[period, value], ...] of recorded months; `projection` is [{period, value, lower,
+ * upper, display, lower_display, upper_display}, ...] exactly as the forecaster produced them.
+ * The recorded line is solid, the projected line dashed, the band is the forecaster's own
+ * lower/upper for each projected month, and a vertical rule marks where recorded months end.
+ * Nothing is estimated here: a projected month with no band draws no band.
+ */
+export function forecastChart(history, projection, options) {
+  const opts = options || {};
+  const recorded = (history || []).filter(function (p) { return isFinite(Number(p[1])); });
+  const shownHistory = opts.recent && recorded.length > opts.recent
+    ? recorded.slice(-opts.recent) : recorded;
+  const ahead = (projection || []).filter(function (p) {
+    return p && p.value !== null && isFinite(Number(p.value));
+  });
+  const wrap = el('figure', 'chart chart-line chart-forecast');
+  wrap.setAttribute('data-chart', 'forecast');
+
+  if (shownHistory.length < 1 || ahead.length < 1) {
+    wrap.appendChild(el('figcaption', 'chart-empty',
+      'Not enough months to draw the recorded and projected lines.'));
+    return wrap;
+  }
+
+  const hasBand = function (p) {
+    return p.lower !== null && p.upper !== null && p.lower !== undefined &&
+      p.upper !== undefined && isFinite(Number(p.lower)) && isFinite(Number(p.upper));
+  };
+  const W = 640, H = 200;
+  const total = shownHistory.length + ahead.length;
+  const values = shownHistory.map(function (p) { return Number(p[1]); });
+  ahead.forEach(function (p) {
+    values.push(Number(p.value));
+    if (hasBand(p)) { values.push(Number(p.lower)); values.push(Number(p.upper)); }
+  });
+  let lo = Math.min.apply(null, values);
+  let hi = Math.max.apply(null, values);
+  if (lo === hi) { lo -= 1; hi += 1; }
+  const innerW = W - PAD.left - PAD.right;
+  const innerH = H - PAD.top - PAD.bottom;
+  const x = function (i) { return PAD.left + (i / Math.max(total - 1, 1)) * innerW; };
+  const y = function (v) { return PAD.top + innerH - ((v - lo) / (hi - lo)) * innerH; };
+  const lastIndex = shownHistory.length - 1;
+  const lastRecorded = shownHistory[lastIndex];
+  const firstAhead = ahead[0];
+  const finalAhead = ahead[ahead.length - 1];
+
+  const svg = svgEl('svg', {
+    viewBox: '0 0 ' + W + ' ' + H, class: 'chart-svg', role: 'img',
+    preserveAspectRatio: 'none',
+    'aria-label': (opts.label || 'Invoiced revenue') + ': recorded ' +
+      monthLabel(shownHistory[0][0]) + ' to ' + monthLabel(lastRecorded[0]) + ', projected ' +
+      monthLabel(firstAhead.period) + ' to ' + monthLabel(finalAhead.period),
+  });
+
+  // The band: the forecaster's own lower and upper bound for each projected month.
+  const banded = [];
+  ahead.forEach(function (p, i) { if (hasBand(p)) banded.push([p, lastIndex + 1 + i]); });
+  if (banded.length > 0) {
+    const top = banded.map(function (pair, k) {
+      return (k === 0 ? 'M' : 'L') + x(pair[1]).toFixed(1) + ' ' +
+        y(Number(pair[0].upper)).toFixed(1);
+    });
+    const bottom = banded.slice().reverse().map(function (pair) {
+      return 'L' + x(pair[1]).toFixed(1) + ' ' + y(Number(pair[0].lower)).toFixed(1);
+    });
+    svg.appendChild(svgEl('path', { d: top.concat(bottom).join(' ') + ' Z', class: 'chart-band' }));
+  }
+
+  // Where recorded months end.
+  const boundaryX = x(lastIndex).toFixed(1);
+  svg.appendChild(svgEl('line', {
+    x1: boundaryX, x2: boundaryX, y1: PAD.top, y2: (H - PAD.bottom).toFixed(1),
+    class: 'chart-boundary',
+  }));
+
+  const recordedPath = shownHistory.map(function (p, i) {
+    return (i === 0 ? 'M' : 'L') + x(i).toFixed(1) + ' ' + y(Number(p[1])).toFixed(1);
+  }).join(' ');
+  svg.appendChild(svgEl('path', { d: recordedPath, class: 'chart-path', fill: 'none' }));
+
+  // The projected line starts at the last recorded month, so the two read as one measure.
+  const projectedPath = ['M' + x(lastIndex).toFixed(1) + ' ' +
+    y(Number(lastRecorded[1])).toFixed(1)].concat(ahead.map(function (p, i) {
+    return 'L' + x(lastIndex + 1 + i).toFixed(1) + ' ' + y(Number(p.value)).toFixed(1);
+  })).join(' ');
+  svg.appendChild(svgEl('path', { d: projectedPath, class: 'chart-forecast-path', fill: 'none' }));
+
+  svg.appendChild(svgEl('circle', {
+    cx: x(lastIndex).toFixed(1), cy: y(Number(lastRecorded[1])).toFixed(1), r: 3.5,
+    class: 'chart-point',
+  }));
+
+  const displays = opts.displays || {};
+  const tip = el('p', 'chart-tip');
+  tip.setAttribute('role', 'status');
+  const step = innerW / Math.max(total - 1, 1);
+  const hitFor = function (index, label) {
+    const hit = svgEl('rect', {
+      x: (x(index) - step / 2).toFixed(1), y: 0, width: Math.max(step, 6).toFixed(1), height: H,
+      class: 'chart-hit', tabindex: '0', role: 'button', 'aria-label': 'Show ' + label,
+    });
+    const show = function () { tip.textContent = label; };
+    hit.addEventListener('mouseenter', show);
+    hit.addEventListener('focus', show);
+    hit.addEventListener('mouseleave', function () { tip.textContent = ''; });
+    svg.appendChild(hit);
+  };
+  shownHistory.forEach(function (p, i) {
+    const figure = displays[p[0]] || '';
+    hitFor(i, monthLabel(p[0]) + ' (recorded)' + (figure ? ': ' + figure : ''));
+  });
+  ahead.forEach(function (p, i) {
+    const band = p.lower_display && p.upper_display
+      ? ', usually between ' + p.lower_display + ' and ' + p.upper_display : '';
+    hitFor(lastIndex + 1 + i,
+      monthLabel(p.period) + ' (projected): ' + (p.display || fmtMoney(p.value)) + band);
+  });
+
+  wrap.appendChild(svg);
+  wrap.appendChild(tip);
+
+  const scale = el('div', 'chart-scale');
+  scale.appendChild(el('span', 'chart-scale-min', monthLabel(shownHistory[0][0])));
+  scale.appendChild(el('span', 'chart-scale-boundary',
+    'Recorded to ' + monthLabel(lastRecorded[0]) + ' | projected from ' +
+    monthLabel(firstAhead.period)));
+  scale.appendChild(el('span', 'chart-scale-max', monthLabel(finalAhead.period)));
+  wrap.appendChild(scale);
+
+  const legend = el('p', 'chart-legend');
+  legend.appendChild(el('span', 'chart-legend-recorded', 'Solid line: recorded invoiced revenue'));
+  legend.appendChild(document.createTextNode(' · '));
+  legend.appendChild(el('span', 'chart-legend-projected',
+    'Dashed line: projected invoiced revenue'));
+  if (banded.length > 0) {
+    legend.appendChild(document.createTextNode(' · '));
+    legend.appendChild(el('span', 'chart-legend-band', 'Shaded: usual range of the projection'));
+  }
+  wrap.appendChild(legend);
+
+  const caption = el('figcaption', 'chart-caption');
+  caption.textContent =
+    shownHistory.length + ' recorded months of invoiced revenue, ' +
+    monthLabel(shownHistory[0][0]) + ' to ' + monthLabel(lastRecorded[0]) + ', latest ' +
+    fmtMoney(lastRecorded[1]) + '. ' + ahead.length + ' projected months, ' +
+    monthLabel(firstAhead.period) + ' to ' + monthLabel(finalAhead.period) + '.' +
+    (shownHistory.length < recorded.length
+      ? ' Showing the most recent ' + shownHistory.length + ' of ' + recorded.length +
+        ' recorded months.'
+      : '');
+  wrap.appendChild(caption);
+  return wrap;
+}
+
+/*
  * A ranked breakdown. `rows` is [[label, value], ...]. Ordering is by the value the engine
  * supplied; nothing is combined, and a category recorded as zero stays visible as zero rather
  * than being dropped for looking empty.

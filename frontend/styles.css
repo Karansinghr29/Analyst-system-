@@ -1010,6 +1010,27 @@ body {
 
 .forecast-line { margin: .3rem 0 0; font-size: .87rem; line-height: 1.55; }
 
+.workspace-forecast { margin: 0 0 1.2rem; }
+.forecast-points { margin: .5rem 0 0; padding: 0 0 0 1.1rem; }
+.chart-forecast .chart-svg { height: 200px; }
+.chart-forecast-path {
+  stroke: var(--caution);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.chart-band { fill: var(--caution); fill-opacity: .14; stroke: none; }
+.chart-boundary { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 2 3; }
+.chart-scale-boundary { text-align: center; }
+.chart-legend { margin: .3rem 0 0; font-size: .78rem; color: var(--ink-soft); }
+
+.workspace-dq, .workspace-diagnostics, .workspace-descriptive { margin: 0 0 1.2rem; display: grid; gap: .5rem; }
+.table-scroll { overflow-x: auto; }
+.diagnostics-table { border-collapse: collapse; font-size: .84rem; min-width: 32rem; }
+.diagnostics-table th, .diagnostics-table td { text-align: left; padding: .3rem .6rem; border-bottom: 1px solid var(--line); }
+.diagnostics-production td { font-weight: 600; }
+
 /* --- analyst actions ------------------------------------------------------------------------ */
 
 .bi-actions {
