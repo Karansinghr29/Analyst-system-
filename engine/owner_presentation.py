@@ -1350,8 +1350,13 @@ def present_forecast(forecast, question=""):
     if direction and forecast.last_actual is not None:
         word = {"increase": "higher than", "decrease": "lower than",
                 "flat": "level with"}.get(direction, "compared with")
+        # `last_actual` is the forecast target's own figure -- invoiced revenue (SUM of invoice
+        # totals) for the training window's final month -- not ledger revenue, which is a
+        # different measure with a different figure for the same month.
+        end = getattr(forecast, "training_end", "")
+        month = f" for {_month_name(end + '-01')}" if end else ""
         lines.append(
-            f"That is {word} the last complete month "
+            f"That is {word} invoiced revenue{month}, the last complete month "
             f"({format_owner_quantity(forecast.last_actual, 'INR')}).")
 
     mape = (forecast.backtest or {}).get("mape_pct")

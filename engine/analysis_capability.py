@@ -372,8 +372,10 @@ def owner_capability_gap_text(classification: CapabilityClassification, subject:
     if classification.capability_id == "forecasting":
         label = subject or "this measure"
         return (
-            f"I can show historical {label}, but I can't reliably forecast the next period "
-            f"because a forecasting method isn't currently available."
+            f"I can show historical {label}, but I can't reliably forecast future {label} "
+            f"because a forecasting method isn't currently available for it. The only "
+            f"validated forecast here is for invoiced revenue, so no {label} figure is "
+            f"estimated."
         )
     lead = classification.owner_summary or (
         f"{classification.label} is not available from the current analytics capabilities."

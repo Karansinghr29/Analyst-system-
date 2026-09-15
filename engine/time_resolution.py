@@ -85,6 +85,9 @@ def asks_unsupported_forecast(question):
     # the answer -- treating it as a forecast request refused a question the evidence answers.
     if _names_a_recorded_month(question):
         return False, ""
+    future = _names_a_month_after_the_export(question)
+    if future:
+        return True, future
     for phrase in _FUTURE_PERIOD_MARKERS:
         if phrase in q:
             return True, phrase
@@ -106,6 +109,25 @@ def _names_a_recorded_month(question):
     from engine import forecasting
 
     return forecasting.horizon_for_period(label) <= 0
+
+
+def _names_a_month_after_the_export(question):
+    """The month label ("December 2026") when the question names one calendar month that starts
+    after the export snapshot and is not asked in the past tense; "" otherwise.
+
+    "December occupancy" carries no forecast wording, but no export row can ever answer it.
+    Treating it as a coverage gap offered the all-time figure in its place. A month inside the
+    export (the snapshot month included) stays a historical question.
+    """
+    from engine import forecasting
+
+    if not forecasting.asks_future_month(question):
+        return ""
+    period = forecasting.parse_target_month(question)
+    if not period or f"{period}-01" <= forecasting.EXPORT_SNAPSHOT_DATE:
+        return ""
+    import calendar
+    return f"{calendar.month_name[int(period[5:7])]} {period[:4]}"
 
 
 def strip_forecast_language(question):
