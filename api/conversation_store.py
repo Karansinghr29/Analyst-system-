@@ -26,13 +26,9 @@ import tempfile
 import time
 from dataclasses import dataclass, field
 
-# Vercel serves the deployment from a read-only filesystem; only the temp directory is writable
-# there. Anywhere else (local, Docker/Render) the file stays beside the package, unchanged.
-if os.environ.get("VERCEL"):
-    DEFAULT_DB = os.path.join(tempfile.gettempdir(), "conversations.db")
-else:
-    DEFAULT_DB = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                              "conversations.db")
+_PACKAGE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_DB_DIR = _PACKAGE_DIR if os.access(_PACKAGE_DIR, os.W_OK) else tempfile.gettempdir()
+DEFAULT_DB = os.path.join(_DB_DIR, "conversations.db")
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS conversations (
