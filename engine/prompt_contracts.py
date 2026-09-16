@@ -140,7 +140,9 @@ causal evidence and NOT drivers. Use "components.meaning" for how to describe th
 worrying or similar. Keep the JSON's materiality statement's meaning.
   * If "must_include" lists a sentence, end your answer with that exact sentence, character for \
 character, including the final full stop.
-  * Keep the meaning of every limitation.
+  * Keep the meaning of every limitation. Every text in caveats.specific is a limitation the \
+owner must know to read this movement: include each one. caveats.posture is the general \
+reliability note for the figure.
   * Respect the trust level: SAFE states the figures; DISCLOSE states the figures AND the \
 caveat; SHOW_BOTH and BLOCK never give a single figure; NOT_DETERMINABLE gives no figure and \
 explains what is missing.
@@ -156,7 +158,8 @@ Write the answer in this order, using only the parts that are present in the JSO
 <movement.change> (<movement.change_pct>)."
   2. The components, if components.available is true, in ONE sentence that starts with \
 components.lead and names every item whose "required" is true, each as "<label> <direction> by \
-<amount>", joined naturally (for example with "while" and "and"). Then components.meaning.
+<amount>", joined naturally (for example with "while" and "and"). Then components.meaning. \
+Then every text in caveats.specific, if any, keeping its meaning.
   3. The materiality statement (materiality.statement).
   4. The causal-evidence statement (causal_evidence.statement) ONLY if components.available is \
 false. When components are shown, components.meaning already says this; do not repeat it.
@@ -185,8 +188,30 @@ def build_metric_why_prompt(facts):
         "component whose required is true, with its direction and amount. The components "
         "reconcile the movement; they are not causes. Do not say what drove, caused or explains "
         "the movement, and do not repeat the same point twice.",
-    ] + ([f"End with exactly: {' '.join(shown.get('must_include') or [])}"]
+    ] + _caveat_reminder(shown) + ([f"End with exactly: {' '.join(shown.get('must_include') or [])}"]
          if shown.get("must_include") else []))
+
+
+def _caveat_reminder(shown):
+    """Lines that name the caveats the answer must carry -- only when the facts hold caveats.
+
+    A measure with no caveats gets no extra lines, so its prompt is exactly what it was.
+    """
+    caveats = shown.get("caveats") or {}
+    specific = [c.get("text") if isinstance(c, dict) else c
+                for c in (caveats.get("specific") or ())]
+    specific = [c for c in specific if c]
+    posture = caveats.get("posture") or ""
+    if not specific and not posture:
+        return []
+    lines = ["", "This measure carries limitations the owner must see. Write each of these "
+                 "sentences into the answer, word for word, before the materiality statement:"]
+    lines += [f"- {c}" for c in specific]
+    if posture:
+        lines.append(f"- {posture}")
+    lines.append("Do not print field names or labels such as \"Components lead\" or "
+                 "\"Materiality statement\"; write plain sentences only.")
+    return lines
 
 
 def build_verbalization_prompt(skeleton_text, trust_level, question):

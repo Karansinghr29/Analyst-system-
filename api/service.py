@@ -42,7 +42,7 @@ from api.conversation_store import ConversationStore, DEFAULT_DB
 from api.decision_store import decision_store, STATUSES, STATUS_LABELS
 from api.provider_config import (ProviderConfig, build_provider, available_adapters,
                                  config_from_env, MODE_HTTP)
-from engine import answer_renderer, prompt_contracts
+from engine import narrative
 from engine.llm_provider import LLMUnavailable
 from api import data_source as ds
 from api import auth as auth_mod
@@ -51,21 +51,12 @@ from api.observability import Observability, OBS
 
 API_VERSION = "1.0.0"
 
-# The measures whose metric-card "Why?" is worded by the local model. One, in this first slice;
-# every other measure keeps its deterministic narrative only.
-NARRATIVE_METRICS = ("M.REV.002",)
-
-# The narrative is requested in the background, after the deterministic answer is already on the
-# page, so the owner is never waiting on it. The cap only bounds how long a background request may
-# hold a worker before the deterministic answer is confirmed as the one that stands.
-NARRATIVE_TIMEOUT_SECONDS = 90
-NARRATIVE_MAX_TOKENS = 400
-
-# What the owner is told when a narrative was attempted and not used. The reason -- a guard
-# finding, a provider error, a timeout -- is an implementation detail: it goes to the server log
-# and the fallback counter, never into the response.
-NARRATIVE_FALLBACK_NOTE = ("The wording layer was not used, so the verified deterministic "
-                           "explanation is shown instead.")
+# The Local LLM narrative layer lives in `engine/narrative.py`. These names are kept for callers
+# that read them from the service.
+NARRATIVE_METRICS = narrative.WHY.enabled_metrics
+NARRATIVE_TIMEOUT_SECONDS = narrative.WHY.timeout_seconds
+NARRATIVE_MAX_TOKENS = narrative.WHY.max_tokens
+NARRATIVE_FALLBACK_NOTE = narrative.FALLBACK_NOTE
 
 _LOG = logging.getLogger(__name__)
 
@@ -503,8 +494,12 @@ class AnalyticsService:
 
     @staticmethod
     def _narrative_eligible(metric_id, action, facts, payload):
-        return bool(action == "why" and metric_id in NARRATIVE_METRICS and facts
-                    and payload.get("available"))
+        """Switched on for this measure, AND today's result is one that may be narrated."""
+        spec = narrative.spec_for(action, metric_id)
+        if spec is None or not facts or not payload.get("available"):
+            return False
+        eligible, _reasons = narrative.eligibility_for(spec, facts)
+        return eligible
 
     def metric_narrative(self, metric_id, action, question="", role_id=ROLE_OWNER):
         """The background half of a metric-card answer: a guarded Local LLM narrative, or nothing.
@@ -518,8 +513,8 @@ class AnalyticsService:
                   "narrative_note": "", "guard_violations": []}
         if not self.authorizer.may_see(role_id, metric_id):
             return result
-        if action != "why" or metric_id not in NARRATIVE_METRICS or not self._narrative_active():
-            return result         # not eligible, or disabled: the provider is never called
+        if narrative.spec_for(action, metric_id) is None or not self._narrative_active():
+            return result         # not switched on, or disabled: the provider is never called
 
         # The same deterministic facts and answer the first response was built from. The engine is
         # deterministic over an immutable export, so they are the same facts, not new ones.
@@ -528,16 +523,17 @@ class AnalyticsService:
         if not self._narrative_eligible(metric_id, action, facts, payload):
             return result
 
-        narrative, violations = self._metric_narrative(facts, payload.get("answer", ""))
-        if narrative is None:
+        text, violations = self._metric_narrative(
+            narrative.spec_for(action, metric_id), facts, payload.get("answer", ""))
+        if text is None:
             _LOG.warning("metric narrative fallback for %s/%s: %s", metric_id, action,
                          " | ".join(str(v) for v in violations))
             self.obs.note_llm_fallback()
-            result["narrative_note"] = NARRATIVE_FALLBACK_NOTE
+            result["narrative_note"] = narrative.FALLBACK_NOTE
             return result
 
         result["narrative_source"] = "local_llm"
-        result["answer"] = narrative
+        result["answer"] = text
         return result
 
     def _narrative_active(self):
@@ -546,40 +542,28 @@ class AnalyticsService:
         return bool(config and config.explicitly_enabled and config.mode == MODE_HTTP)
 
     def _narrative_provider(self):
-        """The configured provider, with the narrative's own shorter wait where it has one."""
-        provider = build_provider(self.provider_config)
-        if hasattr(provider, "timeout"):
-            provider.timeout = min(float(provider.timeout), float(NARRATIVE_TIMEOUT_SECONDS))
-        return provider
+        """The configured provider. The narrative kind sets its own wait on it."""
+        return build_provider(self.provider_config)
 
-    def _metric_narrative(self, facts, draft):
-        """(narrative, ()) when the local model's wording passes the guard, else (None, reasons).
+    def _metric_narrative(self, spec, facts, draft):
+        """(narrative, ()) when the local model's wording passes the spec's guard, else (None, reasons).
 
-        Whole-output decision: a narrative is used as written or not at all.
+        The provider call, the guard and the whole-output decision are `narrative.generate`'s; this
+        supplies the configured provider and the measure names the guard checks against.
         """
         try:
             provider = self._narrative_provider()
-            response = provider.complete(
-                prompt_contracts.build_metric_why_prompt(facts),
-                system=prompt_contracts.METRIC_WHY_NARRATIVE_SYSTEM,
-                max_tokens=NARRATIVE_MAX_TOKENS, temperature=0.0)
         except LLMUnavailable as exc:
             return None, (f"local model unavailable: {exc}",)
-        except Exception as exc:                     # a timeout or transport fault
+        except Exception as exc:                     # a misconfigured adapter, never a 500
             return None, (f"local model failed: {type(exc).__name__}",)
-
-        text = getattr(response, "text", "")
-        if not isinstance(text, str):
-            return None, ("local model returned no text",)
+        if hasattr(provider, "timeout"):
+            provider.timeout = min(float(provider.timeout), float(spec.timeout_seconds))
         other_names = tuple(
             op.owner_measure_name(self.registry.get(m).display_name
                                   or self.registry.get(m).semantic_name)
             for m in self.registry.all_ids())
-        violations = answer_renderer.guard_metric_narrative(
-            text, facts, draft, other_measure_names=other_names)
-        if violations:
-            return None, violations
-        return op.sanitize_owner_text(text.strip()), ()
+        return narrative.generate(spec, provider, facts, draft, other_measure_names=other_names)
 
     def conflict_view(self, metric_id, role_id=ROLE_OWNER):
         if not self.authorizer.may_see(role_id, metric_id):

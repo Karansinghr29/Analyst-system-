@@ -289,6 +289,20 @@ _OPEN_QUESTION_MARKERS = ("whether", "not set by the records", "owner judgement"
                           "not determinable")
 
 
+# Scaffolding the narrative framework itself could leak: the facts contract's field names, the
+# sentence-plan labels the prompt uses, and the prompt's own headings. Targeted to this framework's
+# vocabulary, so ordinary owner prose ("the change is reconciled across ...") is untouched.
+_NARRATIVE_SCAFFOLDING = (
+    r"\b(?:components|caveats|materiality|causal_evidence|movement|metric)\.(?:lead|meaning|items|specific|posture|statement|direction|change|name)\b",
+    r"\b(?:causal_evidence|must_include|deterministic_answer|narrative_facts|trust_level|owner_status|change_pct|partial_period|metric_why)\b",
+    r"\bcomponents lead\b",
+    r"\b(?:materiality|causal[ _-]evidence|components?|caveats?) statement\b",
+    r"\b(?:materiality|causal[ _-]evidence|components?|caveats?|posture|specific caveats?)\s*:",
+    r"(?:authoritative json|\btrust level\s*:|\breminder\s*:|\bfacts\s*\()",
+    r'"[a-z_]+"\s*:',
+)
+
+
 def _fact_strings(value):
     """Every string leaf in the facts, in order. The source a narrative may draw on."""
     if isinstance(value, dict):
@@ -351,6 +365,12 @@ def guard_metric_narrative(text, facts, draft, other_measure_names=()):
                                   f"({pattern!r})")
                 break
 
+    for pattern in _NARRATIVE_SCAFFOLDING:
+        if re.search(pattern, low):
+            violations.append(f"narrative contains framework scaffolding or a field label "
+                              f"({pattern!r})")
+            break
+
     for pattern in _NARRATIVE_CAUSAL:
         if re.search(pattern, low) and not re.search(pattern, source_low):
             violations.append(f"narrative asserts a cause the facts do not state ({pattern!r})")
@@ -395,6 +415,14 @@ def guard_metric_narrative(text, facts, draft, other_measure_names=()):
                 violations.append(f"narrative does not name the component {label!r}")
             elif amount and amount not in narrative:
                 violations.append(f"narrative drops the amount of the component {label!r}")
+
+    # Specific caveats are required, whatever the posture: each is a limitation the owner needs to
+    # read this movement, sourced from the engine's evidence rather than from the posture's
+    # general sentence.
+    for caveat in ((facts.get("caveats") or {}).get("specific") or ()):
+        text_of = (caveat.get("text") if isinstance(caveat, dict) else caveat) or ""
+        if text_of and not _caveat_survives(text_of, narrative):
+            violations.append("narrative drops a specific caveat")
 
     # The two statuses the facts decide. Neither may be dropped when the narrative replaces the
     # verified answer: that the records leave significance to the owner, and that they do not show

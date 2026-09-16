@@ -909,8 +909,60 @@ class ViewModelBuilder:
         analysis = self.analyzer.analyze(metric_id)
         asked = question or f"Why did {name} change?"
         text = op.present_driver_answer(asked, None, (), analysis)
-        return [text], tuple(analysis.limitations or ()), self._why_facts(
-            asked, name, tile, analysis)
+        facts = self._why_facts(asked, name, tile, analysis)
+        if metric_id in self.RECONCILED_WHY_METRICS:
+            text = self._with_reconciliation(text, facts)
+        return [text], tuple(analysis.limitations or ()), facts
+
+    # Measures whose verified Why? answer states its reconciliation split in place of the "no
+    # driver components" sentence. Listed, not derived, so a measure's owner-facing answer changes
+    # only when it is deliberately added here.
+    RECONCILED_WHY_METRICS = ("M.REV.002", "M.COL.002")
+
+    # The sentence `present_driver_answer` writes when no documented driver moved. True of the
+    # dependency edges, but read beside a reconciled split it says the opposite of the facts.
+    NO_DRIVER_COMPONENTS = ("No driver components with a comparable period change are available "
+                            "for this measure, so a contribution breakdown cannot be stated.")
+
+    def _with_reconciliation(self, text, facts):
+        """The verified answer for a measure whose movement reconciles to named parts.
+
+        One explanation, in one order, built only from the facts: what moved (both periods and
+        values, the change and its percentage), the parts the movement reconciles to with their
+        amounts, what those parts do and do not show, the specific caveats, the posture's caveat
+        where there is one, and the materiality question left open -- stated once, followed by the
+        required sentence. Nothing is recomputed and no part is called a cause. An answer whose
+        facts hold no established movement or no reconciled split is returned unchanged.
+        """
+        facts = facts or {}
+        movement = facts.get("movement") or {}
+        components = facts.get("components") or {}
+        moved = [i for i in components.get("items") or () if i.get("required")]
+        if (not movement.get("available") or not components.get("available") or not moved
+                or self.NO_DRIVER_COMPONENTS not in text):
+            return text
+
+        name = (facts.get("metric") or {}).get("name") or ""
+        previous, current = movement.get("previous") or {}, movement.get("current") or {}
+        change = movement.get("change") or ""
+        pct = movement.get("change_pct") or ""
+        opening = (f"{name} {movement.get('direction', '')} from {previous.get('value', '')} in "
+                   f"{previous.get('period', '')} to {current.get('value', '')} in "
+                   f"{current.get('period', '')}, a change of {change}"
+                   + (f" ({pct})." if pct else "."))
+
+        said = [f"{i['label']} {i['direction']} by {i['amount']}" for i in moved]
+        joined = said[0] if len(said) == 1 else ", ".join(said[:-1]) + " and " + said[-1]
+        reconciliation = f"{components.get('lead', '')} {joined}. {components.get('meaning', '')}"
+
+        caveats = facts.get("caveats") or {}
+        limits = [c.get("text", "") for c in caveats.get("specific") or ()]
+        limits.append(caveats.get("posture") or "")
+
+        closing = f"{(facts.get('materiality') or {}).get('statement', '')} {NOT_DETERMINABLE_TEXT}"
+
+        paragraphs = [opening, reconciliation, " ".join(l for l in limits if l), closing]
+        return "\n".join(p.strip() for p in paragraphs if p and p.strip())
 
     # The owner's sentence for a movement whose significance no threshold in the records decides.
     MATERIALITY_OPEN = ("Whether this movement is significant is not set by the records; it is "
@@ -966,6 +1018,7 @@ class ViewModelBuilder:
 
         components = {"available": False, "basis": "", "reconciles_to_change": False,
                       "items": []}
+        specific_caveats = []
         if detected:
             split = variance.decompose(target)
             if split.available:
@@ -989,6 +1042,12 @@ class ViewModelBuilder:
                                "required": bool(c.change)}
                               for c in split.components],
                 }
+                # What the decomposition declares about its own parts. For collections this is
+                # the duplicate-receipt finding's effect on the series: receipts flagged as
+                # duplicates but still live are inside the total and inside their category.
+                specific_caveats = [
+                    {"kind": "reconciliation", "text": op.sanitize_owner_text(c)}
+                    for c in (split.caveats or ()) if (c or "").strip()]
 
         drivers = []
         for driver in analysis.drivers or ():
@@ -1001,7 +1060,8 @@ class ViewModelBuilder:
             })
 
         trust = tile["trust"]
-        return {
+        posture_caveat = tile.get("owner_caveat") or ""
+        facts = {
             "contract": "metric_why.v1",
             "question": question,
             "metric": {"name": name, "trust_level": trust["trust_level"],
@@ -1019,6 +1079,13 @@ class ViewModelBuilder:
             "must_include": [],
             "deterministic_answer": "",
         }
+        # The two kinds of caveat, kept apart: the posture's general sentence ("a known limitation
+        # affects it"), and the specific limitations an owner needs to read THIS movement. Present
+        # only when there is something to say, so a measure with neither is narrated from exactly
+        # the facts it had before.
+        if posture_caveat or specific_caveats:
+            facts["caveats"] = {"posture": posture_caveat, "specific": specific_caveats}
+        return facts
 
     def _action_trust(self, metric_id, spec, tile, name, question):
         """This measure's own posture, from the gate's verdict on this id."""

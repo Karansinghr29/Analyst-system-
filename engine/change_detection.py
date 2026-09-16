@@ -378,7 +378,8 @@ class ChangeDetector:
                           current_period=cur_p, previous_period=prev_p,
                           current_value=series[cur_p], previous_value=series[prev_p],
                           unavailable_reason=(
-                              f"{metric_id}'s monthly values are composite, so no single "
+                              f"{_owner_measure_name(self.registry, metric_id)} holds "
+                              f"composite monthly values, so no single "
                               f"quantity changes between periods. Comparing one component "
                               f"would be a definition choice this layer may not make. "
                               f"{NOT_DETERMINABLE_TEXT}"),
