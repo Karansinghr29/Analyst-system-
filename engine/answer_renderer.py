@@ -462,6 +462,146 @@ def guard_metric_narrative(text, facts, draft, other_measure_names=()):
     return tuple(violations)
 
 
+BUSINESS_HEALTH_MIN_CHARS = 150
+BUSINESS_HEALTH_MAX_CHARS = 3000
+
+# The business-health facts contract's own field names, and the posture tokens it carries. Prose
+# never needs them, so their appearance means the model printed the scaffolding.
+_BUSINESS_HEALTH_SCAFFOLDING = (
+    r"\b(?:no_single_figure|as_of|business_health)\b",
+    r"\b(?:figures|movements|attention)\.(?:name|value|decisions|count|caveats?|previous|current|statement|definitions)\b",
+)
+_POSTURE_TOKEN = re.compile(r"\b(?:SAFE|DISCLOSE|SHOW_BOTH|BLOCK|NOT_DETERMINABLE)\b")
+
+
+def _caveat_kept(caveat, text):
+    """Stricter than `_caveat_survives`, for a narrative that carries many caveats at once: most
+    of a caveat's distinctive words must appear, so words it shares with the rest of the answer
+    ("recorded", "total") cannot stand in for the caveat itself."""
+    words = set(re.findall(r"[a-z]{5,}", (caveat or "").lower()))
+    if not words:
+        return True
+    low = (text or "").lower()
+    hits = sum(1 for w in words if w in low)
+    return hits >= max(2, -(-len(words) * 2 // 3))
+
+
+def _digits(value):
+    """A figure's digits, so a sign or currency symbol written differently is not a missing one."""
+    return re.sub(r"[^0-9.,]", "", value or "").strip(".,")
+
+
+def guard_business_health_narrative(text, facts, draft, other_measure_names=()):
+    """Check a Local LLM business-health narrative against the facts it was given.
+
+    Returns a tuple of violations; empty means the narrative may replace the deterministic
+    briefing. Whole-output: one violation rejects all of it. It composes `guard_workflow` (no new
+    numbers, nothing internal, the refusal sentence kept, no invented judgement or cause, no PII)
+    and adds what a whole-business narrative owes the facts: every stated figure and movement
+    kept with its periods and percentage, every caveat kept, every measure without a single figure
+    still said to have none -- with each competing definition named where the posture shows them
+    all -- and the materiality and causal status kept open.
+    """
+    from engine import owner_presentation
+
+    facts = facts or {}
+    narrative = (text or "").strip()
+    if not narrative:
+        return ("narrative is empty",)
+
+    source = "\n".join([draft or ""] + list(_fact_strings(facts)))
+    signed = " ".join(f"{n} {-n}" for n in _numbers_in(source))
+    violations = list(guard_workflow(narrative, source + "\n" + signed))
+    low = narrative.lower()
+    source_low = source.lower()
+
+    if not BUSINESS_HEALTH_MIN_CHARS <= len(narrative) <= BUSINESS_HEALTH_MAX_CHARS:
+        violations.append(f"narrative length {len(narrative)} is outside "
+                          f"{BUSINESS_HEALTH_MIN_CHARS}-{BUSINESS_HEALTH_MAX_CHARS} characters")
+
+    if owner_presentation._METRIC_ID.search(narrative):
+        violations.append("narrative exposes a metric ID")
+    for pattern, what in ((owner_presentation._SPEC_FILE, "a file name"),
+                          (owner_presentation._DB_OBJECT, "a database object name")):
+        if pattern.search(narrative):
+            violations.append(f"narrative exposes {what}")
+    if _POSTURE_TOKEN.search(narrative):
+        violations.append("narrative prints an internal posture label")
+
+    for sentence in facts.get("must_include") or ():
+        if sentence and sentence not in narrative:
+            violations.append(f"narrative omits the required sentence {sentence!r}")
+
+    for sentence in re.split(r"(?<=[.!?])\s+", low):
+        if any(marker in sentence for marker in _OPEN_QUESTION_MARKERS):
+            continue
+        for pattern in _NARRATIVE_JUDGEMENT:
+            if re.search(pattern, sentence):
+                violations.append(f"narrative judges a movement's size or importance "
+                                  f"({pattern!r})")
+                break
+
+    for pattern in _NARRATIVE_SCAFFOLDING + _BUSINESS_HEALTH_SCAFFOLDING:
+        if re.search(pattern, low):
+            violations.append(f"narrative contains framework scaffolding or a field label "
+                              f"({pattern!r})")
+            break
+
+    for pattern in _NARRATIVE_CAUSAL:
+        if re.search(pattern, low) and not re.search(pattern, source_low):
+            violations.append(f"narrative asserts a cause the facts do not state ({pattern!r})")
+
+    for figure in facts.get("figures") or ():
+        name = (figure.get("name") or "").strip()
+        if name and name.lower() not in low:
+            violations.append(f"narrative drops the figure for {name!r}")
+        elif _digits(figure.get("value")) and _digits(figure.get("value")) not in narrative:
+            violations.append(f"narrative drops the value of {name!r}")
+        caveat = figure.get("caveat") or ""
+        if caveat and not _caveat_kept(caveat, narrative):
+            violations.append(f"narrative drops the caveat on {name!r}")
+
+    for movement in facts.get("movements") or ():
+        name = (movement.get("name") or "").strip()
+        if name and name.lower() not in low:
+            violations.append(f"narrative drops the movement of {name!r}")
+            continue
+        for what, needle in (
+                ("previous period", (movement.get("previous") or {}).get("period")),
+                ("previous value", _digits((movement.get("previous") or {}).get("value"))),
+                ("current period", (movement.get("current") or {}).get("period")),
+                ("current value", _digits((movement.get("current") or {}).get("value"))),
+                ("change", _digits(movement.get("change"))),
+                ("percentage change", movement.get("change_pct")),
+                ("direction", movement.get("direction"))):
+            if needle and needle.lower() not in low:
+                violations.append(f"narrative drops the {what} of {name!r}")
+        for caveat in movement.get("caveats") or ():
+            if caveat and not _caveat_kept(caveat, narrative):
+                violations.append(f"narrative drops a caveat on {name!r}")
+
+    for entry in facts.get("no_single_figure") or ():
+        name = (entry.get("name") or "").strip()
+        if name and name.lower() not in low:
+            violations.append(f"narrative drops {name!r}, which has no single figure")
+        for label in entry.get("definitions") or ():
+            if label and label.lower() not in low:
+                violations.append(f"narrative does not name the definition {label!r} of {name!r}")
+    if facts.get("no_single_figure") and not any(
+            w in low for w in ("no single figure", "no single", "definitions disagree",
+                               "definitions conflict", "competing")):
+        violations.append("narrative does not say that some measures have no single figure")
+
+    if facts.get("movements"):
+        if not any(m in low for m in ("not set by the records", "owner judgement",
+                                      "owner judgment")):
+            violations.append("narrative drops the materiality status")
+        if "not show why" not in low:
+            violations.append("narrative drops the causal-evidence status")
+
+    return tuple(dict.fromkeys(violations))
+
+
 def guard(verbalized, skeleton, plan, answers):
     """Check an LLM verbalization against the deterministic skeleton. Returns a tuple of
     violations; empty means the verbalization may be shown to the user."""

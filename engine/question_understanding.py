@@ -85,7 +85,11 @@ _INTENT_MARKERS = (
     (TREND, ("trend", "trending", "over time", "by month", "monthly", "each month",
              "month by month", "history of", "historical", "getting better", "getting worse",
              "improving", "worsening", "doing", "improve", "improved", "declining",
-             "growing", "shrinking", "picking up", "holding up", "on track")),
+             "growing", "shrinking", "picking up", "holding up", "on track",
+             # "What happened to revenue?" asks what the measure did over time, not what it
+             # totals. Phrased with the measure as its object, so the bare "what's happening?"
+             # -- the whole-business question -- is not caught here.
+             "happened to", "happened with", "happening to", "happening with")),
 )
 
 

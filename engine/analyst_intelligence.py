@@ -66,6 +66,10 @@ _BRIEFING_PHRASES = (
     "how is the company", "how's the company", "how is our company", "how's our company",
     "business overview", "company overview", "give me an overview", "give me a business overview",
     "overview of the business", "overview of my business", "overview of our business",
+    # Everyday ways of asking for the same picture. Each names no measure, so answering with a
+    # "which measure?" menu asked the owner to narrow a question that was deliberately broad.
+    "business update", "give me an update", "update on the business", "what's happening",
+    "whats happening", "what is happening", "important insights", "how are things",
 )
 _WHAT_CHANGED_PHRASES = (
     "what changed", "what has changed", "what's changed", "whats changed",
@@ -188,6 +192,9 @@ class AnalystAnswer:
     metric_ids: tuple = ()
     limitations: tuple = ()
     not_determinable_reason: str = ""
+    # One sentence placed before a workflow answer that was narrowed to what the conversation is
+    # about, saying what it was narrowed to. Empty for an answer about the whole business.
+    scope_note: str = ""
 
     @property
     def determinable(self):
@@ -217,6 +224,11 @@ class AnalystIntelligence:
                                 executor=self.executor, verbalize=verbalize,
                                 insight_engine=self.insight_engine)
         self._summary_cache = None
+        self._insights_cache = None
+        # Set by a caller that words the business-health answer itself, in the background (the
+        # service's narrative layer). The briefing is then returned as its deterministic draft
+        # without waiting on the wording layer here.
+        self.defer_briefing_wording = False
 
     # -- the owner-facing surface -------------------------------------------------------------------
 
@@ -288,7 +300,9 @@ class AnalystIntelligence:
         # only the metric path ran the Phase 4 verbalization. They now take the SAME path:
         # deterministic draft -> Ollama -> guard -> answer, falling back to the draft.
         if owner_intent in WORKFLOW_INTENTS:
-            answer = self._verbalize_workflow(answer, working)
+            answer = self._verbalize_workflow(
+                answer, working,
+                wording=not (owner_intent == INTENT_BRIEFING and self.defer_briefing_wording))
 
         answer.question = question or ""
         self.llm.context.last_owner_intent = owner_intent
@@ -481,7 +495,7 @@ class AnalystIntelligence:
             return owner_presentation.condense_what_to_trust(buckets)
         return ""
 
-    def _verbalize_workflow(self, answer, question):
+    def _verbalize_workflow(self, answer, question, wording=True):
         """Re-word a workflow draft through the existing LLM boundary, under guard.
 
         This is not a second pipeline: it uses the same provider, the same verbalization
@@ -495,10 +509,12 @@ class AnalystIntelligence:
         # The owner sees the concise answer either way. The full draft stays on `owner_draft`
         # for the engine and debug layers.
         brief = self._condensed_brief(answer)
+        if answer.scope_note:
+            brief = f"{answer.scope_note}\n\n{brief or draft}"
         if brief:
             answer.text = brief
 
-        if not draft.strip() or not getattr(self.llm, "verbalize", False):
+        if not wording or not draft.strip() or not getattr(self.llm, "verbalize", False):
             return answer
 
         # The wording layer is handed a SMALL, question-relevant brief -- not the whole
@@ -825,8 +841,57 @@ class AnalystIntelligence:
                 "exported evidence.",)),
         )
 
+    def _conversation_subject(self):
+        """The measures the conversation is about, for narrowing "What should I do?".
+
+        Only a metric question counts, and only when it was the latest turn and resolved to
+        measures: a follow-up after a whole-business answer is about the whole business, and a
+        turn still waiting on a clarification is about nothing yet. The measure's concept family
+        is included, so "Collections by month" also reaches the findings recorded against the
+        collections definitions it belongs to.
+        """
+        from engine import concept_map
+        ctx = self.llm.context
+        last = ctx.last
+        if ctx.last_owner_intent != INTENT_METRIC or last is None or not last.metric_ids:
+            return ()
+        ids = set(last.metric_ids)
+        for c in concept_map.all_concepts():
+            family = set(c.metric_ids) | set(c.alternatives)
+            if family & set(last.metric_ids):
+                ids |= family
+        return tuple(sorted(ids))
+
+    def _insights(self):
+        if self._insights_cache is None:
+            self._insights_cache = tuple(self.insight_engine.generate())
+        return self._insights_cache
+
     def _what_to_do(self, question):
         s = self._summary()
+        subject = self._conversation_subject()
+        scope_note = ""
+        if subject:
+            # The findings the insight layer already raised against the measures in question. The
+            # list is narrowed, never re-ranked and never added to.
+            relevant = {i.insight_id for i in self._insights()
+                        if set(i.trigger_metric_ids) & set(subject)}
+            names = owner_presentation.owner_subject_names(
+                self.llm.context.last.metric_ids, self.registry)
+            label = owner_presentation._joined_names(names) if names else "this measure"
+            if relevant:
+                from dataclasses import replace
+                s = replace(
+                    s,
+                    attention_required=tuple(a for a in s.attention_required
+                                             if a.get("insight_id") in relevant),
+                    what_to_do=tuple(a for a in s.what_to_do
+                                     if a.get("insight_id") in relevant),
+                    risks=tuple(r for r in s.risks if r.get("insight_id") in relevant))
+                scope_note = f"For {label}, these are the items the records raise:"
+            else:
+                scope_note = (f"The records raise nothing that needs a decision about {label} "
+                              f"specifically. For the business as a whole:")
         routing = analyst_roles.RoleRouting(
             roles=(analyst_roles.DECISION_SUPPORT, analyst_roles.BUSINESS_ANALYST,
                    analyst_roles.RISK_DQ_ANALYST),
@@ -835,9 +900,11 @@ class AnalystIntelligence:
                      analyst_roles.RISK_DQ_ANALYST: "risks and pending conflicts"},
             primary=analyst_roles.DECISION_SUPPORT)
 
+        text = owner_presentation.present_what_to_do(s)
         return AnalystAnswer(
             question=question, owner_intent=INTENT_WHAT_TO_DO, routing=routing,
-            summary=s, text=owner_presentation.present_what_to_do(s),
+            summary=s, text=f"{scope_note}\n\n{text}" if scope_note else text,
+            scope_note=scope_note,
             limitations=owner_presentation.owner_limitations(s.limitations))
 
     def _what_to_trust(self, question):

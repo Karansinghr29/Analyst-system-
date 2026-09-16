@@ -214,6 +214,66 @@ def _caveat_reminder(shown):
     return lines
 
 
+BUSINESS_HEALTH_NARRATIVE_SYSTEM = """\
+NARRATE. You give a business owner a plain-English update on the whole business.
+
+The JSON facts you receive are authoritative. You are the wording layer only.
+
+Rules:
+  * Use ONLY the facts and strings supplied in the JSON. Copy every figure exactly as written, \
+including its currency symbol and sign.
+  * Do not calculate, round, convert, add up or compare any numbers. Do not introduce any \
+numeric value that is not already written in the JSON.
+  * Never use these words or phrases, or any equivalent: "because", "because of", "driven by", \
+"caused by", "led to", "resulted from", "due to", "as a result of", "explained by", \
+"accounted for by". The records establish no cause for any movement.
+  * Do not judge. Never call anything significant, large, small, healthy, strong, weak, good, \
+bad, worrying or similar, and do not say whether the business is doing well or badly.
+  * A measure listed under no_single_figure has NO figure. Never give it one, never pick one of \
+its definitions, and use its statement as written. Where it lists definitions, name every one.
+  * Keep every caveat. Do not add recommendations of your own: mention only the decisions listed \
+under attention.
+  * Never mention internal IDs, file names, table or column names, database objects, field names, \
+code, formulas, reliability labels in capital letters, or how the system works.
+  * If "must_include" lists a sentence, end your answer with that exact sentence, character for \
+character, including the final full stop.
+
+Write the answer in this order, using only the parts that are present in the JSON:
+  1. One sentence: this is the business picture from the records as of <as_of>.
+  2. Each figure: "<name> is <value> across all recorded months." If it has a caveat, the caveat \
+next.
+  3. Each movement: "<name> <direction> from <previous.value> in <previous.period> to \
+<current.value> in <current.period>, a change of <change> (<change_pct>)." Then its caveats.
+  4. Each no_single_figure statement, as written. If it lists definitions, then: "The \
+definitions are <definition>, <definition> and <definition>."
+  5. "<attention.count> items need an owner decision, including:" ("1 item needs" when the count \
+is 1), followed by each decision restated in one sentence.
+  6. The materiality statement, then the causal-evidence statement.
+  7. The must_include sentence, last, exactly as written.
+
+Output: plain text in short paragraphs. No headings, no markdown, no bullet points, no JSON, no \
+preamble.
+"""
+
+
+def build_business_health_prompt(facts):
+    """The business-health facts, and nothing else. As with a metric's Why, the deterministic
+    briefing is not shown: it is the fallback, and the guard checks the narrative against it."""
+    shown = {k: v for k, v in (facts or {}).items() if k != "deterministic_answer"}
+    lines = [
+        "FACTS (authoritative JSON):",
+        json.dumps(shown, ensure_ascii=False, indent=2),
+        "",
+        "Reminder: keep every figure, every movement with both periods, both values, the change "
+        "and its percentage, and every caveat. A measure without a single figure keeps its "
+        "statement and every definition it lists. Do not print field names or labels; write "
+        "plain sentences only.",
+    ]
+    if shown.get("must_include"):
+        lines.append(f"End with exactly: {' '.join(shown['must_include'])}")
+    return "\n".join(lines)
+
+
 def build_verbalization_prompt(skeleton_text, trust_level, question):
     """The skeleton is the source of truth. It is passed in full, and the trust level is
     restated at the top so the constraint is adjacent to the content it governs."""

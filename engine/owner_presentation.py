@@ -928,6 +928,15 @@ def _trimmed(lines, limit=BRIEFING_LIST_LIMIT, noun="item"):
         f"to see them all."]
 
 
+def _items_need(n):
+    """"1 item needs" / "15 items need" -- the count unchanged, the grammar agreeing with it."""
+    return f"{n} item needs" if n == 1 else f"{n} items need"
+
+
+def _further_items(n):
+    return f"{n} further item is" if n == 1 else f"{n} further items are"
+
+
 def present_briefing(summary):
     """Six-section owner briefing from an ExecutiveSummary. No IDs, dumps, or spec filenames."""
     health = tuple(summary.business_health or ())
@@ -947,7 +956,7 @@ def present_briefing(summary):
             "exists, and choosing between them is a business decision.")
     if n_attention:
         takeaway.append(
-            f"{n_attention} items need an owner decision before a single figure can be used.")
+            f"{_items_need(n_attention)} an owner decision before a single figure can be used.")
 
     facts = []
     for line in health + ops:
@@ -1112,7 +1121,7 @@ def present_what_to_do(summary):
 
     n = len(summary.attention_required or ())
     takeaway = (
-        f"{n} items need an owner decision because competing definitions exist, or because "
+        f"{_items_need(n)} an owner decision because competing definitions exist, or because "
         "a documented risk was already raised by the insight layer. No new priority score "
         "is invented."
     )
@@ -1192,7 +1201,7 @@ def condense_briefing(summary):
         f"figure; {len(contested)} do not.",
     ]
     if n_attention:
-        takeaway.append(f"{n_attention} items need an owner decision.")
+        takeaway.append(f"{_items_need(n_attention)} an owner decision.")
 
     facts = [_short_fact(l) for l in presentable[:CONDENSED_KEY_NUMBERS]]
 
@@ -1212,7 +1221,7 @@ def condense_briefing(summary):
             attention.append(f"• {decision}")
     remaining = n_attention - len(attention)
     if remaining > 0:
-        attention.append(f"{remaining} further items are not listed here.")
+        attention.append(f"{_further_items(remaining)} not listed here.")
 
     changed = [_first_sentence(ln)
                for ln in _change_lines(tuple(summary.what_changed or ())[:2])]
@@ -1229,7 +1238,7 @@ def condense_briefing(summary):
 def condense_what_to_do(summary):
     """The few decisions actually waiting on the owner."""
     n = len(summary.attention_required or ())
-    takeaway = [f"{n} items need an owner decision. No priority score is invented, so these "
+    takeaway = [f"{_items_need(n)} an owner decision. No priority score is invented, so these "
                 f"are not ranked."]
 
     attention = []
@@ -1238,7 +1247,7 @@ def condense_what_to_do(summary):
         if decision:
             attention.append(f"• {decision}")
     if n > len(attention):
-        attention.append(f"{n - len(attention)} further items are not listed here.")
+        attention.append(f"{_further_items(n - len(attention))} not listed here.")
 
     # "What to do next" repeated the attention list almost word for word. Only steps that say
     # something the attention list did not are carried.

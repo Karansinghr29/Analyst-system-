@@ -34,6 +34,10 @@ FOLLOWUP_MARKERS = (
     "explain this", "explain that", "explain", "tell me more", "what does that mean",
 )
 
+# Follow-ups that ask about the previous answer itself rather than a new aspect of its measure.
+_EXPLAIN_BACK_MARKERS = ("explain this", "explain that", "explain it", "tell me more",
+                         "what does that mean", "in simple terms", "simply")
+
 # Markers of an EXPLICIT new constraint. When one is present for a field, that field is the
 # user's, and context must not touch it.
 _TIME_MARKERS = ("next month", "next year", "next quarter", "last month", "this month",
@@ -233,6 +237,15 @@ class ConversationContext:
                 updates["intent"] = tuple(dict.fromkeys(tuple(request.intent) + ("driver",)))
                 updates["explanation_requested"] = True
                 inherited.append("intent:driver")
+        # "Explain that" / "tell me more" asks about the answer just given, so it keeps what that
+        # question asked -- a movement stays a movement -- rather than becoming a bare lookup of
+        # the same measure. Only when the follow-up states no analysis of its own.
+        elif (any(m in q for m in _EXPLAIN_BACK_MARKERS)
+              and tuple(request.intent) in ((), ("lookup",)) and prior.intent
+              and {"concept", "metric_ids"} & set(inherited)):
+            updates["intent"] = tuple(prior.intent)
+            updates["explanation_requested"] = True
+            inherited.append("intent:previous")
 
         if not updates:
             return request, ()

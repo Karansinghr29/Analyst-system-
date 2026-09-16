@@ -37,18 +37,26 @@ const SUGGESTIONS = [
 ];
 
 /*
- * Follow-ups offered after an answer. Every one of these is a question the pipeline actually
- * supports: the first two resolve against the previous turn through conversation context, and
- * the rest are deterministic workflows that run whether or not the language layer is reachable.
- * Offering a follow-up that cannot be answered would train the owner to distrust the buttons.
+ * Follow-ups offered after an answer, chosen by what that answer was. Each is only a question:
+ * it is sent exactly as if typed, and the server resolves it against the same conversation --
+ * "Explain this." refers back to the answer above it, "What should I do?" is narrowed to the
+ * measure being discussed. No button carries an answer of its own. Every one is a question the
+ * pipeline supports; offering one it cannot answer would train the owner to distrust the buttons.
  */
-const FOLLOW_UPS = [
-  'Why?',
-  'Explain this.',
-  'What changed?',
-  'What should I do?',
-  'Which area should I look at first?',
-];
+const FOLLOW_UPS = {
+  briefing: ['What changed?', 'What should I do?', 'Which area should I look at first?',
+    'Explain this.'],
+  what_changed: ['What should I do?', 'Which area should I look at first?', 'Explain this.'],
+  what_to_do: ['What changed?', 'How is the business doing?'],
+  what_to_trust: ['What should I do?', 'How is the business doing?'],
+  metric_question: ['Explain this.', 'What should I do?', 'What changed?'],
+};
+
+function followUpsFor(result) {
+  // An open question to the owner is answered, not stepped around.
+  if (!result || result.status === 'NEEDS_CLARIFICATION') return [];
+  return FOLLOW_UPS[result.owner_intent] || FOLLOW_UPS.metric_question;
+}
 
 export function renderChat(root, ctx) {
   const page = el('div', 'chat');
@@ -123,6 +131,9 @@ export function renderChat(root, ctx) {
 
   async function ask(question) {
     if (welcome.parentNode) welcome.remove();
+    // The starter questions belong to an empty conversation. Once one is under way, the next
+    // steps are the follow-ups offered under each answer, or whatever the owner types.
+    if (asks.parentNode) asks.remove();
     thread.appendChild(userBubble(question));
     const pending = loading('an answer');
     thread.appendChild(pending);
@@ -142,8 +153,14 @@ export function renderChat(root, ctx) {
     ctx.conversationId = result.conversation_id;
     const panel = answerPanel(result, ctx);
     pending.replaceWith(panel);
-    panel.appendChild(followUpBar());
+    const next = followUpBar(followUpsFor(result));
+    if (next) panel.appendChild(next);
     thread.scrollTop = thread.scrollHeight;
+    // The verified answer is on screen. Where its wording is still to come, it is fetched
+    // without holding anything up.
+    if (result.narrative_pending && result.narrative_kind) {
+      wordInBackground(panel, result.narrative_kind, result.conversation_id);
+    }
   }
 
   /* A metric card action: answered for the metric id the card carries, shown in the same panel
@@ -213,14 +230,50 @@ async function narrateInBackground(panel, metricId, action, question) {
 }
 
 /*
+ * The analyst's own wording of an Analyst answer, fetched after the verified answer is on screen.
+ * Same rule as a card narrative: only the answer's text can change, and only to wording the
+ * server's guard accepted. Anything else leaves the verified answer as it is, and says so once.
+ */
+async function wordInBackground(panel, kind, conversationId) {
+  const body = panel.querySelector('[data-role="answer-text"]');
+  if (!body) return;
+  const status = el('p', 'answer-fallback', 'Generating analyst explanation…');
+  status.setAttribute('data-role', 'narrative-status');
+  status.setAttribute('aria-live', 'polite');
+  body.parentNode.insertBefore(status, body);
+
+  let narrative = null;
+  try {
+    narrative = await api.askNarrative(kind, conversationId);
+  } catch (_) {
+    narrative = null;
+  }
+  status.remove();
+
+  if (narrative && narrative.narrative_source === 'local_llm' && narrative.answer) {
+    body.textContent = narrative.answer;
+    panel.setAttribute('data-narrative-source', 'local_llm');
+    return;
+  }
+  panel.setAttribute('data-narrative-source', 'deterministic');
+  if (narrative && narrative.narrative_note) {
+    const g = el('section', 'answer-guard');
+    g.setAttribute('data-role', 'narrative-note');
+    g.appendChild(el('p', null, narrative.narrative_note));
+    body.parentNode.insertBefore(g, body.nextSibling);
+  }
+}
+
+/*
  * The follow-up bar. These reuse the global `data-question` entry point, so a clicked follow-up
  * travels the identical path as a typed one and inherits the same conversation.
  */
-function followUpBar() {
+function followUpBar(questions) {
+  if (!questions || !questions.length) return null;
   const bar = el('nav', 'follow-ups');
   bar.setAttribute('aria-label', 'Follow-up questions');
   bar.appendChild(el('span', 'follow-ups-label', 'Ask next'));
-  FOLLOW_UPS.forEach(function (q) {
+  questions.forEach(function (q) {
     const b = el('button', 'follow-up entry-point', q);
     b.setAttribute('data-action', 'follow-up');
     b.setAttribute('data-question', q);

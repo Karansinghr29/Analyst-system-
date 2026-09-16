@@ -536,6 +536,48 @@ class AnalyticsService:
         result["answer"] = text
         return result
 
+    # The Analyst answers whose wording is fetched in the background, by kind.
+    ASK_NARRATIVE_KINDS = ("business_health",)
+
+    def ask_narrative(self, kind, role_id=ROLE_OWNER):
+        """The background half of an Analyst answer: a guarded Local LLM narrative, or nothing.
+
+        Same contract as `metric_narrative`. Today one kind exists: the business-health answer to
+        a whole-business question. Its facts are rebuilt from the same deterministic engine the
+        answer on screen came from, and the narrative is kept only when the guard accepts all of
+        it; otherwise the deterministic answer already shown stands, unchanged.
+        """
+        result = {"kind": kind, "narrative_source": "deterministic", "narrative_note": "",
+                  "guard_violations": []}
+        if kind not in self.ASK_NARRATIVE_KINDS or not self._narrative_active():
+            return result
+        # Every measure the answer draws on must be one this role may see.
+        if not set(self.vb.business_health_metric_ids()) <= self._visible(role_id):
+            return result
+
+        spec = narrative.BUSINESS_HEALTH
+        ai = self._analyst()
+        summary = ai._summary()
+        facts = self._memo("business_health_facts",
+                           lambda: self.vb.business_health_facts(summary))
+        eligible, _reasons = narrative.eligibility_for(spec, facts)
+        if not eligible:
+            return result
+
+        from engine import owner_presentation
+        draft = owner_presentation.condense_briefing(summary)
+        text, violations = self._metric_narrative(spec, facts, draft)
+        if text is None:
+            _LOG.warning("analyst narrative fallback for %s: %s", kind,
+                         " | ".join(str(v) for v in violations))
+            self.obs.note_llm_fallback()
+            result["narrative_note"] = narrative.FALLBACK_NOTE
+            return result
+
+        result["narrative_source"] = "local_llm"
+        result["answer"] = text
+        return result
+
     def _narrative_active(self):
         """Only an explicitly enabled HTTP adapter narrates. Offline mode is not a narrator."""
         config = self.provider_config
@@ -706,6 +748,10 @@ class AnalyticsService:
         ai = self._analyst()
         ai.llm.context.clear()
         self.store.restore_into(conversation_id, ai.llm.context)
+        # A whole-business answer is worded in the background, so the owner sees the verified
+        # briefing at once instead of waiting on the local model.
+        narrate_briefing = self._narrative_active()
+        ai.defer_briefing_wording = narrate_briefing
 
         answer = ai.ask(question)
         vis = self._visible(session.role_id)
@@ -760,6 +806,9 @@ class AnalyticsService:
             self.obs.note_llm_fallback()
         if answer.ask_result and answer.ask_result.provider_error:
             self.obs.note_llm_fallback()
+        narrative_kind = ("business_health"
+                          if narrate_briefing and answer.owner_intent == ai_mod.INTENT_BRIEFING
+                          else "")
         return {
             "conversation_id": conversation_id,
             "question": question,
@@ -796,7 +845,12 @@ class AnalyticsService:
                                         or answer.ask_result.provider_error))
                 or (answer.ask_result is None
                     and answer.owner_intent in ai_mod.WORKFLOW_INTENTS
-                    and not answer.verbalized)),
+                    and not answer.verbalized
+                    and not narrative_kind)),
+            # Where the wording is still to come, the client asks for it with this kind and shows
+            # the verified answer until a narrative the guard accepted replaces it.
+            "narrative_pending": bool(narrative_kind),
+            "narrative_kind": narrative_kind,
         }
 
     def conversation(self, conversation_id, identity_subject=None):
@@ -1081,6 +1135,17 @@ def create_app(service: AnalyticsService = None, authenticator=None, rate_limite
     def executive_report(request: Request):
         _identity(request)
         return svc.executive_report()
+
+    class AskNarrativeRequest(BaseModel):
+        kind: str = Field(..., min_length=1, max_length=40)
+        conversation_id: str | None = None
+
+    @app.post("/api/ask/narrative")
+    def ask_narrative(req: AskNarrativeRequest, request: Request):
+        # Plain (non-async), like the metric narrative: a slow local model holds a worker thread,
+        # never the event loop.
+        ident = _identity(request)
+        return svc.ask_narrative(req.kind, ident.role_id)
 
     @app.post("/api/ask")
     def ask(req: AskRequest, request: Request):

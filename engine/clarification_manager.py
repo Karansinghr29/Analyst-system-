@@ -42,13 +42,37 @@ class Clarification:
     question: str            # business-friendly, shown to the user
     options: tuple           # concrete choices, each self-describing
     internal_reason: str     # spec-citing audit trail, not shown to the user
+    # The choices are already named in the question itself, so no numbered list follows it. Used
+    # for ordinary "which area?" ambiguity. A choice between competing DEFINITIONS is never
+    # inline: each option there needs its own description, because the owner is deciding which
+    # evidence-backed figure stands.
+    inline: bool = False
 
     def render(self):
         from engine.owner_presentation import sanitize_owner_text
+        if self.inline:
+            return sanitize_owner_text(self.question)
         lines = [sanitize_owner_text(self.question)]
         for i, opt in enumerate(self.options, 1):
             lines.append(f"  {i}. {sanitize_owner_text(opt)}")
         return "\n".join(lines)
+
+
+def inline_choices(options):
+    """"a, b or c" -- the options as they would be said in one sentence."""
+    names = [str(o).strip() for o in options or () if str(o).strip()]
+    if len(names) <= 1:
+        return "".join(names)
+    return ", ".join(names[:-1]) + " or " + names[-1]
+
+
+def is_subject_menu(options):
+    """True when the options are bare business-area names ("Revenue", "Tenant dues"), not
+    self-describing definitions or periods. Only those read naturally inside one sentence."""
+    names = [str(o).strip() for o in options or ()]
+    return bool(names) and all(
+        n and len(n.split()) <= 3 and not any(ch.isdigit() for ch in n)
+        and not any(ch in n for ch in ":—-()") for n in names)
 
 
 class ClarificationManager:
@@ -79,6 +103,17 @@ class ClarificationManager:
                 question = ("Which specific tenant or unit do you mean? Personal identifying "
                             "details aren't part of the exported data, so I can't match a name -- "
                             "an ID from the system would let me look it up.")
+            elif is_subject_menu(cr.options):
+                # "Which measure should I look up?" followed by a numbered list read as a command
+                # menu. The same choice, asked the way a person would ask it.
+                return Clarification(
+                    trigger=TRIGGER_AMBIGUOUS_TIME,
+                    question=f"Which area would you like me to look at: "
+                             f"{inline_choices(cr.options).lower()}?",
+                    options=cr.options,
+                    internal_reason=cr.reason,
+                    inline=True,
+                )
             else:
                 question = q if q.endswith("?") else q
             return Clarification(

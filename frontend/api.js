@@ -140,6 +140,9 @@ export const api = {
                       get('/api/metrics/' + encodeURIComponent(metricId) + '/action?action='
                           + encodeURIComponent(action) + '&question='
                           + encodeURIComponent(question || '')),
+  // The background wording for an Analyst answer that is already on screen, by kind.
+  askNarrative:    (kind, conversationId) =>
+                      post('/api/ask/narrative', { kind, conversation_id: conversationId || null }),
   // The background narrative for a card answer that is already on screen.
   metricNarrative: (metricId, action, question) =>
                       get('/api/metrics/' + encodeURIComponent(metricId) + '/narrative?action='

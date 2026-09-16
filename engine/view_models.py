@@ -422,6 +422,16 @@ def _clean_filters(filters):
 SOURCE_LIMITATION_STATUS = "Calculation verified \u00b7 Source-data limitation"
 
 
+def _owner_day(iso_date):
+    """"2026-08-29" as an owner reads it: "29 August 2026". Unparseable input is returned as is."""
+    import datetime
+    try:
+        day = datetime.date.fromisoformat(iso_date)
+    except (TypeError, ValueError):
+        return iso_date or ""
+    return f"{day.day} {day.strftime('%B')} {day.year}"
+
+
 def format_value(value, unit=""):
     if value is None:
         return ""
@@ -781,6 +791,11 @@ class ViewModelBuilder:
                 out.append(dim)
         return tuple(out)
 
+    # The metric cards that offer "Why?": the comparable monthly measures, less P&L by month,
+    # whose composite monthly values hold no single quantity that changes between periods.
+    WHY_CARD_METRICS = tuple(m for m in COMPARABLE_MONTHLY_METRICS if m != "M.PNL.001")
+    WHY_CARD_POSTURES = ("SAFE", "DISCLOSE")
+
     def _entry_points(self, metric_id, trust_level):
         """Phase 8 brief 5: View → Ask Why → Drill Down → Explain → Recommend.
 
@@ -788,6 +803,11 @@ class ViewModelBuilder:
         on a snapshot-only measure invites a question the engine must refuse -- M.RISK.003 is a
         live worklist with no time series, so "why did it change?" presupposes a change that
         cannot be established. A button that always fails is worse than an absent one.
+
+        So "Why?" is offered only on a card whose measure has an established comparable monthly
+        movement and a posture that may state a figure. An all-time total, a snapshot, a composite
+        series and a measure held under competing or undeterminable definitions would only ever
+        answer it with a refusal.
         """
         spec = self.registry.get(metric_id)
         # The sentence is what the owner sees echoed above the answer, so it names the measure
@@ -798,7 +818,7 @@ class ViewModelBuilder:
             {"action": "explain", "label": "How was this calculated?",
              "question": f"How was {name} calculated?", "metric_id": metric_id},
         ]
-        if self._has_time_series(spec):
+        if metric_id in self.WHY_CARD_METRICS and trust_level in self.WHY_CARD_POSTURES:
             eps.append({"action": "why", "label": "Why?",
                         "question": f"Why did {name} change?",
                         "metric_id": metric_id})
@@ -975,6 +995,122 @@ class ViewModelBuilder:
     COMPONENTS_MEANING = ("These components reconcile the movement and do not show why it "
                           "happened.")
     CAUSE_NOT_ESTABLISHED = "The available records do not show why this movement happened."
+
+    # -- business health (the Analyst's answer to "how is the business doing?") -------------------
+
+    # The measures a business-health answer reports on, in the order an owner reads them. Each is
+    # reported under the posture the gate already gives it: a figure where one may be stated, the
+    # conflict where one may not. Profit is listed so its refusal is stated, not so a figure is.
+    BUSINESS_HEALTH_MEASURES = ("M.REV.001", "M.COL.001", "M.EXP.001", "M.DEP.001",
+                                "M.AR.001A", "M.OCC.001", "M.PROFIT.001")
+    BUSINESS_HEALTH_ATTENTION = 3
+    MOVEMENTS_MATERIALITY_OPEN = ("Whether any of these movements is significant is not set by "
+                                  "the records; it is an owner judgement.")
+    MOVEMENTS_CAUSE_NOT_ESTABLISHED = ("These movements show what changed; the records do not "
+                                       "show why they happened.")
+
+    def business_health_metric_ids(self):
+        """Every measure a business-health answer draws on, for the caller's visibility check."""
+        return tuple(dict.fromkeys(self.BUSINESS_HEALTH_MEASURES + self.WHY_CARD_METRICS))
+
+    def business_health_facts(self, summary=None):
+        """The `business_health.v1` facts: what the engine already knows about the whole business.
+
+        Assembled from results that already exist -- the executive summary's gated measure lines,
+        the Why? facts of the measures with an established monthly movement, and the insight
+        layer's decisions. Nothing is calculated here, no definition is chosen for a conflicted
+        measure, and each posture is the gate's. Values are formatted once, in the owner's form,
+        so the wording layer never reformats a figure.
+        """
+        summary = summary or self.summary_builder.build(include_why=False)
+        lines = {l.metric_id: l for l in tuple(summary.business_health or ())
+                 + tuple(summary.operations or ())}
+
+        figures, no_single_figure = [], []
+        for mid in self.BUSINESS_HEALTH_MEASURES:
+            line = lines.get(mid) or self.summary_builder.kpi_line(mid)
+            name = op.owner_measure_name(line.display_name)
+            if line.trust_level == "NOT_DETERMINABLE":
+                no_single_figure.append({
+                    "name": name, "trust_level": line.trust_level,
+                    "statement": f"No figure can be stated for {name.lower()}. "
+                                 f"{NOT_DETERMINABLE_TEXT}"})
+                continue
+            if not line.presentable:
+                # A definition the export cannot compute is not one of the figures that disagree.
+                computed = tuple(label for label, value in line.definitions or ()
+                                 if value is not None)
+                count = len(computed)
+                if line.trust_level == "BLOCK":
+                    statement = (f"No {name.lower()} figure can be stated: its {count} "
+                                 f"definitions conflict, and which one applies is an owner "
+                                 f"decision.")
+                else:
+                    statement = (f"No single figure can be stated for {name.lower()}: {count} "
+                                 f"evidence-backed definitions disagree, and choosing between "
+                                 f"them is an owner decision.")
+                entry = {"name": name, "trust_level": line.trust_level, "statement": statement}
+                if line.trust_level == "SHOW_BOTH":
+                    # Named, not valued: every definition is listed and none is preferred. Each
+                    # definition's figure is one question away, on the measure itself.
+                    entry["definitions"] = list(dict.fromkeys(
+                        op.owner_definition_labels(computed)))
+                no_single_figure.append(entry)
+                continue
+            value = line.value
+            if isinstance(value, dict):
+                # A measure recorded with parts states its own total; the parts are not summed.
+                value = value.get("total")
+            if not isinstance(value, (int, float)):
+                continue
+            figures.append({
+                "name": name, "value": format_value(value, line.unit),
+                "trust_level": line.trust_level, "period": "all recorded months",
+                # The same owner caveat the measure's own card carries.
+                "caveat": ((self.tile(mid).as_dict().get("owner_caveat") or "")
+                           if line.trust_level == "DISCLOSE" else "")})
+
+        movements = []
+        for mid in self.WHY_CARD_METRICS:
+            why = self.metric_action(mid, "why").get("narrative_facts") or {}
+            movement = why.get("movement") or {}
+            metric = why.get("metric") or {}
+            if not movement.get("available") or movement.get("partial_period"):
+                continue
+            if (metric.get("trust_level") or "") not in self.WHY_CARD_POSTURES:
+                continue
+            movements.append({
+                "name": metric.get("name") or "", "trust_level": metric.get("trust_level"),
+                "direction": movement.get("direction"),
+                "previous": dict(movement.get("previous") or {}),
+                "current": dict(movement.get("current") or {}),
+                "change": movement.get("change"), "change_pct": movement.get("change_pct"),
+                "caveats": [c.get("text") for c in
+                            (why.get("caveats") or {}).get("specific") or ()
+                            if c.get("text")]})
+
+        attention = tuple(summary.attention_required or ())
+        decisions = []
+        for item in attention:
+            text = op._first_sentence(op.owner_caveat(item.get("decision") or ""))
+            if text and text not in decisions:
+                decisions.append(text)
+            if len(decisions) >= self.BUSINESS_HEALTH_ATTENTION:
+                break
+
+        facts = {
+            "contract": "business_health.v1",
+            "as_of": _owner_day(cd_detect.EXPORT_SNAPSHOT_DATE),
+            "figures": figures,
+            "movements": movements,
+            "no_single_figure": no_single_figure,
+            "attention": {"count": len(attention), "decisions": decisions},
+        }
+        if movements:
+            facts["materiality"] = {"statement": self.MOVEMENTS_MATERIALITY_OPEN}
+            facts["causal_evidence"] = {"statement": self.MOVEMENTS_CAUSE_NOT_ESTABLISHED}
+            facts["must_include"] = [NOT_DETERMINABLE_TEXT]
+        return facts
 
     def _why_facts(self, question, name, tile, analysis):
         """The `metric_why.v1` facts for one analysed measure. Formats; computes nothing."""

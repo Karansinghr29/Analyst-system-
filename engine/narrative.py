@@ -57,6 +57,20 @@ WHY = NarrativeSpec(
     enabled_metrics=("M.REV.002", "M.COL.002"),
 )
 
+# The Analyst's answer to a whole-business question ("how is the business doing?"). Not scoped to
+# one measure, so it has no enabled measures: it is narrated wherever the Local LLM is switched on
+# and the facts pass `business_health_eligibility`.
+BUSINESS_HEALTH = NarrativeSpec(
+    action="business_health",
+    contract="business_health.v1",
+    system_prompt=prompt_contracts.BUSINESS_HEALTH_NARRATIVE_SYSTEM,
+    build_prompt=prompt_contracts.build_business_health_prompt,
+    guard=answer_renderer.guard_business_health_narrative,
+    enabled_metrics=(),
+    max_tokens=900,
+    timeout_seconds=150,
+)
+
 SPECS = {WHY.action: WHY}
 
 
@@ -93,10 +107,31 @@ def why_eligibility(facts):
     return not reasons, tuple(reasons)
 
 
+def business_health_eligibility(facts):
+    """Whether a `business_health.v1` package may be narrated, and every reason it may not.
+
+    There must be something verified to say -- a stated figure or an established movement -- and
+    where movements are reported, the materiality and causal statements that go with them.
+    """
+    facts = facts or {}
+    if facts.get("contract") != BUSINESS_HEALTH.contract:
+        return False, ("no structured business-health facts",)
+    reasons = []
+    if not facts.get("figures") and not facts.get("movements"):
+        reasons.append("no stated figure and no established movement")
+    if facts.get("movements"):
+        for field in ("materiality", "causal_evidence"):
+            if not isinstance(facts.get(field), dict) or not (facts[field].get("statement") or ""):
+                reasons.append(f"no {field.replace('_', '-')} statement")
+    return not reasons, tuple(reasons)
+
+
 def eligibility_for(spec, facts):
     """Dispatch to the kind's own eligibility rule."""
     if spec is WHY:
         return why_eligibility(facts)
+    if spec is BUSINESS_HEALTH:
+        return business_health_eligibility(facts)
     return False, (f"no eligibility rule for {spec.action!r}",)
 
 

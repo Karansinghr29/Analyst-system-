@@ -72,7 +72,11 @@ CONCEPTS = (
                  "tenants owing", "owing us", "outstanding from tenants", "stuck with tenants",
                  "tenants still need to pay", "tenants still owe", "money is stuck",
                  "still due from tenants", "due from tenants",
-                 "money is still due from tenants", "money still due from tenants"),
+                 "money is still due from tenants", "money still due from tenants",
+                 # Owner phrasings of the same family. "Days outstanding" stays aging's: the
+                 # longer phrase wins the match, so this bare word does not capture it.
+                 "owes us", "who owes", "outstanding", "tenant outstanding",
+                 "tenants outstanding", "outstanding amount"),
         alternatives=("M.AR.002", "M.AR.003", "M.RISK.001"),
         note="Other grains of the same concept exist: M.AR.002 (by tenant), M.AR.003 (by "
              "property), M.RISK.001 (risk framing).",
@@ -276,7 +280,7 @@ CONCEPTS = (
         family_rule="Single canonical ledger-derived total; the P&L bucket gap (DQ.015) "
                     "affects M.EXP.002's categorisation, not this total (proven).",
         phrases=("expenses", "expense", "costs", "spending", "how much did we spend",
-                 "cost base", "outgoings"),
+                 "cost base", "outgoings", "spend", "spent", "what did we spend"),
         alternatives=("M.EXP.002", "M.PNL.001"),
         note="M.EXP.002 breaks the same total down by category. M.PNL.001 exposes the "
              "ledger monthly expense series used for period-scoped expense questions.",
@@ -658,7 +662,19 @@ def match(question):
     names = {c.name for c, _ in kept}
     kept = [(c, ph) for c, ph in kept
             if not any(sup in names for sup in c.superseded_by)]
+
+    # A bare qualifier names a concept only when nothing else is named. "Outstanding" on its own
+    # is the owner's word for tenant dues; in "deposit refunds outstanding" it only describes the
+    # deposit refunds, and reading it as a second subject would ask about an ambiguity the owner
+    # never raised.
+    if len(kept) > 1:
+        kept = [(c, ph) for c, ph in kept if ph not in _QUALIFIER_PHRASES] or kept
     return kept
+
+
+# Phrases that are qualifiers as often as they are subjects. Matched like any other phrase, but
+# they yield to any other concept named in the same question.
+_QUALIFIER_PHRASES = frozenset({"outstanding"})
 
 
 def verify_against_registry(registry):

@@ -177,9 +177,7 @@ class LLMInterface:
                     # under a heading saying the question could not be answered.
                     result.clarification = pc
                     result.clarification_state = cs.CLAR_STILL_AMBIGUOUS
-                    result.text = ("I still couldn't tell which you meant. Please pick one:\n"
-                                   + "\n".join(f"  {i + 1}. {o}"
-                                               for i, o in enumerate(pc.options)))
+                    result.text = self._re_ask(pc)
                     self._record(question, None, None, result)
                     return result
 
@@ -379,6 +377,14 @@ class LLMInterface:
         # become the answered question -- letting attacker-controlled text steer metric
         # selection. Deferring to the deterministic resolver makes that impossible.
         defer_to_resolver = request.clarification_needed
+        # Except where the conversation, not the question, supplied the subject. "Explain that
+        # simply" names no measure, so the model rightly calls it unclear on its own; the previous
+        # turn resolves it. The inherited subject comes from what the owner already asked, never
+        # from this question's text, and a follow-up that names any concept of its own inherits
+        # nothing -- so no wording in the question can steer which measure is answered.
+        if (defer_to_resolver and {"concept", "metric_ids"} & set(inherited)
+                and not concept_map.match(working)):
+            defer_to_resolver = False
 
         # ---- stage 4: deterministic planning + trust gate -----------------------------------
         plan = self._plan(working, request, ignore_model_concept=defer_to_resolver)
@@ -467,12 +473,38 @@ class LLMInterface:
         self._record(working, request, plan, result)
         return result
 
+    @staticmethod
+    def _re_ask(pending):
+        """The open question, asked again after a reply that did not answer it.
+
+        A choice between competing definitions keeps its numbered, self-describing options: the
+        owner is deciding which evidence-backed figure stands, and each option has to say what it
+        is. Any other open question is asked again in one sentence.
+        """
+        from engine import clarification_manager as cm
+        options = tuple(pending.options or ())
+        if pending.trigger != cm.TRIGGER_CONFLICTING_DEFINITIONS and cm.is_subject_menu(options):
+            return (f"I need one more detail before I answer: which area do you mean -- "
+                    f"{cm.inline_choices(options).lower()}?")
+        lead = (pending.question or "").strip()
+        if pending.trigger == cm.TRIGGER_CONFLICTING_DEFINITIONS:
+            lead = ("Before I can explain this, I need you to choose which definition to use. "
+                    "They are both backed by the records and give different figures, so I "
+                    "won't choose for you:")
+        return lead + "\n" + "\n".join(f"  {i + 1}. {o}" for i, o in enumerate(options))
+
     def _looks_like_fresh_question(self, text, pending):
         """True when the reply is a new owner question, not an attempt to pick a clarification option."""
         import re
         from engine import concept_map
+        from engine.conversation_context import ConversationContext
         q = (text or "").strip().lower()
         if not q:
+            return False
+        # "Explain that simply" while a question is open refers to that question. Treating it as
+        # new dropped the pending choice and asked the owner which measure they meant, as if the
+        # conversation had not happened.
+        if ConversationContext.looks_like_followup(q) and not concept_map.match(q):
             return False
         if re.fullmatch(r"[1-9]|cancel|latest.*|historical.*", q):
             return False
@@ -700,13 +732,22 @@ class LLMInterface:
         result.status = plan.status
         result.trust_level = plan.trust_level
         result.metric_ids = plan.metric_ids
+        # What the owner chose, as the structured interpretation of this turn. Without it the
+        # next "Explain that" had no subject to refer back to, although the owner had just
+        # named one. It carries the chosen measure only -- no figure and no posture -- and a
+        # follow-up that inherits it is planned and gated from scratch.
+        from engine.structured_output import LLMPlanRequest
+        request = (LLMPlanRequest(intent=tuple(plan.intents) or ("lookup",),
+                                  metric_ids=(pending.resolved_metric_id,))
+                   if pending.resolved_metric_id else None)
+        result.llm_request = request
 
         if plan.status not in (READY, BLOCKED) or not plan.execution_calls:
             from engine import owner_presentation
             result.text = owner_presentation.present_metric_answer(
                 plan, (), None) if plan.status == NOT_DETERMINABLE else (
                 plan.not_determinable_reason or "That selection could not be executed.")
-            self._record(orig, None, plan, result)
+            self._record(orig, request, plan, result)
             return result
 
         answers = tuple(self.executor.execute(c.metric_id, **c.kwargs)
@@ -721,7 +762,7 @@ class LLMInterface:
         result.change = self._last_change
         result.executed = True
         result.decision_support = ds_mod.build(plan, answers, reasoning, (), orig)
-        self._record(orig, None, plan, result)
+        self._record(orig, request, plan, result)
         return result
 
     # -- stages ---------------------------------------------------------------------------------
@@ -783,6 +824,12 @@ class LLMInterface:
         """
         q = question
         stripped = (question or "").strip().lower().rstrip("?.! ")
+        # How the owner wants it said changes nothing about what "that" refers to: "Explain that
+        # simply" is still "Explain that".
+        for softener in (" more simply", " in simple terms", " in plain english", " simply",
+                         " please", " for me", " again"):
+            if stripped.endswith(softener):
+                stripped = stripped[:-len(softener)].rstrip(" ,")
 
         # A "why" follow-up carries its subject only by reference -- "Why was it lower?" names
         # no measure at all. Left unexpanded, Phase 3 resolves no metric and the turn dies as
@@ -798,6 +845,10 @@ class LLMInterface:
         )
         if stripped.startswith("why") or stripped in ("how so",) or bare_explain:
             subject = request.concept.replace("_", " ") if request.concept else ""
+            # A measure the owner chose from a clarification is carried by id, not concept. The
+            # id itself is handed to the planner separately; the text only needs the reference.
+            if not subject and request.metric_ids:
+                subject = "it"
             if subject and subject not in stripped:
                 # Keep the user's own words -- they may carry direction ("lower", "higher") that
                 # the reasoning layer uses -- and append the subject the question omitted.
