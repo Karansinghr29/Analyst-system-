@@ -129,6 +129,7 @@ export function metricTile(tile, onOpen) {
     const b = el('button', 'entry-point', ep.label);
     b.setAttribute('data-action', ep.action);
     b.setAttribute('data-question', ep.question);
+    if (ep.metric_id) b.setAttribute('data-metric-id', ep.metric_id);
     foot.appendChild(b);
   });
   if (foot.childNodes.length) card.appendChild(foot);
@@ -188,6 +189,7 @@ export function insightCard(insight) {
     const b = el('button', 'entry-point', ep.label);
     b.setAttribute('data-action', ep.action);
     b.setAttribute('data-question', ep.question);
+    if (ep.metric_id) b.setAttribute('data-metric-id', ep.metric_id);
     foot.appendChild(b);
   });
   if (foot.childNodes.length) card.appendChild(foot);
@@ -223,6 +225,7 @@ export function changeCard(change) {
     const b = el('button', 'entry-point', ep.label);
     b.setAttribute('data-action', ep.action);
     b.setAttribute('data-question', ep.question);
+    if (ep.metric_id) b.setAttribute('data-metric-id', ep.metric_id);
     foot.appendChild(b);
   });
   card.appendChild(foot);

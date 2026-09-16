@@ -134,6 +134,12 @@ export const api = {
   conversation:    (id)             => get('/api/conversations/' + encodeURIComponent(id)),
   ask:             (question, conversationId) =>
                       post('/api/ask', { question, conversation_id: conversationId || null }),
+  // A metric card action. The metric id identifies the measure; the question is carried only so
+  // the answer can be shown beside the sentence the owner clicked.
+  metricAction:    (metricId, action, question) =>
+                      get('/api/metrics/' + encodeURIComponent(metricId) + '/action?action='
+                          + encodeURIComponent(action) + '&question='
+                          + encodeURIComponent(question || '')),
 };
 
 /* Whether this session already carries an identity. Reports only presence, never the token. */

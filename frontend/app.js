@@ -109,6 +109,16 @@ function buildShell() {
   return { shell, main };
 }
 
+async function askMetricAndShow(metricId, action, question) {
+  if (!location.hash.startsWith('#/ask')) {
+    location.hash = '#/ask';
+    await new Promise(function (r) { setTimeout(r, 0); });
+  }
+  if (ctx.askMetric) {
+    ctx.askMetric(metricId, action, question);
+  }
+}
+
 async function askAndShow(question) {
   if (!location.hash.startsWith('#/ask')) {
     location.hash = '#/ask';
@@ -188,9 +198,20 @@ function wireEntryPoints() {
     if (!btn) return;
     event.preventDefault();
     event.stopPropagation();
+    // A card action carries the measure it was built for. That id answers it -- the sentence on
+    // the button is not how the measure is identified. A button without one (a free-text
+    // suggestion) still goes to the analyst and still resolves by name.
+    const metricId = btn.getAttribute('data-metric-id');
+    const action = btn.getAttribute('data-action');
+    if (metricId && CARD_ACTIONS.indexOf(action) !== -1) {
+      askMetricAndShow(metricId, action, btn.getAttribute('data-question'));
+      return;
+    }
     askAndShow(btn.getAttribute('data-question'));
   });
 }
+
+const CARD_ACTIONS = ['explain', 'why', 'trust', 'conflict'];
 
 /*
  * Ask the service for a session token before deciding the owner needs to paste one.

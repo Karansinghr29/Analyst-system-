@@ -69,6 +69,14 @@ class RootCauseAnalysis:
         return not self.not_determinable_reason
 
 
+def _owner_name(spec):
+    """The measure's owner-facing name, so a sentence survives identifier stripping intact."""
+    from engine import owner_presentation as op
+
+    return op.owner_measure_name(getattr(spec, "display_name", "")
+                                 or getattr(spec, "semantic_name", "") or "this measure")
+
+
 class RootCauseAnalyzer:
     def __init__(self, registry: SemanticRegistry = None, gate: TrustGate = None,
                  executor: MetricExecutor = None, detector: ChangeDetector = None):
@@ -99,24 +107,25 @@ class RootCauseAnalyzer:
                 for m in (decision.required_definitions or (metric_id,))
                 if m in self.registry)
             limitations.append(
-                f"{metric_id} is {decision.effective_level}: the decomposition is presented per "
-                f"definition and is never merged into a single explanation "
-                f"(analytics_execution_spec.md 2.6). Conflicting definitions exist.")
+                f"Every competing definition of {_owner_name(spec)} is explained on its own, and "
+                f"they are never merged into a single explanation. Conflicting definitions "
+                f"exist.")
 
         if not target.detected and decision.effective_level not in ("SHOW_BOTH", "BLOCK"):
             limitations.append(
-                f"No period change could be established for {metric_id}: "
+                f"No period-to-period change could be established for {_owner_name(spec)}: "
                 f"{target.unavailable_reason}")
 
         if not drivers:
             limitations.append(
-                f"metric_dependency_graph.md documents no dependency edge from {metric_id}, so "
-                f"no driver decomposition is available for it. {NOT_DETERMINABLE_TEXT}")
+                f"No driver breakdown is available for {_owner_name(spec)}, because the "
+                f"available evidence does not record a driver relationship for this measure. "
+                f"{NOT_DETERMINABLE_TEXT}")
 
         statements = self._ladder(spec, decision, target, drivers)
 
         return RootCauseAnalysis(
-            metric_id=metric_id, metric_name=spec.semantic_name,
+            metric_id=metric_id, metric_name=_owner_name(spec),
             target_change=target, drivers=drivers, per_definition=per_definition,
             statements=statements, trust_level=decision.effective_level,
             limitations=tuple(limitations),
@@ -140,8 +149,9 @@ class RootCauseAnalyzer:
                 status, note = PATTERN_ONLY, CAUSAL_DISCLAIMER
             else:
                 status = EDGE_ONLY
-                note = (f"The dependency edge is documented, but no period comparison is "
-                        f"available for {dep}: {dep_change.unavailable_reason}")
+                note = (f"A relationship to {_owner_name(dep_spec)} is recorded, but no "
+                        f"period comparison is available for it: "
+                        f"{dep_change.unavailable_reason}")
 
             out.append(Driver(
                 metric_id=dep, metric_name=dep_spec.semantic_name, status=status,

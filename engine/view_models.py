@@ -790,21 +790,150 @@ class ViewModelBuilder:
         cannot be established. A button that always fails is worse than an absent one.
         """
         spec = self.registry.get(metric_id)
+        # The sentence is what the owner sees echoed above the answer, so it names the measure
+        # the way the rest of the product does. The identifier travels beside it, as the field
+        # that actually answers the action.
+        name = op.owner_measure_name(spec.display_name or spec.semantic_name)
         eps = [
             {"action": "explain", "label": "How was this calculated?",
-             "question": f"How was {metric_id} calculated?", "metric_id": metric_id},
+             "question": f"How was {name} calculated?", "metric_id": metric_id},
         ]
         if self._has_time_series(spec):
             eps.append({"action": "why", "label": "Why?",
-                        "question": f"Why did {spec.semantic_name} change?",
+                        "question": f"Why did {name} change?",
                         "metric_id": metric_id})
         eps.append({"action": "trust", "label": "Can I trust this?",
-                    "question": "Which numbers should I trust?", "metric_id": metric_id})
+                    "question": f"Can I trust {name}?", "metric_id": metric_id})
         if trust_level in ("SHOW_BOTH", "BLOCK"):
             eps.insert(0, {"action": "conflict", "label": "View all definitions",
-                           "question": "Which definition should we use?",
+                           "question": f"Which definitions apply to {name}?",
                            "metric_id": metric_id})
         return tuple(eps)
+
+    # -- metric-card actions ----------------------------------------------------------------------
+
+    # The four actions a metric card offers. Each is answered FOR THE SELECTED METRIC: the id is
+    # the identity, never the button's sentence. The sentence is carried only so the answer can
+    # be shown beside the question the owner clicked.
+    CARD_ACTIONS = ("explain", "why", "trust", "conflict")
+
+    def metric_action(self, metric_id, action, question=""):
+        """One metric card action, answered for `metric_id` and nothing else.
+
+        Nothing is computed here that the engine does not already produce: the calculation comes
+        from the metric's own executed answer and contract, the change and drivers from the
+        root-cause analyzer for this id, the posture from the gate's own verdict on this id, and
+        the competing definitions from `conflict_view(metric_id)`.
+        """
+        if metric_id not in self.registry:
+            return {"metric_id": metric_id, "action": action, "available": False,
+                    "answer": f"{metric_id!r} is not a semantic metric. {NOT_DETERMINABLE_TEXT}"}
+        if action not in self.CARD_ACTIONS:
+            return {"metric_id": metric_id, "action": action, "available": False,
+                    "answer": f"{action!r} is not a metric card action. "
+                              f"Known: {list(self.CARD_ACTIONS)}."}
+
+        spec = self.registry.get(metric_id)
+        tile = self.tile(metric_id).as_dict()
+        name = op.owner_measure_name(spec.display_name or spec.semantic_name)
+        builder = {"explain": self._action_explain, "why": self._action_why,
+                   "trust": self._action_trust, "conflict": self._action_definitions}[action]
+        lines, limitations = builder(metric_id, spec, tile, name, question)
+        # One sentence per thing said: the posture line, the caveat and the validation sentence
+        # legitimately overlap for some postures, and saying the same sentence twice reads as a
+        # rendering fault rather than as emphasis.
+        seen, kept = set(), []
+        for line in lines:
+            text = (line or "").strip()
+            if text and text not in seen:
+                seen.add(text)
+                kept.append(text)
+        lines = kept
+        return {
+            "metric_id": metric_id,
+            "action": action,
+            "available": True,
+            "question": question,
+            "metric_name": name,
+            "answer": op.sanitize_owner_text("\n".join(ln for ln in lines if ln).strip()),
+            "trust_level": tile["trust"]["trust_level"],
+            "owner_status": tile["trust"]["owner_status"],
+            "headline_permitted": tile["headline_permitted"],
+            "metric_ids": (metric_id,),
+            "limitations": tuple(op.sanitize_owner_text(l) for l in limitations if l),
+        }
+
+    def _action_explain(self, metric_id, spec, tile, name, question):
+        """How this measure is calculated -- from its own contract and its own executed answer."""
+        contract = self.metric_contract(metric_id)
+        safe = set(contract.get("owner_safe_fields") or ())
+        answer = self.executor.execute(metric_id)
+        first = answer.results[0] if answer.results else None
+        lines = [f"How {name} is calculated"]
+        # The registry's own prose, but only the part its contract marks owner-safe -- the same
+        # rule the metric page applies to the same fields.
+        for field in ("definition", "supported_period", "supported_dimensions"):
+            if field in safe and contract.get(field):
+                lines.append(contract[field])
+        provenance = (getattr(first, "calculation_provenance", "") or "").strip()
+        if provenance and provenance not in lines:
+            lines.append(provenance)
+        lines.append(tp.validation_sentence(tile.get("validation_status")))
+        if tile.get("owner_caveat"):
+            lines.append(tile["owner_caveat"])
+        return lines, ()
+
+    def _action_why(self, metric_id, spec, tile, name, question):
+        """The change and its recorded drivers, for this measure. Substitutes nothing."""
+        analysis = self.analyzer.analyze(metric_id)
+        text = op.present_driver_answer(question or f"Why did {name} change?", None, (), analysis)
+        return [text], tuple(analysis.limitations or ())
+
+    def _action_trust(self, metric_id, spec, tile, name, question):
+        """This measure's own posture, from the gate's verdict on this id."""
+        contract = self.metric_contract(metric_id)
+        trust = tile["trust"]
+        lines = [f"{name}: {trust['owner_status']}", trust.get("owner_explanation", "")]
+        if tile.get("owner_caveat"):
+            lines.append(tile["owner_caveat"])
+        validation = tp.validation_sentence(tile.get("validation_status"))
+        if not any(validation in (line or "") for line in lines):
+            lines.append(validation)
+        if contract.get("usable_for_decisions_note"):
+            lines.append(contract["usable_for_decisions_note"])
+        if contract.get("comparable_over_time_note"):
+            lines.append(contract["comparable_over_time_note"])
+        if trust["trust_level"] in ("SHOW_BOTH", "BLOCK"):
+            lines.append(contract.get("conflict_behaviour", ""))
+            lines.append(contract.get("owner_action", ""))
+        findings = len(tile.get("dq_ids") or ())
+        if findings:
+            lines.append(f"{findings} recorded data-quality finding"
+                         f"{' affects' if findings == 1 else 's affect'} this measure. "
+                         f"{'It is' if findings == 1 else 'They are'} listed on its own page and "
+                         f"in the data quality review.")
+        if tile.get("unavailable_reason"):
+            lines.append(tile["unavailable_reason"])
+        return lines, ()
+
+    def _action_definitions(self, metric_id, spec, tile, name, question):
+        """Every competing definition of THIS measure, never merged and never chosen between."""
+        contract = self.metric_contract(metric_id)
+        if tile["trust"]["trust_level"] not in ("SHOW_BOTH", "BLOCK"):
+            return ([f"{name} has one agreed definition.",
+                     contract.get("conflict_behaviour", "")], ())
+        view = self.conflict_view(metric_id)
+        lines = [f"The definitions the records hold for {name}:"]
+        for definition in view.get("definitions", ()):
+            label = op.owner_definition_label(definition.get("label", ""))
+            value = definition.get("display_value", "")
+            lines.append(f"\u2022 {label}" + (f": {value}" if value else ""))
+        for key in ("statement", "owner_decision", "decision_required"):
+            if isinstance(view.get(key), str) and view[key]:
+                lines.append(view[key])
+                break
+        lines.append(contract.get("owner_action", ""))
+        return lines, ()
 
     # -- owner home -------------------------------------------------------------------------------
 

@@ -226,6 +226,7 @@ export async function renderMetric(root, metricId, ctx) {
     const b = el('button', 'entry-point', ep.label);
     b.setAttribute('data-action', ep.action);
     b.setAttribute('data-question', ep.question);
+    if (ep.metric_id) b.setAttribute('data-metric-id', ep.metric_id);
     asks.appendChild(b);
   });
   next.appendChild(asks);

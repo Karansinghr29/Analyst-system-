@@ -449,6 +449,19 @@ class AnalyticsService:
                     "reason": f"Not visible to role {role_id!r}."}
         return _plain(self.vb.metric_detail(metric_id))
 
+    def metric_action(self, metric_id, action, question="", role_id=ROLE_OWNER):
+        """A metric card action, answered for the metric the card was built for.
+
+        The id is the identity. Free-text questions still go to `ask()` and still resolve by
+        name; this path exists so a card never has to describe its measure in a sentence and
+        hope the resolver picks the same one.
+        """
+        if not self.authorizer.may_see(role_id, metric_id):
+            return {"metric_id": metric_id, "action": action, "available": False,
+                    "answer": f"Not visible to role {role_id!r}.",
+                    "reason": f"Not visible to role {role_id!r}."}
+        return _plain(self.vb.metric_action(metric_id, action, question))
+
     def conflict_view(self, metric_id, role_id=ROLE_OWNER):
         if not self.authorizer.may_see(role_id, metric_id):
             return {"metric_id": metric_id, "available": False,
@@ -896,6 +909,12 @@ def create_app(service: AnalyticsService = None, authenticator=None, rate_limite
     def metric_detail(metric_id: str, request: Request):
         ident = _identity(request)
         return svc.metric_detail(metric_id, ident.role_id)
+
+    @app.get("/api/metrics/{metric_id}/action")
+    def metric_action(metric_id: str, request: Request, action: str = "explain",
+                      question: str = ""):
+        ident = _identity(request)
+        return svc.metric_action(metric_id, action, question, ident.role_id)
 
     @app.get("/api/metrics/{metric_id}/conflict")
     def conflict(metric_id: str, request: Request):

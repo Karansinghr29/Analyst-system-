@@ -651,12 +651,13 @@ def present_driver_answer(question, plan, answers, root_cause, reasoning=None):
     from engine.change_detection import DECREASE, INCREASE, NO_CHANGE, UNAVAILABLE
 
     q = (question or "").lower()
-    claims_down = any(w in q for w in (
-        "down", "fall", "fell", "drop", "dropped", "decline", "decreased", "lower", "worse",
-    ))
-    claims_up = any(w in q for w in (
-        "up", "rise", "rose", "increase", "increased", "higher", "better", "grow", "grew",
-    ))
+    # Matched as whole words: "up" sits inside "occupancy", and a question that only asked what
+    # changed was answered as though it had claimed an increase.
+    claims_down = bool(re.search(
+        r"\b(?:down|fall|fell|drop|dropped|decline|declined|decrease|decreased"
+        r"|lower|worse)\b", q))
+    claims_up = bool(re.search(
+        r"\b(?:up|rise|rose|increase|increased|higher|better|grow|grew)\b", q))
 
     lines = []
     target = getattr(root_cause, "target_change", None) if root_cause else None

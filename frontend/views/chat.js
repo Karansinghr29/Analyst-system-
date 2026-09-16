@@ -146,7 +146,28 @@ export function renderChat(root, ctx) {
     thread.scrollTop = thread.scrollHeight;
   }
 
+  /* A metric card action: answered for the metric id the card carries, shown in the same panel
+   * as any other answer. Nothing about the free-text path changes. */
+  async function askMetric(metricId, action, question) {
+    if (welcome.parentNode) welcome.remove();
+    thread.appendChild(userBubble(question));
+    const pending = loading('an answer');
+    thread.appendChild(pending);
+    thread.scrollTop = thread.scrollHeight;
+
+    let result;
+    try {
+      result = await api.metricAction(metricId, action, question);
+    } catch (err) {
+      pending.replaceWith(errorState(err));
+      return;
+    }
+    pending.replaceWith(answerPanel(result, ctx));
+    thread.scrollTop = thread.scrollHeight;
+  }
+
   ctx.ask = ask;
+  ctx.askMetric = askMetric;
   root.replaceChildren(page);
 }
 

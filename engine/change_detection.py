@@ -48,6 +48,16 @@ MATERIALITY_UNDEFINED = (
 # Each is already validated at monthly grain (metric_reconstruction.md REV.02 / EXP / COLL).
 COMPARABLE_MONTHLY_METRICS = ("M.REV.002", "M.PNL.001", "M.COL.002")
 
+
+def _owner_measure_name(registry, metric_id):
+    """The measure's owner-facing name, so the sentence survives identifier stripping."""
+    from engine import owner_presentation as op
+
+    spec = registry.get(metric_id) if registry and metric_id in registry else None
+    return op.owner_measure_name(getattr(spec, "display_name", "")
+                                 or getattr(spec, "semantic_name", "") or "This measure")
+
+
 def comparable_metrics_for(dimension, registry=None):
     """Every registered metric that can be compared across months AT a given grain.
 
@@ -243,8 +253,9 @@ class ChangeDetector:
             # forbids. The conflict is the finding.
             return Change(classification=UNAVAILABLE,
                           unavailable_reason=(
-                              f"{metric_id} is {decision.effective_level}: competing definitions "
-                              f"exist, and comparing periods would require choosing one. "
+                              f"{_owner_measure_name(self.registry, metric_id)} is recorded "
+                              f"under competing definitions, and comparing periods would "
+                              f"require choosing one of them. "
                               f"Conflicting definitions exist."),
                           **base)
 
