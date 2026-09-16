@@ -131,13 +131,15 @@ Rules:
 including its currency symbol and sign.
   * Do not calculate, round, convert or otherwise transform any number. Do not introduce any \
 numeric value that is not already written in the JSON.
-  * "components" are recorded parts of the movement. They are NOT causes or drivers. Describe \
-them as parts of the recorded movement.
-  * Never write "because", "driven by", "caused by", "due to", "as a result of", "led to" or \
-any equivalent causal wording unless that exact causal relationship is stated in the JSON.
+  * "components" reconcile the movement: they show how the change is distributed. They are NOT \
+causal evidence and NOT drivers. Use "components.meaning" for how to describe them.
+  * Never use these words or phrases, or any equivalent: "because", "because of", "driven by", \
+"caused by", "led to", "resulted from", "due to", "as a result of", "explained by", \
+"accounted for by". The records establish no cause for this movement.
   * Do not judge materiality. Never call the movement significant, large, small, healthy, \
 worrying or similar. Keep the JSON's materiality statement's meaning.
-  * If "must_include" lists a sentence, reproduce it verbatim.
+  * If "must_include" lists a sentence, end your answer with that exact sentence, character for \
+character, including the final full stop.
   * Keep the meaning of every limitation.
   * Respect the trust level: SAFE states the figures; DISCLOSE states the figures AND the \
 caveat; SHOW_BOTH and BLOCK never give a single figure; NOT_DETERMINABLE gives no figure and \
@@ -145,9 +147,22 @@ explains what is missing.
   * Never mention internal IDs, file names, table or column names, database objects, code, \
 formulas or how the system works.
   * Do not make recommendations. Do not mention any other measure than the ones named in the JSON.
-  * Refer to the measure by the exact name in metric.name.
+  * Refer to the measure by the exact name in metric.name, as the subject of the first \
+sentence. Do not write "the recorded movement of" or put "The" before the measure name.
 
-Output: 2 to 5 short plain-text sentences. No headings, no markdown, no lists, no JSON, no \
+Write the answer in this order, using only the parts that are present in the JSON:
+  1. What moved: "<metric.name> <movement.direction> from <movement.previous.value> in \
+<movement.previous.period> to <movement.current.value> in <movement.current.period>, a change of \
+<movement.change> (<movement.change_pct>)."
+  2. The components, if components.available is true, in ONE sentence that starts with \
+components.lead and names every item whose "required" is true, each as "<label> <direction> by \
+<amount>", joined naturally (for example with "while" and "and"). Then components.meaning.
+  3. The materiality statement (materiality.statement).
+  4. The causal-evidence statement (causal_evidence.statement) ONLY if components.available is \
+false. When components are shown, components.meaning already says this; do not repeat it.
+  5. The must_include sentence, last, exactly as written.
+
+Output: 3 to 6 short plain-text sentences. No headings, no markdown, no lists, no JSON, no \
 preamble.
 """
 
@@ -165,7 +180,13 @@ def build_metric_why_prompt(facts):
         "",
         "FACTS (authoritative JSON):",
         json.dumps(shown, ensure_ascii=False, indent=2),
-    ])
+        "",
+        "Reminder: keep the periods and values, the change and its percentage. Name every "
+        "component whose required is true, with its direction and amount. The components "
+        "reconcile the movement; they are not causes. Do not say what drove, caused or explains "
+        "the movement, and do not repeat the same point twice.",
+    ] + ([f"End with exactly: {' '.join(shown.get('must_include') or [])}"]
+         if shown.get("must_include") else []))
 
 
 def build_verbalization_prompt(skeleton_text, trust_level, question):

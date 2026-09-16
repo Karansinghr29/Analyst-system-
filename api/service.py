@@ -55,9 +55,10 @@ API_VERSION = "1.0.0"
 # every other measure keeps its deterministic narrative only.
 NARRATIVE_METRICS = ("M.REV.002",)
 
-# A narrative is a button click, not a chat turn. The model gets this long, then the owner gets
-# the deterministic answer instead of a wait.
-NARRATIVE_TIMEOUT_SECONDS = 25
+# The narrative is requested in the background, after the deterministic answer is already on the
+# page, so the owner is never waiting on it. The cap only bounds how long a background request may
+# hold a worker before the deterministic answer is confirmed as the one that stands.
+NARRATIVE_TIMEOUT_SECONDS = 90
 NARRATIVE_MAX_TOKENS = 400
 
 # What the owner is told when a narrative was attempted and not used. The reason -- a guard
@@ -484,8 +485,9 @@ class AnalyticsService:
                     "narrative_source": "deterministic", "narrative_note": "",
                     "guard_violations": []}
 
-        # The deterministic answer is always produced first and always complete. The facts ride
-        # along internally and never leave this method.
+        # The deterministic answer, returned at once. The model is never called on this path: a
+        # narrative, where one is eligible, is fetched separately by `metric_narrative` after this
+        # answer is already on the owner's screen. The facts never leave the service.
         payload = _plain(self.vb.metric_action(metric_id, action, question))
         facts = payload.pop("narrative_facts", None)
         payload["narrative_source"] = "deterministic"
@@ -494,24 +496,49 @@ class AnalyticsService:
         # narrative that was attempted and not used is `narrative_note`, and only that.
         payload["narrative_note"] = ""
         payload["guard_violations"] = []
+        payload["narrative_pending"] = bool(
+            self._narrative_eligible(metric_id, action, facts, payload)
+            and self._narrative_active())
+        return payload
 
-        if (action != "why" or metric_id not in NARRATIVE_METRICS or not facts
-                or not payload.get("available")):
-            return payload
-        if not self._narrative_active():
-            return payload        # disabled or quarantined: the provider is never called
+    @staticmethod
+    def _narrative_eligible(metric_id, action, facts, payload):
+        return bool(action == "why" and metric_id in NARRATIVE_METRICS and facts
+                    and payload.get("available"))
+
+    def metric_narrative(self, metric_id, action, question="", role_id=ROLE_OWNER):
+        """The background half of a metric-card answer: a guarded Local LLM narrative, or nothing.
+
+        Returns `narrative_source` "local_llm" with the narrative as `answer` when the model's
+        wording passed the guard. Otherwise `narrative_source` "deterministic" and no answer: the
+        deterministic answer already on the page stands, unchanged. `narrative_note` carries the
+        owner-safe sentence only when a narrative was attempted and not used; the reason is logged.
+        """
+        result = {"metric_id": metric_id, "action": action, "narrative_source": "deterministic",
+                  "narrative_note": "", "guard_violations": []}
+        if not self.authorizer.may_see(role_id, metric_id):
+            return result
+        if action != "why" or metric_id not in NARRATIVE_METRICS or not self._narrative_active():
+            return result         # not eligible, or disabled: the provider is never called
+
+        # The same deterministic facts and answer the first response was built from. The engine is
+        # deterministic over an immutable export, so they are the same facts, not new ones.
+        payload = _plain(self.vb.metric_action(metric_id, action, question))
+        facts = payload.pop("narrative_facts", None)
+        if not self._narrative_eligible(metric_id, action, facts, payload):
+            return result
 
         narrative, violations = self._metric_narrative(facts, payload.get("answer", ""))
         if narrative is None:
             _LOG.warning("metric narrative fallback for %s/%s: %s", metric_id, action,
                          " | ".join(str(v) for v in violations))
             self.obs.note_llm_fallback()
-            payload["narrative_note"] = NARRATIVE_FALLBACK_NOTE
-            return payload
+            result["narrative_note"] = NARRATIVE_FALLBACK_NOTE
+            return result
 
-        payload["answer"] = narrative
-        payload["narrative_source"] = "local_llm"
-        return payload
+        result["narrative_source"] = "local_llm"
+        result["answer"] = narrative
+        return result
 
     def _narrative_active(self):
         """Only an explicitly enabled HTTP adapter narrates. Offline mode is not a narrator."""
@@ -1007,6 +1034,14 @@ def create_app(service: AnalyticsService = None, authenticator=None, rate_limite
                       question: str = ""):
         ident = _identity(request)
         return svc.metric_action(metric_id, action, question, ident.role_id)
+
+    @app.get("/api/metrics/{metric_id}/narrative")
+    def metric_narrative(metric_id: str, request: Request, action: str = "why",
+                         question: str = ""):
+        # A plain (non-async) route: the framework runs it on a worker thread, so a slow local
+        # model occupies that worker and never the event loop serving the rest of the dashboard.
+        ident = _identity(request)
+        return svc.metric_narrative(metric_id, action, question, ident.role_id)
 
     @app.get("/api/metrics/{metric_id}/conflict")
     def conflict(metric_id: str, request: Request):

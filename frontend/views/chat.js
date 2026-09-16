@@ -162,13 +162,54 @@ export function renderChat(root, ctx) {
       pending.replaceWith(errorState(err));
       return;
     }
-    pending.replaceWith(answerPanel(result, ctx));
+    const panel = answerPanel(result, ctx);
+    pending.replaceWith(panel);
     thread.scrollTop = thread.scrollHeight;
+    // The verified answer is already shown. Where a narrative is eligible it is fetched without
+    // holding anything up; nothing is awaited here.
+    if (result.narrative_pending) narrateInBackground(panel, metricId, action, question);
   }
 
   ctx.ask = ask;
   ctx.askMetric = askMetric;
   root.replaceChildren(page);
+}
+
+/*
+ * The Local LLM narrative for a metric card, fetched after the verified answer is on screen.
+ *
+ * Only the answer's text can change, and only to a narrative the server's guard accepted. Anything
+ * else -- a timeout, an error, a rejected wording, an unreachable service -- leaves the verified
+ * answer exactly as it is, and says so in one owner-safe sentence.
+ */
+const NARRATIVE_NOTE =
+  'The wording layer was not used, so the verified deterministic explanation is shown instead.';
+
+async function narrateInBackground(panel, metricId, action, question) {
+  const body = panel.querySelector('[data-role="answer-text"]');
+  if (!body) return;
+  const status = el('p', 'answer-fallback', 'Generating analyst explanation\u2026');
+  status.setAttribute('data-role', 'narrative-status');
+  body.parentNode.insertBefore(status, body.nextSibling);
+
+  let narrative = null;
+  try {
+    narrative = await api.metricNarrative(metricId, action, question);
+  } catch (_) {
+    narrative = null;
+  }
+  status.remove();
+
+  if (narrative && narrative.narrative_source === 'local_llm' && narrative.answer) {
+    body.textContent = narrative.answer;
+    panel.setAttribute('data-narrative-source', 'local_llm');
+    return;
+  }
+  panel.setAttribute('data-narrative-source', 'deterministic');
+  const g = el('section', 'answer-guard');
+  g.setAttribute('data-role', 'narrative-note');
+  g.appendChild(el('p', null, NARRATIVE_NOTE));
+  body.parentNode.insertBefore(g, body.nextSibling);
 }
 
 /*

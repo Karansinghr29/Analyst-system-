@@ -916,6 +916,14 @@ class ViewModelBuilder:
     MATERIALITY_OPEN = ("Whether this movement is significant is not set by the records; it is "
                         "an owner judgement.")
 
+    # What a reconciliation split is, and what the records do not say. Worded without any of the
+    # causal phrases the narrative guard refuses, so carrying them in the facts cannot license
+    # those phrases in a narrative.
+    COMPONENTS_LEAD = "The change is reconciled across {basis}:"
+    COMPONENTS_MEANING = ("These components reconcile the movement and do not show why it "
+                          "happened.")
+    CAUSE_NOT_ESTABLISHED = "The available records do not show why this movement happened."
+
     def _why_facts(self, question, name, tile, analysis):
         """The `metric_why.v1` facts for one analysed measure. Formats; computes nothing."""
         from engine.change_detection import DECREASE, INCREASE, NO_CHANGE
@@ -965,7 +973,20 @@ class ViewModelBuilder:
                 # cent, three ways -- the decomposition module refuses otherwise.
                 components = {
                     "available": True, "basis": split.basis, "reconciles_to_change": True,
-                    "items": [{"label": c.label, "change": signed(c.change)}
+                    "lead": self.COMPONENTS_LEAD.format(
+                        basis=(split.basis[:-len("category")] + "categories"
+                               if split.basis.endswith("category")
+                               else split.basis)),
+                    "meaning": self.COMPONENTS_MEANING,
+                    # Each part's direction and unsigned amount are given ready to say, so the
+                    # wording layer never has to read a sign or reformat a figure. A part that
+                    # did not move is still listed; only parts that moved must be named.
+                    "items": [{"label": c.label, "change": signed(c.change),
+                               "direction": ("increased" if c.change > 0 else
+                                             "decreased" if c.change < 0 else
+                                             "did not change"),
+                               "amount": money(abs(c.change)),
+                               "required": bool(c.change)}
                               for c in split.components],
                 }
 
@@ -988,6 +1009,10 @@ class ViewModelBuilder:
                        "caveat": tile.get("owner_caveat") or ""},
             "movement": movement,
             "materiality": materiality,
+            # No driver status in this engine establishes a cause: a documented edge that moved in
+            # the same window is a pattern, and the root-cause module never emits a CAUSE status.
+            "causal_evidence": {"established": False,
+                                "statement": self.CAUSE_NOT_ESTABLISHED},
             "components": components,
             "drivers": drivers,
             "limitations": [],

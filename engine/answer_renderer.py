@@ -274,7 +274,8 @@ NARRATIVE_MAX_CHARS = 1200
 _NARRATIVE_CAUSAL = (r"\bbecause\b", r"\bdriven by\b", r"\bdrove\b", r"\bcaused\b",
                      r"\bcausing\b", r"\bdue to\b", r"\bas a result of\b", r"\bled to\b",
                      r"\bleads to\b", r"\bresulted in\b", r"\bresponsible for\b",
-                     r"\bthanks to\b", r"\bowing to\b", r"\bthe reason\b")
+                     r"\bthanks to\b", r"\bowing to\b", r"\bthe reason\b",
+                     r"\bresulted from\b", r"\bexplained by\b", r"\baccounted for by\b")
 
 
 # A judgement of size or importance. The facts carry materiality only as an open question, so a
@@ -360,6 +361,50 @@ def guard_metric_narrative(text, facts, draft, other_measure_names=()):
 
     if name and name.lower() not in low:
         violations.append("narrative does not name the measure it explains")
+
+    # The verified context the deterministic answer carries. A narrative that replaces that answer
+    # may re-word it, never thin it: where the facts hold the periods, the values, the change and
+    # its percentage, each must still be there. Figures are matched on their digits, so a sign or
+    # currency symbol written differently is not read as a missing figure.
+    movement = facts.get("movement") or {}
+    if movement.get("available"):
+        def digits(value):
+            return re.sub(r"[^0-9.,]", "", value or "").strip(".,")
+        required = [
+            ("previous period", (movement.get("previous") or {}).get("period")),
+            ("previous value", digits((movement.get("previous") or {}).get("value"))),
+            ("current period", (movement.get("current") or {}).get("period")),
+            ("current value", digits((movement.get("current") or {}).get("value"))),
+            ("change", digits(movement.get("change"))),
+            ("percentage change", movement.get("change_pct")),
+        ]
+        for what, needle in required:
+            if needle and needle.lower() not in low:
+                violations.append(f"narrative drops the verified {what}")
+
+    # Where the facts carry a reconciliation, every part that moved is named with its amount. A
+    # part that did not move is not required, and a part the facts do not list cannot be required.
+    components = facts.get("components") or {}
+    if components.get("available"):
+        for item in components.get("items") or ():
+            if not item.get("required"):
+                continue
+            label = (item.get("label") or "").strip()
+            amount = re.sub(r"[^0-9.,]", "", item.get("amount") or "").strip(".,")
+            if label and label.lower() not in low:
+                violations.append(f"narrative does not name the component {label!r}")
+            elif amount and amount not in narrative:
+                violations.append(f"narrative drops the amount of the component {label!r}")
+
+    # The two statuses the facts decide. Neither may be dropped when the narrative replaces the
+    # verified answer: that the records leave significance to the owner, and that they do not show
+    # why the movement happened.
+    if movement.get("available"):
+        if not any(marker in low for marker in ("not set by the records", "owner judgement",
+                                                "owner judgment")):
+            violations.append("narrative drops the materiality status")
+        if "not show why" not in low:
+            violations.append("narrative drops the causal-evidence status")
 
     # Other measures: a name the facts do not carry is a measure the narrative wandered into.
     # The facts' own names are removed first, so "Revenue" inside "Revenue by month" is not read

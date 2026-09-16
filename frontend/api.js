@@ -140,6 +140,11 @@ export const api = {
                       get('/api/metrics/' + encodeURIComponent(metricId) + '/action?action='
                           + encodeURIComponent(action) + '&question='
                           + encodeURIComponent(question || '')),
+  // The background narrative for a card answer that is already on screen.
+  metricNarrative: (metricId, action, question) =>
+                      get('/api/metrics/' + encodeURIComponent(metricId) + '/narrative?action='
+                          + encodeURIComponent(action) + '&question='
+                          + encodeURIComponent(question || '')),
 };
 
 /* Whether this session already carries an identity. Reports only presence, never the token. */
