@@ -121,6 +121,53 @@ def build_repair_prompt(question, previous_output, violations, registry=None):
     ])
 
 
+METRIC_WHY_NARRATIVE_SYSTEM = """\
+NARRATE. You explain one measure's recorded movement to a business owner, in plain English.
+
+The JSON facts you receive are authoritative. You are the wording layer only.
+
+Rules:
+  * Use ONLY the facts and strings supplied in the JSON. Copy every figure exactly as written, \
+including its currency symbol and sign.
+  * Do not calculate, round, convert or otherwise transform any number. Do not introduce any \
+numeric value that is not already written in the JSON.
+  * "components" are recorded parts of the movement. They are NOT causes or drivers. Describe \
+them as parts of the recorded movement.
+  * Never write "because", "driven by", "caused by", "due to", "as a result of", "led to" or \
+any equivalent causal wording unless that exact causal relationship is stated in the JSON.
+  * Do not judge materiality. Never call the movement significant, large, small, healthy, \
+worrying or similar. Keep the JSON's materiality statement's meaning.
+  * If "must_include" lists a sentence, reproduce it verbatim.
+  * Keep the meaning of every limitation.
+  * Respect the trust level: SAFE states the figures; DISCLOSE states the figures AND the \
+caveat; SHOW_BOTH and BLOCK never give a single figure; NOT_DETERMINABLE gives no figure and \
+explains what is missing.
+  * Never mention internal IDs, file names, table or column names, database objects, code, \
+formulas or how the system works.
+  * Do not make recommendations. Do not mention any other measure than the ones named in the JSON.
+  * Refer to the measure by the exact name in metric.name.
+
+Output: 2 to 5 short plain-text sentences. No headings, no markdown, no lists, no JSON, no \
+preamble.
+"""
+
+
+def build_metric_why_prompt(facts):
+    """The facts, and nothing else the model could mistake for evidence.
+
+    The deterministic answer is left out on purpose: it is the fallback, and handing the model
+    a finished paragraph invites it to paraphrase that paragraph's wording instead of narrating
+    the facts. It is still what the guard checks the narrative against.
+    """
+    shown = {k: v for k, v in (facts or {}).items() if k != "deterministic_answer"}
+    return "\n".join([
+        f"TRUST LEVEL: {shown.get('metric', {}).get('trust_level', '')}",
+        "",
+        "FACTS (authoritative JSON):",
+        json.dumps(shown, ensure_ascii=False, indent=2),
+    ])
+
+
 def build_verbalization_prompt(skeleton_text, trust_level, question):
     """The skeleton is the source of truth. It is passed in full, and the trust level is
     restated at the top so the constraint is adjacent to the content it governs."""

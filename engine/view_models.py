@@ -838,7 +838,9 @@ class ViewModelBuilder:
         name = op.owner_measure_name(spec.display_name or spec.semantic_name)
         builder = {"explain": self._action_explain, "why": self._action_why,
                    "trust": self._action_trust, "conflict": self._action_definitions}[action]
-        lines, limitations = builder(metric_id, spec, tile, name, question)
+        built = builder(metric_id, spec, tile, name, question)
+        lines, limitations = built[0], built[1]
+        facts = built[2] if len(built) > 2 else None
         # One sentence per thing said: the posture line, the caveat and the validation sentence
         # legitimately overlap for some postures, and saying the same sentence twice reads as a
         # rendering fault rather than as emphasis.
@@ -849,19 +851,33 @@ class ViewModelBuilder:
                 seen.add(text)
                 kept.append(text)
         lines = kept
-        return {
+        answer = op.sanitize_owner_text("\n".join(ln for ln in lines if ln).strip())
+        owner_limitations = tuple(op.sanitize_owner_text(l) for l in limitations if l)
+        payload = {
             "metric_id": metric_id,
             "action": action,
             "available": True,
             "question": question,
             "metric_name": name,
-            "answer": op.sanitize_owner_text("\n".join(ln for ln in lines if ln).strip()),
+            "answer": answer,
             "trust_level": tile["trust"]["trust_level"],
             "owner_status": tile["trust"]["owner_status"],
             "headline_permitted": tile["headline_permitted"],
             "metric_ids": (metric_id,),
-            "limitations": tuple(op.sanitize_owner_text(l) for l in limitations if l),
+            "limitations": owner_limitations,
         }
+        if facts is not None:
+            # Completed with the two things only this method knows: the finished deterministic
+            # answer, and whether it carries the refusal sentence a wording must keep. The facts
+            # are for the service's narrative layer and are removed before any owner sees them.
+            facts["limitations"] = list(owner_limitations)
+            facts["deterministic_answer"] = answer
+            facts["must_include"] = (
+                [NOT_DETERMINABLE_TEXT]
+                if NOT_DETERMINABLE_TEXT in answer
+                or any(NOT_DETERMINABLE_TEXT in l for l in owner_limitations) else [])
+            payload["narrative_facts"] = facts
+        return payload
 
     def _action_explain(self, metric_id, spec, tile, name, question):
         """How this measure is calculated -- from its own contract and its own executed answer."""
@@ -884,10 +900,100 @@ class ViewModelBuilder:
         return lines, ()
 
     def _action_why(self, metric_id, spec, tile, name, question):
-        """The change and its recorded drivers, for this measure. Substitutes nothing."""
+        """The change and its recorded drivers, for this measure. Substitutes nothing.
+
+        Also returns the same analysis as structured facts, for a wording layer that may only
+        re-say it. Every value in the facts is one the engine already produced, formatted once
+        here in the owner's form so nothing downstream has to compute or convert a figure.
+        """
         analysis = self.analyzer.analyze(metric_id)
-        text = op.present_driver_answer(question or f"Why did {name} change?", None, (), analysis)
-        return [text], tuple(analysis.limitations or ())
+        asked = question or f"Why did {name} change?"
+        text = op.present_driver_answer(asked, None, (), analysis)
+        return [text], tuple(analysis.limitations or ()), self._why_facts(
+            asked, name, tile, analysis)
+
+    # The owner's sentence for a movement whose significance no threshold in the records decides.
+    MATERIALITY_OPEN = ("Whether this movement is significant is not set by the records; it is "
+                        "an owner judgement.")
+
+    def _why_facts(self, question, name, tile, analysis):
+        """The `metric_why.v1` facts for one analysed measure. Formats; computes nothing."""
+        from engine.change_detection import DECREASE, INCREASE, NO_CHANGE
+
+        def money(value):
+            return format_value(value, "INR") if isinstance(value, (int, float)) else ""
+
+        def signed(value):
+            if not isinstance(value, (int, float)):
+                return ""
+            sign = "+" if value > 0 else "-" if value < 0 else ""
+            return sign + format_value(abs(value), "INR")
+
+        target = analysis.target_change
+        detected = bool(target is not None and getattr(target, "detected", False))
+        movement = {
+            "available": detected,
+            "direction": {INCREASE: "increased", DECREASE: "decreased",
+                          NO_CHANGE: "did not change"}.get(
+                getattr(target, "classification", ""), "") if detected else "",
+            "previous": {"period": op.owner_period_label(getattr(target, "previous_period", "")),
+                         "value": money(getattr(target, "previous_value", None))},
+            "current": {"period": op.owner_period_label(getattr(target, "current_period", "")),
+                        "value": money(getattr(target, "current_value", None))},
+            "change": signed(getattr(target, "absolute_change", None)) if detected else "",
+            "change_pct": (f"{abs(target.percentage_change)}%"
+                           if detected and target.percentage_change is not None else ""),
+            "partial_period": bool(getattr(target, "current_is_partial", False)),
+            "unavailable_reason": ("" if detected else op.sanitize_owner_text(
+                getattr(target, "unavailable_reason", "") or "")),
+        }
+
+        materiality_text = getattr(target, "materiality", "") or ""
+        undetermined = materiality_text.startswith("Materiality is not determinable")
+        materiality = {
+            "determinable": bool(detected and materiality_text and not undetermined),
+            "statement": (self.MATERIALITY_OPEN if undetermined or not detected
+                          else op.sanitize_owner_text(materiality_text)),
+        }
+
+        components = {"available": False, "basis": "", "reconciles_to_change": False,
+                      "items": []}
+        if detected:
+            split = variance.decompose(target)
+            if split.available:
+                # `available` is only ever true when the parts reconciled to the movement to the
+                # cent, three ways -- the decomposition module refuses otherwise.
+                components = {
+                    "available": True, "basis": split.basis, "reconciles_to_change": True,
+                    "items": [{"label": c.label, "change": signed(c.change)}
+                              for c in split.components],
+                }
+
+        drivers = []
+        for driver in analysis.drivers or ():
+            status = getattr(driver, "status", "")
+            drivers.append({
+                "name": op.owner_measure_name(getattr(driver, "metric_name", "")),
+                "status": ("moved in the same period; a recorded relationship, not a cause"
+                           if status == "PATTERN_ONLY" else
+                           "relationship recorded, no comparable change"),
+            })
+
+        trust = tile["trust"]
+        return {
+            "contract": "metric_why.v1",
+            "question": question,
+            "metric": {"name": name, "trust_level": trust["trust_level"],
+                       "owner_status": trust["owner_status"],
+                       "caveat": tile.get("owner_caveat") or ""},
+            "movement": movement,
+            "materiality": materiality,
+            "components": components,
+            "drivers": drivers,
+            "limitations": [],
+            "must_include": [],
+            "deterministic_answer": "",
+        }
 
     def _action_trust(self, metric_id, spec, tile, name, question):
         """This measure's own posture, from the gate's verdict on this id."""

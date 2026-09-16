@@ -17,6 +17,7 @@ Two structural properties, both checked by the Phase 9 validator:
 Trust is re-read from the gate on every request. Values may be cached; trust may not -- a stale
 trust posture is a correctness failure, not a stale number.
 """
+import logging
 import os
 import re
 import uuid
@@ -39,13 +40,33 @@ from engine.result import NOT_DETERMINABLE_TEXT
 from api.authorization import Authorizer, Session, AuthorizationError, ROLE_OWNER
 from api.conversation_store import ConversationStore, DEFAULT_DB
 from api.decision_store import decision_store, STATUSES, STATUS_LABELS
-from api.provider_config import ProviderConfig, build_provider, available_adapters, config_from_env
+from api.provider_config import (ProviderConfig, build_provider, available_adapters,
+                                 config_from_env, MODE_HTTP)
+from engine import answer_renderer, prompt_contracts
+from engine.llm_provider import LLMUnavailable
 from api import data_source as ds
 from api import auth as auth_mod
 from api import security as sec
 from api.observability import Observability, OBS
 
 API_VERSION = "1.0.0"
+
+# The measures whose metric-card "Why?" is worded by the local model. One, in this first slice;
+# every other measure keeps its deterministic narrative only.
+NARRATIVE_METRICS = ("M.REV.002",)
+
+# A narrative is a button click, not a chat turn. The model gets this long, then the owner gets
+# the deterministic answer instead of a wait.
+NARRATIVE_TIMEOUT_SECONDS = 25
+NARRATIVE_MAX_TOKENS = 400
+
+# What the owner is told when a narrative was attempted and not used. The reason -- a guard
+# finding, a provider error, a timeout -- is an implementation detail: it goes to the server log
+# and the fallback counter, never into the response.
+NARRATIVE_FALLBACK_NOTE = ("The wording layer was not used, so the verified deterministic "
+                           "explanation is shown instead.")
+
+_LOG = logging.getLogger(__name__)
 
 
 # A breakdown key that is a month, as opposed to one that is a bed or an expense category.
@@ -459,8 +480,79 @@ class AnalyticsService:
         if not self.authorizer.may_see(role_id, metric_id):
             return {"metric_id": metric_id, "action": action, "available": False,
                     "answer": f"Not visible to role {role_id!r}.",
-                    "reason": f"Not visible to role {role_id!r}."}
-        return _plain(self.vb.metric_action(metric_id, action, question))
+                    "reason": f"Not visible to role {role_id!r}.",
+                    "narrative_source": "deterministic", "narrative_note": "",
+                    "guard_violations": []}
+
+        # The deterministic answer is always produced first and always complete. The facts ride
+        # along internally and never leave this method.
+        payload = _plain(self.vb.metric_action(metric_id, action, question))
+        facts = payload.pop("narrative_facts", None)
+        payload["narrative_source"] = "deterministic"
+        # `guard_violations` keeps its meaning -- structured findings -- and stays empty on this
+        # response: the findings are logged server-side. What the owner is told about a
+        # narrative that was attempted and not used is `narrative_note`, and only that.
+        payload["narrative_note"] = ""
+        payload["guard_violations"] = []
+
+        if (action != "why" or metric_id not in NARRATIVE_METRICS or not facts
+                or not payload.get("available")):
+            return payload
+        if not self._narrative_active():
+            return payload        # disabled or quarantined: the provider is never called
+
+        narrative, violations = self._metric_narrative(facts, payload.get("answer", ""))
+        if narrative is None:
+            _LOG.warning("metric narrative fallback for %s/%s: %s", metric_id, action,
+                         " | ".join(str(v) for v in violations))
+            self.obs.note_llm_fallback()
+            payload["narrative_note"] = NARRATIVE_FALLBACK_NOTE
+            return payload
+
+        payload["answer"] = narrative
+        payload["narrative_source"] = "local_llm"
+        return payload
+
+    def _narrative_active(self):
+        """Only an explicitly enabled HTTP adapter narrates. Offline mode is not a narrator."""
+        config = self.provider_config
+        return bool(config and config.explicitly_enabled and config.mode == MODE_HTTP)
+
+    def _narrative_provider(self):
+        """The configured provider, with the narrative's own shorter wait where it has one."""
+        provider = build_provider(self.provider_config)
+        if hasattr(provider, "timeout"):
+            provider.timeout = min(float(provider.timeout), float(NARRATIVE_TIMEOUT_SECONDS))
+        return provider
+
+    def _metric_narrative(self, facts, draft):
+        """(narrative, ()) when the local model's wording passes the guard, else (None, reasons).
+
+        Whole-output decision: a narrative is used as written or not at all.
+        """
+        try:
+            provider = self._narrative_provider()
+            response = provider.complete(
+                prompt_contracts.build_metric_why_prompt(facts),
+                system=prompt_contracts.METRIC_WHY_NARRATIVE_SYSTEM,
+                max_tokens=NARRATIVE_MAX_TOKENS, temperature=0.0)
+        except LLMUnavailable as exc:
+            return None, (f"local model unavailable: {exc}",)
+        except Exception as exc:                     # a timeout or transport fault
+            return None, (f"local model failed: {type(exc).__name__}",)
+
+        text = getattr(response, "text", "")
+        if not isinstance(text, str):
+            return None, ("local model returned no text",)
+        other_names = tuple(
+            op.owner_measure_name(self.registry.get(m).display_name
+                                  or self.registry.get(m).semantic_name)
+            for m in self.registry.all_ids())
+        violations = answer_renderer.guard_metric_narrative(
+            text, facts, draft, other_measure_names=other_names)
+        if violations:
+            return None, violations
+        return op.sanitize_owner_text(text.strip()), ()
 
     def conflict_view(self, metric_id, role_id=ROLE_OWNER):
         if not self.authorizer.may_see(role_id, metric_id):

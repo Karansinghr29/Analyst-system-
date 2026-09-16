@@ -58,6 +58,19 @@ def _owner_measure_name(registry, metric_id):
                                  or getattr(spec, "semantic_name", "") or "This measure")
 
 
+# A measure whose own output is a single total, next to the measure that DOES hold its monthly
+# figures. The pairing is the one `engine/descriptive.py` already reads (SERIES_METRICS maps
+# "expenses" to the `expenses` component of M.PNL.001); saying it here stops "not recorded month
+# by month" from reading as "these figures do not exist anywhere".
+#
+# Nothing here changes what a measure is or what it computes: the metric stays a single all-time
+# total, no comparison is produced for it, and no component is substituted for it.
+MONTHLY_FIGURES_ELSEWHERE = {
+    "M.EXP.001": ("Monthly expense figures are available as the expenses component of "
+                  "P&L by month."),
+}
+
+
 def comparable_metrics_for(dimension, registry=None):
     """Every registered metric that can be compared across months AT a given grain.
 
@@ -268,11 +281,15 @@ class ChangeDetector:
             # answer rather than a reason. "Month-keyed series" went with it -- that is how the
             # data is shaped, not something an owner asked about.
             measure = getattr(answer, "metric_name", "") or "This measure"
-            return Change(classification=UNAVAILABLE,
-                          unavailable_reason=(
-                              f"{measure} is not recorded month by month, so there is nothing "
-                              f"to compare between periods. {NOT_DETERMINABLE_TEXT}"),
-                          **base)
+            elsewhere = MONTHLY_FIGURES_ELSEWHERE.get(metric_id, "")
+            if elsewhere:
+                reason = (f"{measure} is defined as a single all-time total, so this measure "
+                          f"cannot be compared month to month. {elsewhere} "
+                          f"{NOT_DETERMINABLE_TEXT}")
+            else:
+                reason = (f"{measure} is not recorded month by month, so there is nothing "
+                          f"to compare between periods. {NOT_DETERMINABLE_TEXT}")
+            return Change(classification=UNAVAILABLE, unavailable_reason=reason, **base)
 
         months, excluded = _complete_months(sorted(series))
         if excluded:

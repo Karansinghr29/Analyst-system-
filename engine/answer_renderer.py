@@ -264,6 +264,131 @@ def guard_workflow(verbalized, draft):
     return tuple(v)
 
 
+# A narrative is a few sentences. Anything shorter says nothing; anything longer is not the
+# requested shape and is more surface for an unsupported claim.
+NARRATIVE_MIN_CHARS = 40
+NARRATIVE_MAX_CHARS = 1200
+
+# Causal wording the narrative may use only where the facts themselves carry it. Matched as
+# phrases or whole words, so "because" is refused but "cause" inside another word is not.
+_NARRATIVE_CAUSAL = (r"\bbecause\b", r"\bdriven by\b", r"\bdrove\b", r"\bcaused\b",
+                     r"\bcausing\b", r"\bdue to\b", r"\bas a result of\b", r"\bled to\b",
+                     r"\bleads to\b", r"\bresulted in\b", r"\bresponsible for\b",
+                     r"\bthanks to\b", r"\bowing to\b", r"\bthe reason\b")
+
+
+# A judgement of size or importance. The facts carry materiality only as an open question, so a
+# sentence that ANSWERS it -- "a significant increase", "a small dip" -- is the model deciding.
+# Sentences that keep the question open ("whether ... is significant") are exempt.
+_NARRATIVE_JUDGEMENT = (
+    r"\bsignificant(?:ly)?\b",
+    r"\b(?:large|small|big|huge|modest|slight|sharp|strong|weak|healthy|worrying|concerning|impressive|substantial|notable|dramatic|minor|major|marginal) (?:increase|decrease|rise|fall|drop|growth|movement|change|jump|decline|dip|gain|loss)\b",
+)
+_OPEN_QUESTION_MARKERS = ("whether", "not set by the records", "owner judgement",
+                          "not determinable")
+
+
+def _fact_strings(value):
+    """Every string leaf in the facts, in order. The source a narrative may draw on."""
+    if isinstance(value, dict):
+        for item in value.values():
+            yield from _fact_strings(item)
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            yield from _fact_strings(item)
+    elif isinstance(value, str):
+        yield value
+
+
+def guard_metric_narrative(text, facts, draft, other_measure_names=()):
+    """Check a Local LLM narrative against the facts it was given and the deterministic answer.
+
+    Returns a tuple of violations; empty means the narrative may replace the answer. It composes
+    `guard_workflow` -- no new numbers, nothing internal, the refusal sentence kept, no invented
+    judgement or cause, no PII -- and adds what a single-measure narrative also owes: the
+    measure named, no other measure named, the posture respected, the caveat kept, a sane length.
+    """
+    from engine import owner_presentation
+
+    facts = facts or {}
+    narrative = (text or "").strip()
+    if not narrative:
+        return ("narrative is empty",)
+
+    source = "\n".join([draft or ""] + list(_fact_strings(facts)))
+    # A figure the facts carry with a sign may be written without one, or with an ASCII minus,
+    # and still be the same recorded figure. Both spellings are admitted; nothing else is.
+    signed = " ".join(f"{n} {-n}" for n in _numbers_in(source))
+    violations = list(guard_workflow(narrative, source + "\n" + signed))
+
+    low = narrative.lower()
+    source_low = source.lower()
+
+    if len(narrative) < NARRATIVE_MIN_CHARS or len(narrative) > NARRATIVE_MAX_CHARS:
+        violations.append(f"narrative length {len(narrative)} is outside "
+                          f"{NARRATIVE_MIN_CHARS}-{NARRATIVE_MAX_CHARS} characters")
+
+    # Internal identifiers, stated explicitly even though the workflow guard covers them when the
+    # sanitizer would change the text.
+    if owner_presentation._METRIC_ID.search(narrative):
+        violations.append("narrative exposes a metric ID")
+    for pattern, what in ((owner_presentation._SPEC_FILE, "a file name"),
+                          (owner_presentation._DB_OBJECT, "a database object name")):
+        if pattern.search(narrative):
+            violations.append(f"narrative exposes {what}")
+
+    for sentence in facts.get("must_include") or ():
+        if sentence and sentence not in narrative:
+            violations.append(f"narrative omits the required sentence {sentence!r}")
+
+    for sentence in re.split(r"(?<=[.!?])\s+", low):
+        if any(marker in sentence for marker in _OPEN_QUESTION_MARKERS):
+            continue
+        for pattern in _NARRATIVE_JUDGEMENT:
+            if re.search(pattern, sentence):
+                violations.append(f"narrative judges the movement's size or importance "
+                                  f"({pattern!r})")
+                break
+
+    for pattern in _NARRATIVE_CAUSAL:
+        if re.search(pattern, low) and not re.search(pattern, source_low):
+            violations.append(f"narrative asserts a cause the facts do not state ({pattern!r})")
+
+    metric = facts.get("metric") or {}
+    name = (metric.get("name") or "").strip()
+    trust = (metric.get("trust_level") or "").upper()
+
+    if name and name.lower() not in low:
+        violations.append("narrative does not name the measure it explains")
+
+    # Other measures: a name the facts do not carry is a measure the narrative wandered into.
+    # The facts' own names are removed first, so "Revenue" inside "Revenue by month" is not read
+    # as a second measure.
+    allowed = {name.lower()} | {(d.get("name") or "").lower()
+                                for d in facts.get("drivers") or ()}
+    allowed |= {(c.get("label") or "").lower()
+                for c in (facts.get("components") or {}).get("items") or ()}
+    scrubbed = low
+    for known in sorted((a for a in allowed if a), key=len, reverse=True):
+        scrubbed = scrubbed.replace(known, " ")
+    for other in other_measure_names or ():
+        key = (other or "").strip().lower()
+        if key and key not in allowed and re.search(r"\b" + re.escape(key) + r"\b", scrubbed):
+            violations.append(f"narrative names another measure ({other!r})")
+
+    if trust in ("SHOW_BOTH", "BLOCK"):
+        if not any(w in low for w in ("competing", "definition", "no single", "conflict",
+                                      "disagree", "blocked")):
+            violations.append(f"{trust} narrative does not say the definitions compete")
+    if trust == "NOT_DETERMINABLE" and NOT_DETERMINABLE_TEXT not in narrative:
+        violations.append("NOT_DETERMINABLE narrative omits the required sentence")
+    caveat = metric.get("caveat") or ""
+    if trust == "DISCLOSE" and caveat and not _caveat_survives(caveat, narrative):
+        violations.append("DISCLOSE narrative drops the caveat")
+
+    return tuple(violations)
+
+
 def guard(verbalized, skeleton, plan, answers):
     """Check an LLM verbalization against the deterministic skeleton. Returns a tuple of
     violations; empty means the verbalization may be shown to the user."""

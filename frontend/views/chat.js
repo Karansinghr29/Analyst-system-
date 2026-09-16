@@ -256,7 +256,17 @@ export function answerPanel(result, ctx) {
   // Guard violations are surfaced, not hidden. If the language layer produced something the
   // guard rejected, the user is told the deterministic text was used instead -- presenting the
   // fallback silently would misrepresent whose words these are.
-  if (result.guard_violations && result.guard_violations.length) {
+  if (result.narrative_source) {
+    // A metric card. The owner is told only that the verified explanation is the one shown, and
+    // only when a narrative was attempted and not used. `guard_violations` is never rendered for
+    // a card: the reasons stay on the server.
+    if (result.narrative_source === 'deterministic' && result.narrative_note) {
+      const g = el('section', 'answer-guard');
+      g.setAttribute('data-role', 'narrative-note');
+      g.appendChild(el('p', null, result.narrative_note));
+      panel.appendChild(g);
+    }
+  } else if (result.guard_violations && result.guard_violations.length) {
     const g = el('section', 'answer-guard');
     g.setAttribute('data-role', 'guard-violations');
     g.appendChild(el('h3', null, 'The wording layer was overridden'));
